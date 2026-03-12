@@ -1,0 +1,4743 @@
+<!doctype html>
+<html lang="es">
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC2CyBcmqd4dhuNtIX2sjUk_dadwriF0x8",
+    authDomain: "mtg-manager-2005.firebaseapp.com",
+    projectId: "mtg-manager-2005",
+    storageBucket: "mtg-manager-2005.firebasestorage.app",
+    messagingSenderId: "310699881878",
+    appId: "1:310699881878:web:dcb0f21e31434393f719b7",
+    measurementId: "G-T3PQ24KKCF"
+  };
+
+  const app   = initializeApp(firebaseConfig);
+  const auth  = getAuth(app);
+  const db    = getFirestore(app);
+
+  // Exponer globalmente para que el resto del código los use
+  window._fbAuth = auth;
+  window._fbDb   = db;
+  window._fbFns  = {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    doc,
+    setDoc,
+    getDoc
+  };
+
+  // Auto-login si hay sesión activa en Firebase
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      window._fbCurrentUser = user;
+      // Cargar datos de la nube cuando el usuario ya está logueado
+      if (typeof window.cloudLoadAll === "function") {
+        window.cloudLoadAll().then(() => {
+          if (typeof window.showApp === "function") window.showApp();
+        });
+      }
+    } else {
+      window._fbCurrentUser = null;
+    }
+  });
+</script>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>💗 MTG Manager</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{
+      --bg:#fff0f6;
+      --card:#ffffff;
+
+      --pink:#f06292;
+      --pink2:#d81b60;
+      --soft:#f8bbd0;
+      --line:#f2c5d5;
+
+      --text:#4a2c37;
+      --muted:#7a4a5a;
+
+      --shadow: 0 10px 24px rgba(216,27,96,.10);
+      --radius: 16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+      --input-bg:#ffffff;
+      --input-text:#111827;
+      --table-bg:#ffffff;
+
+      --base-font: 16px;
+    }
+
+    html{ font-size: var(--base-font); }
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+      background:linear-gradient(180deg, var(--bg), var(--card) 70%);
+      color:var(--text);
+    }
+
+    body[data-density="compact"] .panel{ padding:12px; }
+    body[data-density="compact"] input,
+    body[data-density="compact"] select{ padding:8px 10px; }
+    body[data-density="compact"] .tabbtn{ padding:8px 10px; }
+    body[data-density="compact"] tbody td{ padding:6px; }
+    body[data-density="compact"] thead th{ padding:8px 6px; }
+    body[data-density="compact"] .cardrow{ padding:8px; }
+
+    html[data-motion="reduced"] *{
+      transition:none !important;
+      animation:none !important;
+      scroll-behavior:auto !important;
+    }
+
+    header{
+      position:sticky; top:0; z-index:20;
+      background:var(--bg);
+      opacity:0.95;
+      backdrop-filter: blur(12px);
+      border-bottom:1px solid var(--line);
+    }
+    body[data-theme="black"] header{
+      background: rgba(17,24,39,.78);
+      border-bottom:1px solid var(--line);
+    }
+
+    .wrap{max-width:1700px;margin:0 auto;padding:14px;}
+    main .wrap{padding-top:18px;padding-bottom:30px}
+
+    .topbar{
+      display:flex;gap:12px;align-items:center;justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .brand{display:flex;align-items:center;gap:10px;}
+    .logo{
+      width:40px;height:40px;border-radius:14px;
+      background: linear-gradient(135deg, var(--card), var(--soft));
+      border:1px solid var(--line);
+      box-shadow: var(--shadow);
+      display:grid;place-items:center;
+      font-size:20px;
+      flex: 0 0 auto;
+    }
+    h1{font-size:18px;margin:0;color:var(--pink2)}
+
+    .tabs{
+      display:flex;gap:8px;
+      overflow-x:auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom:6px;
+      max-width:100%;
+    }
+    .tabbtn{
+      flex: 0 0 auto;
+      border:1px solid var(--line);
+      background:var(--card);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      transition:.15s;
+      box-shadow: 0 6px 14px rgba(240,98,146,.08);
+      user-select:none;
+      touch-action: manipulation;
+      white-space:nowrap;
+    }
+    .tabbtn:hover{transform:translateY(-1px)}
+    .tabbtn.active{
+      background:linear-gradient(180deg, var(--card), var(--soft));
+      border-color:var(--soft);
+      color:var(--pink2);
+      box-shadow: var(--shadow);
+    }
+    body[data-theme="black"] .tabbtn.active{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border-color: rgba(255,255,255,.12);
+      color: var(--text);
+    }
+
+    .panel{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+
+    .panel.soft{
+      background: linear-gradient(180deg, var(--bg), var(--card));
+    }
+
+    .h2{ margin:0 0 8px; color:var(--pink2); font-size:1rem; }
+    .h3{ margin:0 0 8px; color:var(--pink2); font-size:.9rem; }
+    .mb10{margin-bottom:10px}
+    .mt12{margin-top:12px}
+    .mt10{margin-top:10px}
+    .hr{ border:none;border-top:1px solid var(--line); margin:14px 0; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr 1fr 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr 1fr} }
+    @media (max-width: 600px){ .grid{grid-template-columns:1fr} }
+
+    .grid-4{display:grid;grid-template-columns: 1fr 1fr 1fr 1fr;gap:12px;}
+    @media (max-width: 980px){ .grid-4{grid-template-columns:1fr 1fr} }
+    @media (max-width: 600px){ .grid-4{grid-template-columns:1fr} }
+
+    .grid-search-top{display:grid;grid-template-columns: 2fr 1fr 1fr 1fr;gap:12px;}
+    @media (max-width: 980px){ .grid-search-top{grid-template-columns:1fr 1fr} }
+    @media (max-width: 600px){ .grid-search-top{grid-template-columns:1fr} }
+
+    label{font-size:.75rem;color:var(--muted);display:block;margin-bottom:6px}
+    input, select{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      outline:none;
+      font-size:.9rem;
+      background:var(--input-bg);
+      color:var(--input-text);
+    }
+    input:focus, select:focus{
+      border-color:var(--pink);
+      box-shadow:0 0 0 3px rgba(240,98,146,.15);
+    }
+
+    .btn{
+      border:none;
+      background:var(--pink);
+      color:#fff;
+      padding:10px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.15s;
+      font-weight:600;
+      touch-action: manipulation;
+    }
+    .btn:hover{background:var(--pink2)}
+    .btn.ghost{
+      background:var(--card);
+      border:1px solid var(--line);
+      color:var(--text);
+      font-weight:600;
+    }
+    .btn.ghost:hover{border-color:var(--soft); color:var(--pink2)}
+    body[data-theme="black"] .btn.ghost:hover{ color: var(--text); }
+
+    .btn.tiny{
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:.78rem;
+    }
+    .btn.danger{
+      background:#ef4444;
+    }
+    .btn.danger:hover{
+      background:#b91c1c;
+    }
+
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .spacer{flex:1 1 auto}
+    .hint{font-size:.75rem;color:var(--muted);margin-top:8px;}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:6px 10px;border-radius:999px;
+      background:rgba(255,255,255,.6);
+      border:1px solid var(--line);
+      font-size:.75rem;color:var(--muted);
+    }
+    body[data-theme="black"] .pill{ background: rgba(255,255,255,.04); }
+
+    .pillRow{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+    .mono{font-family:var(--mono)}
+    .small{font-size:.75rem;color:var(--muted)}
+    .right{text-align:right}
+    .chk{width:18px;height:18px;accent-color: var(--pink);}
+
+    .err{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      background:#fff3f5;
+      border:1px solid #ffd0da;
+      color:#8a1f35;
+      display:none;
+      white-space:pre-wrap;
+    }
+    body[data-theme="black"] .err{
+      background: rgba(220,38,38,.15);
+      border-color: rgba(220,38,38,.35);
+      color: #fecaca;
+    }
+
+    .notice{
+      background: var(--soft);
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      border-radius: 14px;
+      color: var(--pink2);
+      font-size: .9rem;
+    }
+
+    .tablewrap{margin-top:12px; overflow:auto;}
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:var(--table-bg);
+      min-width: 980px;
+    }
+    thead th{
+      position:sticky;top:0;
+      background:linear-gradient(180deg, var(--soft), var(--card));
+      color:var(--pink2);
+      font-size:.75rem;
+      padding:10px 8px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
+      white-space:nowrap;
+      z-index:1;
+    }
+    body[data-theme="black"] thead th{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      color: var(--text);
+    }
+    tbody td{
+      padding:8px;
+      border-bottom:1px solid rgba(242,197,213,.65);
+      vertical-align:middle;
+      font-size:.82rem;
+      background: transparent;
+    }
+    body[data-theme="black"] tbody td{
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    tbody tr:hover{filter: brightness(0.985);}
+
+    .icon{
+      width:30px;height:30px;
+      display:inline-block;vertical-align:middle;
+      border-radius:10px;border:1px solid var(--line);
+      background:var(--card);
+    }
+
+    .tag{
+      display:inline-block;
+      padding:4px 8px;border-radius:999px;
+      border:1px solid var(--line);
+      font-size:.75rem;
+      white-space:nowrap;
+    }
+    .tag.r-common   { background:#ffffff; border-color:#f2c5d5; color: #2b2b2b; }
+    .tag.r-uncommon { background:#f1f1f1; border-color:#d0d0d0; color:#444; }
+    .tag.r-rare     { background:#fff1b8; border-color:#e7c85f; color:#7a5600; }
+    .tag.r-mythic   { background:#ffd0a6; border-color:#ff9f5a; color:#7a2f00; }
+    .tag.r-special  { background:#ffe3ed; border-color:#f8bbd0; color:#b0184d; }
+
+    td.rarity-cell{
+      background: transparent !important;
+      background-image: none !important;
+    }
+    td.rarity-cell .tag{
+      box-shadow: 0 1px 0 rgba(0,0,0,.05);
+    }
+
+    .two{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media(max-width: 900px){ .two{grid-template-columns:1fr} }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      padding:6px;
+    }
+    /* Scroll del listado de mazos: evita desbordes y artefactos visuales */
+    .deckListScrollFix{
+       max-height:480px;
+        overflow-y:auto;
+        overflow-x:hidden;
+        padding:8px;
+        position:relative;
+        contain: paint;
+        /* fade suave al final sin “líneas raras” */
+        -webkit-mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
+        mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
+      }
+
+
+    .cardrow{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:var(--card);
+      padding:10px;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      cursor:pointer;
+    }
+    .cardrow:hover{background:rgba(255,230,240,.55)}
+    body[data-theme="black"] .cardrow:hover{ background: rgba(255,255,255,.03); }
+
+    .cardrow b{color:var(--pink2)}
+    body[data-theme="black"] .cardrow b{ color: var(--text); }
+
+    .mini{
+      display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+      color:var(--muted);font-size:.75rem;
+    }
+
+    .footerbar{
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+      margin-top:12px;
+    }
+
+    section[data-page]{
+      transition: opacity .18s ease, transform .18s ease;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    section[data-page].is-hidden{
+      opacity: 0;
+      transform: translateY(6px);
+      pointer-events:none;
+    }
+
+    .settingsGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 700px){ .settingsGrid{ grid-template-columns: 1fr; } }
+
+    .toggleRow{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: var(--card);
+    }
+    .toggleRow input{ width:18px; height:18px; }
+
+    .moneyGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+    }
+    @media (max-width: 700px){ .moneyGrid{ grid-template-columns: 1fr; } }
+
+    .moneyCard{ padding:20px 24px; min-height:110px; }
+
+    .collectionGrid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
+    }
+    @media (max-width: 980px){ .collectionGrid{ grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px){ .collectionGrid{ grid-template-columns: 1fr; } }
+
+    .cCard{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: var(--card);
+      box-shadow: 0 8px 18px rgba(0,0,0,.06);
+      overflow:hidden;
+    }
+    .cTop{
+      padding:10px 12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .cName{ font-weight:800; color: var(--pink2); line-height:1.1; }
+    .cSub{ font-size:.78rem; color: var(--muted); margin-top:4px; }
+    .cBadges{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      padding:0 12px 10px;
+    }
+    .cBody{
+      padding:10px 12px 12px;
+      border-top:1px solid var(--line);
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:8px 10px;
+    }
+    .cField .k{ font-size:.7rem; color:var(--muted); }
+    .cField .v{ font-size:.85rem; }
+    .cIcon{
+      width:28px;height:28px;border-radius:10px;border:1px solid var(--line);
+      background:var(--card); padding:3px; flex:0 0 auto;
+    }
+    .cRight{ display:flex; align-items:center; gap:8px; }
+
+    .setIcon{
+      width:26px;
+      height:26px;
+      border-radius:8px;
+      border:1px solid var(--line);
+      background:var(--card);
+      padding:3px;
+    }
+
+    /* ===== Deck View ===== */
+    .deckViewGrid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:12px;
+      height: calc(100vh - 220px);
+    }
+    @media (max-width: 900px){
+      .deckViewGrid{ grid-template-columns: 1fr; height:auto; }
+    }
+
+    .deckListPanel,
+    .deckDetailsPanel{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+
+      /* IMPORTANTE: recorta la imagen/sombra de 'Detalles' para que
+        no se dibuje por encima del panel/listado (el “cuadrado” que se veía). */
+      overflow: hidden;
+      position: relative;
+      isolation: isolate;
+    }
+
+    /* El contenido de detalles debe poder hacer scroll dentro del panel */
+    #deckViewDetails{
+      flex: 1;
+      overflow: auto;
+      padding-right: 4px;
+      /* evita que imágenes grandes empujen el layout */
+      min-height: 0;
+    }
+
+    #deckViewDetails img{
+      display:block;
+      max-height: 70vh;
+      object-fit: contain;
+    }
+
+
+    .deckListScroll{
+      flex:1;
+      overflow-y:auto;
+      padding-right:4px;
+    }
+
+    .deckCommander{
+      border:2px solid var(--pink2);
+      background: linear-gradient(90deg, var(--soft), transparent);
+    }
+    .cmdBadge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      font-size:.72rem;
+      font-weight:800;
+      color:var(--pink2);
+      background: rgba(0,0,0,.03);
+    }
+
+    .ownBadge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width: 26px;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,.03);
+    }
+    .ownBadge.ok{
+      background: rgba(34,197,94,.18);
+      border-color: rgba(34,197,94,.55);
+    }
+    .ownBadge.warn{
+      background: rgba(245,158,11,.18);
+      border-color: rgba(245,158,11,.55);
+    }
+    .ownBadge.alt{
+      background: rgba(250,204,21,.22);
+      border-color: rgba(250,204,21,.70);
+    }
+    .ownBadge.no{ opacity:.7; }
+/* Deck groups (cuando se agrupa por tipo) */
+.deckGroup{
+  border:1px solid var(--line);
+  border-radius:16px;
+  overflow:hidden;
+  background: var(--card);
+}
+.deckGroup .cardrow{
+  border:none;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.deckGroup .cardrow:not(:last-child){
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+body[data-theme="black"] .deckGroup .cardrow:not(:last-child){
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.deckGroup .cardrow:hover{
+  background: rgba(0,0,0,0.03);
+}
+body[data-theme="black"] .deckGroup .cardrow:hover{
+  background: rgba(255,255,255,.03);
+}
+
+
+
+
+
+  
+.starBtn{
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  font-size:18px;
+  line-height:1;
+  padding:2px 6px;
+}
+.starBtn:hover{ transform: translateY(-1px); }
+.center{ text-align:center; }
+
+/* ===== AUTH SCREEN (login/registro) ===== */
+.auth-screen{
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(135deg, var(--bg) 0%, var(--soft) 50%, var(--bg) 100%);
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity .35s ease;
+}
+
+.auth-card{
+  width: 100%;
+  max-width: 390px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(255,255,255,.55);
+  backdrop-filter: blur(10px);
+  border-radius: 22px;
+  padding: 32px 28px;
+  box-shadow: 0 30px 60px rgba(0,0,0,.14);
+  text-align: center;
+  transform: translateY(10px) scale(.985);
+  opacity: 0;
+  transition: transform .45s cubic-bezier(.2,.8,.2,1), opacity .45s ease;
+}
+
+/* animación de entrada */
+.auth-screen.is-enter .auth-card{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* animación de salida */
+.auth-screen.is-exit{ opacity: 0; }
+.auth-screen.is-exit .auth-card{
+  transform: translateY(-6px) scale(.99);
+  opacity: 0;
+}
+
+.auth-brand{ margin-bottom: 22px; }
+.auth-logo{
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 12px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--pink), var(--pink2));
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+.auth-title{ margin: 0; font-size: 22px; color: #111827; }
+.auth-subtitle{ margin: 6px 0 0; font-size: 14px; color: #6b7280; }
+
+.auth-form{ display: grid; gap: 12px; text-align: left; }
+.auth-form input{
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+  background: #fff;
+}
+.auth-form input:focus{
+  outline: none;
+  border-color: var(--pink);
+  box-shadow: 0 0 0 3px rgba(240,98,146,.15);
+}
+.auth-btn{ width: 100%; }
+.auth-remember{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #4b5563;
+  user-select: none;
+}
+.auth-remember input{ width: 18px; height: 18px; accent-color: var(--pink); }
+.auth-msg{
+  min-height: 18px;
+  font-size: 13px;
+  color: #ef4444;
+  text-align: center;
+}
+
+/* Oculta la app si no estás autenticado */
+body.not-authenticated header,
+body.not-authenticated main{
+  display:none;
+}
+
+/* transición de entrada para la app */
+body.app-enter header,
+body.app-enter main{
+  animation: appFadeIn .35s ease both;
+}
+@keyframes appFadeIn{
+  from{ opacity: 0; transform: translateY(6px); }
+  to  { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+
+<body class="not-authenticated">
+
+  <!-- AUTH SCREEN (login/registro) -->
+  <!-- Nota: dejamos 'is-enter' por defecto para que el formulario sea visible
+       incluso si falla el JS (por ejemplo, si no hay internet al cargar librerías). -->
+  <section id="authScreen" class="auth-screen is-enter" aria-label="Inicio de sesión">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <!-- Placeholder de logo (luego lo cambias por imagen) -->
+        <div class="auth-logo" aria-hidden="true">💗</div>
+        <h1 class="auth-title">MTG Manager</h1>
+        <p class="auth-subtitle">Accede a tu colección desde cualquier PC</p>
+      </div>
+
+      <!-- Vista: Login -->
+      <div id="authLoginView" class="auth-form">
+        <input id="authEmail" type="email" placeholder="Email" autocomplete="email" />
+        <input id="authPass" type="password" placeholder="Contraseña" autocomplete="current-password" />
+
+        <label class="auth-remember">
+          <input id="authRemember" type="checkbox" checked />
+          <span>Recordarme</span>
+        </label>
+
+        <button class="btn auth-btn" id="btnSignIn">Iniciar sesión</button>
+        <button class="btn ghost auth-btn" id="btnSignUp">Crear cuenta</button>
+
+        <div class="auth-msg" id="authMsg"></div>
+      </div>
+
+      <!-- Vista: Registro -->
+      <div id="authSignupView" class="auth-form" style="display:none;">
+        <input id="suUsername" type="text" placeholder="Nombre de usuario" autocomplete="username" />
+
+        <input id="suEmail" type="email" placeholder="Email" autocomplete="email" />
+        <input id="suEmail2" type="email" placeholder="Confirmar email" autocomplete="email" />
+
+        <input id="suPass" type="password" placeholder="Contraseña" autocomplete="new-password" />
+        <input id="suPass2" type="password" placeholder="Repetir contraseña" autocomplete="new-password" />
+
+        <button class="btn auth-btn" id="btnCreateAccount">Crear cuenta</button>
+        <button class="btn ghost auth-btn" id="btnBackToLogin">← Volver</button>
+
+        <div class="auth-msg" id="authMsg2"></div>
+      </div>
+    </div>
+  </section>
+<header>
+  <div class="wrap topbar">
+    <div class="brand">
+      <div class="logo">💗</div>
+      <div>
+        <h1>MTG Manager</h1>
+        <div class="small">Por María Raposo Sánchez</div>
+      </div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="row" id="authTopBar" style="gap:8px;align-items:center;">
+      <span class="pill" id="authStatus">No logueado</span>
+      <button class="btn ghost tiny" id="btnSignOutTop" style="display:none;">Cerrar sesión</button>
+    </div>
+    <div id="globalErrorBox" class="notice" style="display:none;margin:10px 0;"></div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <!-- INTRO -->
+    <section class="panel" data-page="intro">
+      <h2 class="h2">Introducción</h2>
+
+      <div class="pill">Bienvenido al mejor gestor de cartas de Magic</div>
+
+      <p class="hint">
+        Aquí podrás guardar, gestionar y revisar tu colección de cartas de Magic.
+        Con un par de datos podremos almacenar tus cartas por colores, tipo, rareza, colección...
+        Además de ver estadísticas (colores, tipos) y dinero invertido. También guardamos datos de tus mazos.
+      </p>
+
+      <div class="two mt12">
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Modo de uso</h3>
+          <p class="hint" style="margin:0;">No sabemos adivinar cartas a la perfección, así que danos algunos datos:</p>
+          <ul class="hint" style="margin:0;padding-left:16px;">
+            <li>Nombre de la carta en español o en inglés</li>
+            <li>Código de la colección</li>
+            <li>Número de la carta</li>
+          </ul>
+          <p class="hint" style="margin:0;">Si no sabes código/número:</p>
+          <ul class="hint" style="margin:0;padding-left:16px;">
+            <li>Pon solo el nombre (se busca la impresión más antigua).</li>
+            <li>Revisa esta guía: <b>https://i.imgur.com/VHDtcZc.jpeg</b></li>
+            <li>Más abajo tienes una tabla con todas las colecciones y sus códigos.</li>
+          </ul>
+        </div>
+
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Ajustes y guardado</h3>
+          <p class="hint" style="margin:0;">Los datos se guardan en tu navegador. Puedes exportar/importar JSON.</p>
+          <p class="hint" style="margin:0;">También puedes importar tus mazos y cartas en JSON o TXT/CSV.</p>
+          <p class="hint" style="margin:0;">Tema, moneda, tamaño de letra y extras están en Ajustes.</p>
+          <div class="pillRow">
+            <span class="pill">💾 Guardado local</span>
+            <span class="pill">📤 Exportar</span>
+            <span class="pill">📥 Importar</span>
+            <span class="pill">🎨 Personalización</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="box-shadow:none; margin-top:12px;">
+        <h3 class="h3">Colecciones de Magic</h3>
+        <p class="hint">Listado completo de colecciones oficiales de Magic: The Gathering (Scryfall).</p>
+        <div class="tablewrap" style="max-height:360px;">
+          <table id="tblIntroSets" style="min-width:520px;">
+            <thead>
+              <tr>
+                <th>Logo</th>
+                <th>Nombre</th>
+                <th class="mono">Código</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="hint" id="introSetsInfo"></div>
+      </div>
+    </section>
+
+    <!-- CARTAS -->
+    <section class="panel is-hidden" data-page="cartas" style="display:none;">
+      <div class="row mb10">
+        <h2 class="h2" style="margin:0;">Cartas</h2>
+        <div class="spacer"></div>
+
+        <button class="btn ghost" id="btnExport">Exportar JSON</button>
+        <button class="btn ghost" id="btnImport">Importar JSON</button>
+        <button class="btn ghost" id="btnImportManaBox">Importar ManaBox (CSV)</button>
+        <button class="btn ghost" id="btnClear">Borrar todo</button>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label>Nombre (ES o EN)</label>
+          <input id="inName" placeholder="Sol Ring / Anillo solar"/>
+          <div class="hint">Si dejas SetCode y Nº vacíos, se añade la impresión más antigua.</div>
+        </div>
+        <div>
+          <label>SetCode (opcional)</label>
+          <input id="inSet" placeholder="cmm" class="mono"/>
+        </div>
+        <div>
+          <label>Nº colección (opcional)</label>
+          <input id="inCn" placeholder="001" class="mono"/>
+        </div>
+        <div style="display:flex;align-items:end;gap:10px;">
+          <button class="btn" id="btnAdd" style="width:100%;">Añadir carta</button>
+        </div>
+
+        <div>
+          <label>Idioma</label>
+          <select id="inLang">
+            <option value="es">Español</option>
+            <option value="en">Inglés</option>
+            <option value="fr">Francés</option>
+            <option value="de">Alemán</option>
+            <option value="it">Italiano</option>
+            <option value="pt">Portugués</option>
+            <option value="ja">Japonés</option>
+            <option value="ko">Coreano</option>
+            <option value="zhs">Chino (Simpl.)</option>
+            <option value="zht">Chino (Trad.)</option>
+          </select>
+        </div>
+        <div>
+          <label>Cantidad</label>
+          <input id="inQty" type="number" min="1" value="1"/>
+        </div>
+        <div><label>Proxy</label><input id="inProxy" type="checkbox" class="chk"/></div>
+        <div><label>Foil</label><input id="inFoil" type="checkbox" class="chk"/></div>
+        <div><label>Promo</label><input id="inPromo" type="checkbox" class="chk"/></div>
+        <div><label>Promo pre</label><input id="inPromoPre" type="checkbox" class="chk"/></div>
+        <div><label>A la venta</label><input id="inSale" type="checkbox" class="chk"/></div>
+      </div>
+
+      <div id="errBox" class="err"></div>
+
+      <div class="footerbar">
+        <span class="pill">Total cartas: <b id="countCards">0</b></span>
+        <span class="pill">Total unidades: <b id="countUnits">0</b></span>
+        <span class="pill">Valor estimado (€): <b id="sumEur">0.00</b></span>
+
+        <div class="spacer"></div>
+
+        <label style="margin:0;">
+          <span class="small">Ordenar</span>
+          <select id="sortKey" style="width:auto;min-width:180px;">
+            <option value="added">Añadidas (reciente primero)</option>
+            <option value="name">Nombre</option>
+            <option value="set">SetCode</option>
+            <option value="price">Precio</option>
+            <option value="mv">MV/CMC</option>
+            <option value="rarity">Rareza</option>
+            <option value="qty">Cantidad</option>
+          </select>
+        </label>
+
+        <select id="sortDir" style="width:auto;min-width:140px;">
+          <option value="desc">Desc</option>
+          <option value="asc">Asc</option>
+        </select>
+
+        <button class="btn ghost" id="btnApplySort">Aplicar</button>
+        <button class="btn ghost" id="btnRefreshPrices">Refrescar precios</button>
+      </div>
+
+      <div class="tablewrap">
+        <table id="tbl">
+          <thead>
+            <tr>
+              <th>★</th>
+              <th>Carta</th>
+              <th>Colección</th>
+              <th>Nº</th>
+              <th>Tipo</th>
+              <th>Subtipo</th>
+              <th>Color</th>
+              <th>Maná</th>
+              <th>MV</th>
+              <th>Rareza</th>
+              <th>Logo</th>
+              <th class="right">Precio</th>
+              <th>Proxy</th>
+              <th>Foil</th>
+              <th>Promo</th>
+              <th>Pre</th>
+              <th>Idioma</th>
+              <th class="right">Cant.</th>
+              <th class="right">Mejor venta</th>
+              <th>Venta</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- STATS COLORES -->
+    <section class="panel is-hidden" data-page="stats_colores" style="display:none;">
+      <div class="row mb10">
+        <h2 class="h2" style="margin:0;">Estadísticas: Colores</h2>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btnRecalcColors">Recalcular</button>
+      </div>
+      <div class="two">
+        <div class="panel soft" style="box-shadow:none;">
+          <canvas id="chartColors"></canvas>
+        </div>
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Resumen</h3>
+          <div id="colorsSummary" class="hint"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS TIPOS/RAREZAS + DINERO -->
+    <section class="panel is-hidden" data-page="stats_tipos" style="display:none;">
+      <div class="row mb10">
+        <h2 class="h2" style="margin:0;">Estadísticas: Tipos y rarezas</h2>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btnRecalcTypes">Recalcular</button>
+      </div>
+      <div class="two">
+        <div class="panel soft" style="box-shadow:none;">
+          <canvas id="chartTypes"></canvas>
+        </div>
+        <div class="panel soft" style="box-shadow:none;">
+          <canvas id="chartRarity"></canvas>
+        </div>
+      </div>
+
+      <hr class="hr"/>
+
+      <div class="row mb10">
+        <h3 class="h3" style="margin:0;">Dineros</h3>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btnRecalcMoney">Recalcular</button>
+      </div>
+
+      <div class="moneyGrid">
+        <div class="panel soft moneyCard" style="box-shadow:none;">
+          <h3 class="h3">Dinero en cartones de colores</h3>
+          <div id="invReal" class="mono" style="font-size:1.4rem;color:var(--pink2);">0.00€</div>
+          <p class="hint">Suma de precios estimados excluyendo proxies.</p>
+        </div>
+        <div class="panel soft moneyCard" style="box-shadow:none;">
+          <h3 class="h3">Dinero virtual en cartones</h3>
+          <div id="invAll" class="mono" style="font-size:1.4rem;color:var(--pink2);">0.00€</div>
+          <p class="hint">Incluye proxies.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- BUSCADOR -->
+    <section class="panel is-hidden" data-page="buscador" style="display:none;">
+      <div class="row mb10">
+        <h2 class="h2" style="margin:0;">Buscador</h2>
+        <div class="spacer"></div>
+        <span class="pill">Resultados: <b id="searchCount">0</b></span>
+        <button class="btn ghost" id="btnClearFilters">Limpiar filtros</button>
+      </div>
+
+      <div class="grid-search-top">
+        <div>
+          <label>Nombre</label>
+          <input id="searchQ" placeholder="Escribe parte del nombre..."/>
+        </div>
+
+        <div>
+          <label>Colección (setCode)</label>
+          <input id="searchSet" placeholder="cmm" class="mono"/>
+        </div>
+
+        <div>
+          <label>Rareza</label>
+          <select id="searchRarity">
+            <option value="">(cualquiera)</option>
+            <option>Común</option>
+            <option>Poco común</option>
+            <option>Rara</option>
+            <option>Mítica</option>
+            <option>Especial</option>
+          </select>
+        </div>
+
+        <div style="display:flex;align-items:end;">
+          <button class="btn" id="btnSearch" style="width:100%;">Buscar</button>
+        </div>
+      </div>
+
+      <div class="grid-4 mt12">
+        <div>
+          <label>Color (identidad)</label>
+          <select id="searchColors"></select>
+          <div class="hint">Ej: WU = blanco/azul. “Incoloro” = sin WUBRG.</div>
+        </div>
+
+        <div>
+          <label>Tipo</label>
+          <select id="searchType">
+            <option value="">(cualquiera)</option>
+            <option>Criatura</option>
+            <option>Instantáneo</option>
+            <option>Conjuro</option>
+            <option>Artefacto</option>
+            <option>Encantamiento</option>
+            <option>Tierra</option>
+            <option>Planeswalker</option>
+            <option>Batalla</option>
+            <option>Otro</option>
+          </select>
+        </div>
+
+        <div>
+          <label>MV/CMC mínimo</label>
+          <input id="searchMvMin" type="number" min="0" placeholder="0"/>
+        </div>
+
+        <div>
+          <label>MV/CMC máximo</label>
+          <input id="searchMvMax" type="number" min="0" placeholder="20"/>
+        </div>
+      </div>
+
+      <div class="list mt12" id="searchResults"></div>
+    </section>
+
+    <!-- COLECCIÓN -->
+    <section class="panel is-hidden" data-page="coleccion" style="display:none;">
+      <div class="row mb10">
+        <h2 class="h2" style="margin:0;">Colección</h2>
+        <div class="spacer"></div>
+        <span class="pill">Cartas: <b id="colCountCards">0</b></span>
+        <span class="pill">Unidades: <b id="colCountUnits">0</b></span>
+        <span class="pill">Valor (€): <b id="colSumEur">0.00</b></span>
+      </div>
+
+      <div class="hint mb10">Vista en “tarjetas” con todos los datos (se guarda igual que en Cartas).</div>
+      <div class="row mb10" style="gap:10px; flex-wrap:wrap;">
+        <div style="min-width:260px;">
+          <label>Filtrar por favoritos</label>
+          <select id="colFavFilter">
+            <option value="all">Todos</option>
+            <option value="fav">Solo favoritos</option>
+            <option value="nofav">Sin favoritos</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="collectionGrid" class="collectionGrid"></div>
+    </section>
+
+    <!-- MAZOS -->
+    <section class="panel is-hidden" data-page="mazos" style="display:none;">
+      <div class="row mb10">
+        <h2 class="h2" style="margin:0;">Mazos</h2>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btnDeckExport">Exportar mazos</button>
+        <button class="btn ghost" id="btnDeckImport">Importar mazos (JSON/TXT)</button>
+      </div>
+
+      <div class="two">
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Crear mazo</h3>
+          <label>Nombre del mazo</label>
+          <input id="deckName" placeholder="Mi mazo Commander"/>
+          <div class="row mt12">
+            <button class="btn" id="btnCreateDeck">Crear</button>
+            <div class="spacer"></div>
+            <span class="pill">Mazos: <b id="deckCount">0</b></span>
+          </div>
+
+          <hr class="hr"/>
+
+          <h3 class="h3">Seleccionar mazo</h3>
+          <label>Mazo</label>
+          <select id="deckSelect"></select>
+
+          <div class="row mt10">
+            <button class="btn ghost tiny" id="btnDeckRename">Renombrar</button>
+            <button class="btn ghost tiny" id="btnDeckDuplicate">Duplicar</button>
+            <button class="btn danger tiny" id="btnDeckDelete">Eliminar</button>
+          </div>
+          <div class="hint">Renombrar/Duplicar/Eliminar afectan al mazo seleccionado.</div>
+
+          <hr class="hr"/>
+
+          <h3 class="h3">Comandante (apartado propio)</h3>
+          <div class="grid" style="grid-template-columns:2fr 1fr 1fr; margin-top:10px;">
+            <div>
+              <label>Nombre</label>
+              <input id="deckCmdName" placeholder="Atraxa, Praetors' Voice"/>
+            </div>
+            <div>
+              <label>SetCode (opcional)</label>
+              <input id="deckCmdSet" class="mono" placeholder="cmm"/>
+            </div>
+            <div>
+              <label>Nº (opcional)</label>
+              <input id="deckCmdCn" class="mono" placeholder="380"/>
+            </div>
+          </div>
+
+          <div class="row mt10">
+            <button class="btn" id="btnSetCommander">Guardar comandante</button>
+            <button class="btn ghost" id="btnClearCommander">Quitar comandante</button>
+            <div class="spacer"></div>
+            <span class="pill">Actual: <b id="deckCommanderLabel">—</b></span>
+          </div>
+          <div class="hint">Puedes poner solo el nombre. Si pones set+nº, se verá exacto al exportar y en detalles.</div>
+
+          <hr class="hr"/>
+
+          <h3 class="h3">Añadir carta al mazo</h3>
+          <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr; margin-top:10px;">
+            <div>
+              <label>Nombre</label>
+              <input id="deckCardName" placeholder="Sol Ring"/>
+            </div>
+            <div>
+              <label>SetCode</label>
+              <input id="deckCardSet" class="mono" placeholder="cmm"/>
+            </div>
+            <div>
+              <label>Nº</label>
+              <input id="deckCardCn" class="mono" placeholder="380"/>
+            </div>
+            <div>
+              <label>Cantidad</label>
+              <input id="deckCardQty" type="number" min="1" value="1"/>
+            </div>
+          </div>
+
+          <button class="btn" id="btnAddToDeck" style="margin-top:10px;width:100%;">Añadir al mazo</button>
+          <div class="hint">No consulta Scryfall aquí: guarda referencia (nombre + set + nº) y cantidad.</div>
+
+          <hr class="hr"/>
+
+          <h3 class="h3">Acciones rápidas</h3>
+          <div class="row">
+            <button class="btn ghost" id="btnDeckExportOneTxt">Exportar mazo (TXT)</button>
+            <button class="btn ghost" id="btnDeckExportOneJson">Exportar mazo (JSON)</button>
+            <button class="btn ghost" id="btnDeckCopyTxt">Copiar TXT</button>
+          </div>
+          <div class="hint">Exporta/“copia” el mazo seleccionado.</div>
+        </div>
+
+        <div class="panel soft" style="box-shadow:none;">
+          <div class="row" style="margin-bottom:8px;">
+            <h3 class="h3" style="margin:0;">Mis mazos</h3>
+            <div class="spacer"></div>
+          </div>
+
+          <div class="grid" style="grid-template-columns:2fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label>Buscar mazo</label>
+              <input id="deckListQ" placeholder="Escribe parte del nombre..." />
+            </div>
+            <div>
+              <label>Orden</label>
+              <select id="deckListSort">
+                <option value="recent">Recientes</option>
+                <option value="az">A–Z</option>
+                <option value="za">Z–A</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="deckListScrollFix">
+            <div id="deckList" class="list"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="hint mt12">
+        Formatos TXT soportados:
+        <div class="mono">Mazo: Nombre</div>
+        <div class="mono">Comandante: Nombre (SET #123)</div>
+        <div class="mono">2x Carta (SET #123)</div>
+        <div class="mono">2 Carta (SET) 123</div>
+        <div class="mono">2x Carta</div>
+        <div class="small">(Puedes usar comentarios con # o //)</div>
+      </div>
+    </section>
+
+    
+    <!-- VENTAS -->
+    <section class="panel is-hidden" data-page="ventas" style="display:none;">
+      <h2 class="h2">Ventas (Cardmarket)</h2>
+      <p class="hint">Aquí aparecen todas las cartas marcadas como <b>A la venta</b>. Cuando se venda una, pulsa <b>Vendida</b> para descontar 1 unidad o eliminar la carta si era la última.</p>
+      <div class="pill" id="salesCountPill" style="width:fit-content;">En venta: 0</div>
+
+      <div class="tablewrap mt12">
+        <table id="tblSales">
+          <thead>
+            <tr>
+              <th>★</th>
+              <th>Carta</th>
+              <th>Colección</th>
+              <th>Nº</th>
+              <th class="right">Cant.</th>
+              <th class="right">Precio</th>
+              <th class="right">Mejor venta</th>
+              <th class="right">Acción</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+<!-- DECK VIEW -->
+    <section class="panel is-hidden" data-page="deck_view" style="display:none;">
+      <div class="row mb10">
+        <button class="btn ghost" id="btnDeckBack">← Volver</button>
+        <h2 class="h2" style="margin:0;" id="deckViewTitle">Mazo</h2>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btnDeckViewExportTxt">Exportar TXT</button>
+        <button class="btn ghost" id="btnDeckToWish">Faltan → Deseos</button>
+        <button class="btn danger" id="btnDeckViewDelete">Eliminar mazo</button>
+      </div>
+
+      <div class="notice" id="deckCmdWarnings" style="margin:10px 0; display:none;"></div>
+
+      <div class="deckViewGrid">
+        <div class="panel soft deckListPanel" style="box-shadow:none;">
+          <div class="grid" style="grid-template-columns:2fr 1fr;gap:12px;">
+            <div>
+              <label>Buscar</label>
+              <input id="deckViewQ" placeholder="Nombre..." />
+            </div>
+            <div>
+              <label>Agrupar</label>
+              <select id="deckViewGroup">
+                <option value="type">Por tipo</option>
+                <option value="none">Sin agrupar</option>
+              </select>
+            </div>
+          </div>
+          <div id="deckViewCommanderBox" class="hint" style="display:none;"></div>
+          <div class="hint mt10" id="deckViewMeta"></div>
+          <div class="deckListScroll mt10" id="deckViewList"></div>
+        </div>
+
+        <div class="panel soft deckDetailsPanel" style="box-shadow:none;">
+          <h3 class="h3">Detalles</h3>
+          <div id="deckViewDetails" class="hint">Selecciona una carta del mazo.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AJUSTES -->
+    <section class="panel is-hidden" data-page="deseos" style="display:none;">
+      <h2 class="h2">Lista de deseos</h2>
+      <p class="hint" style="margin:0 0 10px;">Guarda cartas que quieres conseguir, compara con tu colección y registra historial de precios.</p>
+
+      <div class="panel soft" style="box-shadow:none;">
+        <div class="grid" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+          <div>
+            <label>Nombre</label>
+            <input id="wishName" placeholder="Ej: Sol Ring">
+          </div>
+          <div>
+            <label>Cantidad</label>
+            <input id="wishQty" type="number" min="1" value="1">
+          </div>
+          <div>
+            <label>SetCode (opcional)</label>
+            <input id="wishSet" class="mono" placeholder="cmm">
+          </div>
+          <div>
+            <label>Nº colección (opcional)</label>
+            <input id="wishCn" class="mono" placeholder="001">
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button class="btn" id="btnWishAdd">Añadir a deseos</button>
+          <button class="btn ghost" id="btnWishRefresh">Actualizar precios</button>
+          <div class="spacer"></div>
+          <input id="wishQ" placeholder="Buscar en deseos..." style="max-width:260px;">
+        </div>
+      </div>
+
+      <div class="panel soft" style="box-shadow:none;margin-top:12px;">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span class="pill"><b id="wishCount">0</b> items</span>
+          <span class="pill">Faltan: <b id="wishMissingCount">0</b></span>
+          <span class="pill">Cubiertos: <b id="wishCoveredCount">0</b></span>
+        </div>
+        <div id="wishlistList" style="margin-top:10px;"></div>
+      </div>
+    </section>
+
+    <section class="panel is-hidden" data-page="ajustes" style="display:none;">
+      <div class="row mb10">
+        <h2 class="h2" style="margin:0;">Ajustes</h2>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btnResetSettings">Reset ajustes</button>
+      </div>
+
+      <div class="settingsGrid">
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Tema</h3>
+          <label>Elige tema</label>
+          <select id="setTheme">
+            <option value="pink">Rosa (predeterminado)</option>
+            <option value="white">Blanco - Llanuras (W)</option>
+            <option value="blue">Azul - Islas (U)</option>
+            <option value="black">Negro - Pantanos (B)</option>
+            <option value="red">Rojo - Montanas (R)</option>
+            <option value="green">Verde - Bosques (G)</option>
+            <option value="gold">Oro - Multicolor</option>
+          </select>
+          <div class="hint">Los 5 colores de Magic + rosa. "Pantanos (B)" es modo oscuro.</div>
+          <div id="themePreviews" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+            <div class="theme-swatch" data-t="pink"    style="background:linear-gradient(135deg,#f06292,#d81b60);width:32px;height:32px;border-radius:10px;border:2px solid var(--line);cursor:pointer;" title="Rosa"></div>
+            <div class="theme-swatch" data-t="white"   style="background:linear-gradient(135deg,#f5f0dc,#c8a84b);width:32px;height:32px;border-radius:10px;border:2px solid var(--line);cursor:pointer;" title="Blanco (W)"></div>
+            <div class="theme-swatch" data-t="blue"    style="background:linear-gradient(135deg,#bfdbfe,#1d4ed8);width:32px;height:32px;border-radius:10px;border:2px solid var(--line);cursor:pointer;" title="Azul (U)"></div>
+            <div class="theme-swatch" data-t="black"   style="background:linear-gradient(135deg,#374151,#0b0b10);width:32px;height:32px;border-radius:10px;border:2px solid var(--line);cursor:pointer;" title="Negro (B)"></div>
+            <div class="theme-swatch" data-t="red"     style="background:linear-gradient(135deg,#fecaca,#b91c1c);width:32px;height:32px;border-radius:10px;border:2px solid var(--line);cursor:pointer;" title="Rojo (R)"></div>
+            <div class="theme-swatch" data-t="green"   style="background:linear-gradient(135deg,#bbf7d0,#15803d);width:32px;height:32px;border-radius:10px;border:2px solid var(--line);cursor:pointer;" title="Verde (G)"></div>
+            <div class="theme-swatch" data-t="gold"    style="background:linear-gradient(135deg,#fde68a,#92400e);width:32px;height:32px;border-radius:10px;border:2px solid var(--line);cursor:pointer;" title="Oro - Multicolor"></div>
+          </div>
+        </div>
+
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Tamaño de letra</h3>
+          <label>Tamaño: <span class="mono" id="fontPxLabel">16</span>px</label>
+          <input id="setFontSize" type="range" min="12" max="20" step="1"/>
+          <div class="hint">Recomendado: 15–17 en PC, 16–18 en móvil.</div>
+        </div>
+
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Comodidad</h3>
+
+          <div class="toggleRow" style="margin-top:8px;">
+            <input id="setCompact" type="checkbox" class="chk"/>
+            <div>
+              <b>Modo compacto</b>
+              <div class="hint" style="margin:2px 0 0;">Más “apretado” (mejor con muchas cartas).</div>
+            </div>
+          </div>
+
+          <div class="toggleRow" style="margin-top:10px;">
+            <input id="setReducedMotion" type="checkbox" class="chk"/>
+            <div>
+              <b>Reducir animaciones</b>
+              <div class="hint" style="margin:2px 0 0;">Útil si te marea o va lento en móvil.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Precios</h3>
+          <label>Preferencia de moneda</label>
+          <select id="setCurrency">
+            <option value="EUR">Mostrar € primero</option>
+            <option value="USD">Mostrar $ primero</option>
+          </select>
+          <div class="hint">Si no hay precio en esa moneda, usa la otra.</div>
+        </div>
+
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Backups</h3>
+
+          <div class="toggleRow" style="margin-top:8px;">
+            <input id="setAutoBackup" type="checkbox" class="chk"/>
+            <div>
+              <b>Backup automático</b>
+              <div class="hint" style="margin:2px 0 0;">Guarda copia local periódica (cartas + mazos + ajustes).</div>
+            </div>
+          </div>
+
+          <label style="margin-top:10px;">Frecuencia</label>
+          <select id="setAutoBackupEvery">
+            <option value="5">Cada 5 min</option>
+            <option value="10">Cada 10 min</option>
+            <option value="30">Cada 30 min</option>
+            <option value="60">Cada 60 min</option>
+          </select>
+
+          <div class="footerbar" style="margin-top:10px;">
+            <button class="btn ghost" id="btnBackupNow">Guardar backup ahora</button>
+            <button class="btn ghost" id="btnBackupDownload">Descargar backup</button>
+            <button class="btn ghost" id="btnBackupRestore">Restaurar último</button>
+          </div>
+
+          <div class="hint" id="backupInfo" style="margin-top:8px;"></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+
+// ===== Auth local (sin Supabase) =====
+// Nota: esto SOLO gestiona login/registro en este archivo.
+// Los datos de la colección siguen guardándose en el navegador (localStorage), como antes.
+
+const USERS_KEY   = "mtg_rosita_users_v1";
+const SESSION_KEY = "mtg_rosita_session_v1";
+
+function loadUsers(){
+  try{ return JSON.parse(localStorage.getItem(USERS_KEY) || "[]"); }catch{ return []; }
+}
+function saveUsers(users){
+  try{ localStorage.setItem(USERS_KEY, JSON.stringify(users||[])); }catch{}
+}
+function setSession(user, remember){
+  const payload = { id: user.id, email: user.email, username: user.username };
+  try{
+    if(remember){
+      localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+      sessionStorage.removeItem(SESSION_KEY);
+    }else{
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+      localStorage.removeItem(SESSION_KEY);
+    }
+  }catch{}
+  return payload;
+}
+function clearSession(){
+  try{ localStorage.removeItem(SESSION_KEY); }catch{}
+  try{ sessionStorage.removeItem(SESSION_KEY); }catch{}
+}
+function getSession(){
+  try{
+    const a = localStorage.getItem(SESSION_KEY);
+    if(a) return JSON.parse(a);
+  }catch{}
+  try{
+    const b = sessionStorage.getItem(SESSION_KEY);
+    if(b) return JSON.parse(b);
+  }catch{}
+  return null;
+}
+
+/************************************************************
+ * Storage keys + migración
+ ************************************************************/
+const LS_KEY        = "mtg_rosita_cards_v9";
+const LS_DECKS      = "mtg_rosita_decks_v9";
+const LAST_TAB_KEY  = "mtg_rosita_last_tab_v9";
+const LS_SEARCH     = "mtg_rosita_search_v9";
+const LS_SORT       = "mtg_rosita_sort_v9";
+const LS_SETTINGS   = "mtg_rosita_settings_v9";
+
+
+const LS_WISHLIST   = "mtg_rosita_wishlist_v1";
+/* Backups */
+const LS_BACKUP_LAST    = "mtg_rosita_backup_last_v1";
+const LS_BACKUP_HISTORY = "mtg_rosita_backup_history_v1";
+let autoBackupTimer = null;
+
+const OLD_CARD_KEYS  = ["mtg_rosita_cards_v8","mtg_rosita_cards_v7","mtg_rosita_cards_v6","mtg_rosita_cards_v5","mtg_rosita_cards_v4","mtg_rosita_cards_v3"];
+const OLD_DECK_KEYS  = ["mtg_rosita_decks_v8","mtg_rosita_decks_v7","mtg_rosita_decks_v6","mtg_rosita_decks_v5","mtg_rosita_decks_v4","mtg_rosita_decks_v3"];
+const OLD_TAB_KEYS   = ["mtg_rosita_last_tab_v8","mtg_rosita_last_tab_v7","mtg_rosita_last_tab_v6","mtg_rosita_last_tab_v5","mtg_rosita_last_tab_v4","mtg_rosita_last_tab_v3"];
+
+function loadWithMigration(primaryKey, oldKeys, fallback){
+  try{
+    const raw = localStorage.getItem(primaryKey);
+    if(raw) return JSON.parse(raw);
+  }catch{}
+  for(const k of oldKeys){
+    try{
+      const raw = localStorage.getItem(k);
+      if(raw) return JSON.parse(raw);
+    }catch{}
+  }
+  return fallback;
+}
+
+/************************************************************
+ * Ajustes (Tema + letra + extras)
+ ************************************************************/
+const THEME_PRESETS = {
+  // Rosa (predeterminado)
+  pink:  { bg:"#fff0f6", card:"#ffffff", pink:"#f06292", pink2:"#d81b60", soft:"#f8bbd0", line:"#f2c5d5", text:"#4a2c37", muted:"#7a4a5a", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(216,27,96,.10)" },
+  // Blanco - Llanuras (W)
+  white: { bg:"#fafaf7", card:"#ffffff", pink:"#c8a84b", pink2:"#8b6914", soft:"#f5f0dc", line:"#e8dfc4", text:"#2a2416", muted:"#6b5a38", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(139,105,20,.10)" },
+  // Azul - Islas (U)
+  blue:  { bg:"#eff6ff", card:"#ffffff", pink:"#3b82f6", pink2:"#1d4ed8", soft:"#bfdbfe", line:"#c7d2fe", text:"#1e2a44", muted:"#4b5b7a", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(29,78,216,.12)" },
+  // Negro - Pantanos (B)
+  black: { bg:"#0b0b10", card:"#111827", pink:"#a78bfa", pink2:"#7c3aed", soft:"#1f2937", line:"#374151", text:"#e5e7eb", muted:"#9ca3af", inputBg:"#0f172a", inputText:"#e5e7eb", tableBg:"#0f172a", shadow:"0 10px 26px rgba(0,0,0,.45)" },
+  // Rojo - Montanas (R)
+  red:   { bg:"#fff1f1", card:"#ffffff", pink:"#ef4444", pink2:"#b91c1c", soft:"#fecaca", line:"#f5b5b5", text:"#3a1f1f", muted:"#7a4a4a", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(185,28,28,.12)" },
+  // Verde - Bosques (G)
+  green: { bg:"#ecfdf5", card:"#ffffff", pink:"#22c55e", pink2:"#15803d", soft:"#bbf7d0", line:"#a7f3d0", text:"#15352a", muted:"#3f6b57", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(21,128,61,.12)" },
+  // Oro - Multicolor
+  gold:  { bg:"#fffbeb", card:"#ffffff", pink:"#d97706", pink2:"#92400e", soft:"#fde68a", line:"#fcd34d", text:"#3d2a08", muted:"#78550e", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(146,64,14,.12)" },
+  // Alias de compatibilidad
+  yellow: { bg:"#fffbeb", card:"#ffffff", pink:"#f59e0b", pink2:"#b45309", soft:"#fde68a", line:"#fcd34d", text:"#4a2c0f", muted:"#7a5a2f", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(180,83,9,.12)" },
+};
+
+const DEFAULT_SETTINGS = {
+  theme: "pink",
+  fontPx: 16,
+  density: "normal",
+  motion: "normal",
+  currency: "EUR",
+  autoBackupEnabled: false,
+  autoBackupEveryMin: "30",  colFavFilter: "all",
+};
+
+let settings = (() => {
+  try{
+    const raw = localStorage.getItem(LS_SETTINGS);
+    if(!raw) return {...DEFAULT_SETTINGS};
+    const parsed = JSON.parse(raw);
+    return {...DEFAULT_SETTINGS, ...(parsed||{})};
+  }catch{
+    return {...DEFAULT_SETTINGS};
+  }
+})();
+
+function saveSettings(){ localStorage.setItem(LS_SETTINGS, JSON.stringify(settings)); 
+  try{ cloudSaveAll(); }catch{}
+}
+
+function applyThemePreset(key){
+  const preset = THEME_PRESETS[key] || THEME_PRESETS.pink;
+  const root = document.documentElement;
+  root.style.setProperty("--bg", preset.bg);
+  root.style.setProperty("--card", preset.card);
+  root.style.setProperty("--pink", preset.pink);
+  root.style.setProperty("--pink2", preset.pink2);
+  root.style.setProperty("--soft", preset.soft);
+  root.style.setProperty("--line", preset.line);
+  root.style.setProperty("--text", preset.text);
+  root.style.setProperty("--muted", preset.muted);
+  root.style.setProperty("--input-bg", preset.inputBg);
+  root.style.setProperty("--input-text", preset.inputText);
+  root.style.setProperty("--table-bg", preset.tableBg);
+  root.style.setProperty("--shadow", preset.shadow);
+  document.body.dataset.theme = key;
+}
+
+function applySettings(){
+  applyThemePreset(settings.theme);
+  document.documentElement.style.setProperty("--base-font", `${settings.fontPx}px`);
+  document.body.dataset.density = settings.density;
+  document.documentElement.dataset.motion = (settings.motion === "reduced") ? "reduced" : "normal";
+}
+
+function getCssVar(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+function hexToRgba(hex, a){
+  const h = String(hex||"").replace("#","").trim();
+  if(!/^[0-9a-f]{6}$/i.test(h)) return `rgba(240,98,146,${a})`;
+  const r = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+/************************************************************
+ * Estado principal
+ ************************************************************/
+let cards = loadWithMigration(LS_KEY, OLD_CARD_KEYS, []);
+
+/* Normaliza cartas antiguas (por ejemplo fav como string) */
+function normalizeCards(){
+  let changed = false;
+  for(const c of cards){
+    if(!c || typeof c !== 'object') continue;
+    const b = (c.fav === true || c.fav === 1 || c.fav === '1' || String(c.fav).toLowerCase() === 'true');
+    if(c.fav !== b){ c.fav = b; changed = true; }
+  }
+  if(changed) saveCards();
+}
+normalizeCards();
+let decks = loadWithMigration(LS_DECKS, OLD_DECK_KEYS, []);
+
+
+let wishlist = loadWithMigration(LS_WISHLIST, [], []);
+/* Normaliza decks antiguos */
+function normalizeDecks(){
+  let changed = false;
+  for(const d of decks){
+    if(!d.id){ d.id = crypto.randomUUID(); changed = true; }
+    if(!d.name){ d.name = "Mazo"; changed = true; }
+    if(!Array.isArray(d.items)){ d.items = []; changed = true; }
+    if(typeof d.commander === "undefined"){ d.commander = null; changed = true; }
+    if(typeof d._createdAt !== "number"){ d._createdAt = Date.now(); changed = true; }
+    if(typeof d._updatedAt !== "number"){ d._updatedAt = Date.now(); changed = true; }
+
+    if(d.commander && typeof d.commander === "object"){
+      if(!d.commander.name) d.commander = null, changed = true;
+      else{
+        d.commander.set = String(d.commander.set||"").toUpperCase();
+        d.commander.cn  = String(d.commander.cn||"");
+        d.commander.key = (d.commander.set && d.commander.cn) ? `${d.commander.set}#${d.commander.cn}` : "";
+      }
+    }
+  }
+  if(changed) saveDecks();
+}
+normalizeDecks();
+
+/************************************************************
+ * Persist
+ ************************************************************/
+function saveCards(){ localStorage.setItem(LS_KEY, JSON.stringify(cards)); try{ renderWishlist(); 
+  try{ cloudSaveAll(); }catch{}
+}catch{} }
+function saveDecks(){ localStorage.setItem(LS_DECKS, JSON.stringify(decks)); 
+  try{ cloudSaveAll(); }catch{}
+}
+function saveWishlist(){ localStorage.setItem(LS_WISHLIST, JSON.stringify(wishlist)); 
+  try{ cloudSaveAll(); }catch{}
+}
+
+function touchDeck(d){
+  d._updatedAt = Date.now();
+}
+
+function toTitleCase(str){
+  return String(str||"").trim().replace(/\s+/g," ").split(" ").map(w=>{
+    if(!w) return w;
+    return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();
+  }).join(" ");
+}
+
+function escapeHtml(s){
+  return String(s ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+/************************************************************
+ * Backups
+ ************************************************************/
+function buildBackupPayload(){
+  return {
+    ts: Date.now(),
+    version: "v1",
+    cards,
+    decks,
+    settings,
+    sortState,
+  };
+}
+function saveBackupLocal(payload){
+  localStorage.setItem(LS_BACKUP_LAST, JSON.stringify(payload));
+  try{
+    const raw = localStorage.getItem(LS_BACKUP_HISTORY);
+    const arr = raw ? JSON.parse(raw) : [];
+    const next = Array.isArray(arr) ? arr : [];
+    next.unshift({ ts: payload.ts, sizeCards: payload.cards?.length||0, sizeDecks: payload.decks?.length||0 });
+    while(next.length > 10) next.pop();
+    localStorage.setItem(LS_BACKUP_HISTORY, JSON.stringify(next));
+  }catch{}
+}
+function getLastBackup(){
+  try{
+    const raw = localStorage.getItem(LS_BACKUP_LAST);
+    return raw ? JSON.parse(raw) : null;
+  }catch{ return null; }
+}
+function formatTs(ts){
+  try{ return new Date(ts).toLocaleString(); }catch{ return ""; }
+}
+function updateBackupInfoUI(){
+  const info = document.getElementById("backupInfo");
+  if(!info) return;
+  const last = getLastBackup();
+  info.textContent = last
+    ? `Último backup: ${formatTs(last.ts)} · Cartas: ${last.cards?.length||0} · Mazos: ${last.decks?.length||0}`
+    : "No hay backups aún.";
+}
+function doBackupNow(silent=false){
+  const payload = buildBackupPayload();
+  saveBackupLocal(payload);
+  updateBackupInfoUI();
+  if(!silent) alert("Backup guardado ✅");
+}
+function restoreLastBackup(){
+  const last = getLastBackup();
+  if(!last){ alert("No hay backup para restaurar."); return; }
+  if(!confirm(`¿Restaurar el backup del ${formatTs(last.ts)}? Esto reemplaza tus datos actuales.`)) return;
+
+  cards = Array.isArray(last.cards) ? last.cards : [];
+  decks = Array.isArray(last.decks) ? last.decks : [];
+  settings = {...DEFAULT_SETTINGS, ...(last.settings||{})};
+  sortState = {...sortState, ...(last.sortState||{})};
+
+  saveCards(); saveDecks(); saveSettings(); saveSortState();
+  applySettings();
+  normalizeDecks();
+
+  renderCardsTableFull();
+  renderDecks();
+  renderWishlist();
+  updateInvestmentUI();
+  renderSalesTable();
+  renderSearchResults();
+  renderColorStats();
+  renderTypeStats();
+  if(document.querySelector('section[data-page="coleccion"]:not(.is-hidden)')) renderColeccion();
+
+  updateBackupInfoUI();
+  alert("Backup restaurado ✅");
+}
+function downloadBackup(){
+  const payload = buildBackupPayload();
+  const blob = new Blob([JSON.stringify(payload,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `mtg_rosita_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function startAutoBackupTimer(){
+  if(autoBackupTimer) clearInterval(autoBackupTimer);
+  autoBackupTimer = null;
+  if(!settings.autoBackupEnabled) return;
+  const everyMin = Math.max(5, parseInt(settings.autoBackupEveryMin || "30", 10));
+  autoBackupTimer = setInterval(()=> doBackupNow(true), everyMin * 60 * 1000);
+}
+function initBackupUI(){
+  const chk = document.getElementById("setAutoBackup");
+  const sel = document.getElementById("setAutoBackupEvery");
+  const btnNow = document.getElementById("btnBackupNow");
+  const btnDl = document.getElementById("btnBackupDownload");
+  const btnRestore = document.getElementById("btnBackupRestore");
+  if(!chk || !sel || !btnNow || !btnDl || !btnRestore) return;
+
+  chk.checked = !!settings.autoBackupEnabled;
+  sel.value = String(settings.autoBackupEveryMin || "30");
+
+  chk.onchange = ()=>{
+    settings.autoBackupEnabled = chk.checked;
+    saveSettings();
+    startAutoBackupTimer();
+    updateBackupInfoUI();
+  };
+  sel.onchange = ()=>{
+    settings.autoBackupEveryMin = sel.value;
+    saveSettings();
+    startAutoBackupTimer();
+  };
+
+  btnNow.onclick = ()=> doBackupNow(false);
+  btnDl.onclick = ()=> downloadBackup();
+  btnRestore.onclick = ()=> restoreLastBackup();
+
+  updateBackupInfoUI();
+  startAutoBackupTimer();
+}
+
+/************************************************************
+ * Tabs / Router
+ ************************************************************/
+const UI_TABS = {
+  intro: "Introducción",
+  cartas: "Cartas",
+  stats_colores: "Stats Colores",
+  stats_tipos: "Stats Tipos/Rarezas",
+  coleccion: "Colección",
+  buscador: "Buscador",
+  mazos: "Mazos",
+  deseos: "Deseos",
+  ventas: "Ventas",
+  ajustes: "Ajustes",
+};
+
+const pages = [
+  {id:"intro", label:UI_TABS.intro},
+  {id:"cartas", label:UI_TABS.cartas},
+  {id:"stats_colores", label:UI_TABS.stats_colores},
+  {id:"stats_tipos", label:UI_TABS.stats_tipos},
+  {id:"coleccion", label:UI_TABS.coleccion},
+  {id:"buscador", label:UI_TABS.buscador},
+  {id:"mazos", label:UI_TABS.mazos},
+  {id:"deseos", label:UI_TABS.deseos},
+  {id:"ventas", label:UI_TABS.ventas},
+  {id:"ajustes", label:UI_TABS.ajustes},
+];
+
+function getLastTab(){
+  try{
+    const raw = localStorage.getItem(LAST_TAB_KEY);
+    if(raw) return raw;
+  }catch{}
+  for(const k of OLD_TAB_KEYS){
+    try{
+      const raw = localStorage.getItem(k);
+      if(raw) return raw;
+    }catch{}
+  }
+  return "intro";
+}
+
+function showPage(id){
+  const sections = Array.from(document.querySelectorAll('section[data-page]'));
+  const exists = (pid) => !!document.querySelector(`section[data-page="${pid}"]`);
+  if(!id || !exists(id)) id = "intro";
+
+  for(const s of sections){
+    const isActive = (s.dataset.page === id);
+    s.classList.toggle("is-hidden", !isActive);
+    s.style.display = isActive ? "" : "none";
+    if(isActive){ void s.offsetWidth; }
+  }
+
+  document.querySelectorAll(".tabbtn").forEach(b=>{
+    b.classList.toggle("active", b.dataset.page === id);
+  });
+
+  try{ localStorage.setItem(LAST_TAB_KEY, id); }catch{}
+
+  try{
+    if (id === "cartas") renderCardsTableFull();
+    if (id === "stats_colores") renderColorStats();
+    if (id === "stats_tipos") { renderTypeStats(); updateInvestmentUI(); }
+    if (id === "buscador") { ensureSearchOptions(); loadSearchStateToUI(); renderSearchResults(); }
+    if (id === "mazos") renderDecks();
+    if (id === "ajustes") initSettingsUI();
+    if (id === "coleccion") {
+      const sel = document.getElementById("colFavFilter");
+      if(sel) sel.value = settings.colFavFilter || sel.value || "all";
+      renderColeccion();
+    }
+    if (id === "ventas") renderSalesTable();
+  }catch(err){
+    console.error("Error al renderizar pestaña:", id, err);
+    const box = document.getElementById("globalErrorBox");
+    if(box){
+      box.style.display = "";
+      box.textContent = `⚠️ Error al abrir "${id}": ${err?.message || err}`;
+    }
+  }
+}
+
+/************************************************************
+ * Helpers MTG
+ ************************************************************/
+const rarityMap = { common:"Común", uncommon:"Poco común", rare:"Rara", mythic:"Mítica", special:"Especial" };
+
+function rarityClass(r){
+  const s = (r || "").toLowerCase();
+  if (s.includes("mítica")) return "r-mythic";
+  if (s.includes("rara")) return "r-rare";
+  if (s.includes("poco")) return "r-uncommon";
+  if (s.includes("especial")) return "r-special";
+  return "r-common";
+}
+
+function parseEuro(priceText){
+  const m = String(priceText||"").match(/(\d+(\.\d+)?)/);
+  if(!m) return NaN;
+  const val = parseFloat(m[1]);
+  return Number.isFinite(val) ? val : NaN;
+}
+
+function isFav(card){
+  const v = card ? card.fav : false;
+  return v === true || v === 1 || v === "1" || String(v).toLowerCase() === "true";
+}
+
+function bestSellPriceText(priceText){
+  const eur = parseEuro(priceText);
+  if(!Number.isFinite(eur)) return "";
+  const dec = (eur > 1) ? 0.05 : 0.01;
+  const out = Math.max(0, eur - dec);
+  return out.toFixed(2);
+}
+
+
+/************************************************************
+ * Precio: historial (colección + deseos)
+ ************************************************************/
+function parseMoneyText(txt){
+  const s = String(txt||"").trim();
+  if(!s) return { v: null, cur: null };
+  const m = s.match(/([0-9]+(?:[.,][0-9]+)?)\s*([€$])/);
+  if(!m) return { v: null, cur: null };
+  const v = parseFloat(m[1].replace(",",".")); 
+  const cur = m[2] === "$" ? "USD" : "EUR";
+  return { v: Number.isFinite(v) ? v : null, cur };
+}
+
+function updatePriceHistory(obj, priceText){
+  if(!obj) return;
+  const {v, cur} = parseMoneyText(priceText);
+  if(!Number.isFinite(v) || !cur) return;
+
+  if(!Array.isArray(obj.priceHist)) obj.priceHist = [];
+  const hist = obj.priceHist;
+
+  const last = hist[hist.length-1];
+  if(last && last.cur === cur && Number.isFinite(last.v) && Math.abs(last.v - v) < 1e-9){
+    return; // mismo valor
+  }
+
+  hist.push({ t: Date.now(), v, cur });
+  if(hist.length > 80) hist.splice(0, hist.length-80);
+}
+
+function fmtHistLine(h){
+  try{
+    const d = new Date(h.t);
+    const ds = d.toLocaleDateString("es-ES", {year:"2-digit", month:"2-digit", day:"2-digit"});
+    const ts = d.toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"});
+    const sym = (h.cur==="USD") ? "$" : "€";
+    return `${ds} ${ts} · ${Number(h.v).toFixed(2)}${sym}`;
+  }catch{
+    return "";
+  }
+}
+
+function priceTextFromPrices(prices){
+  const num = (v)=> (v==null || v==="") ? null : parseFloat(String(v).replace(",",".")); 
+  const eur = num(prices?.eur) ?? num(prices?.eur_foil) ?? num(prices?.eur_etched);
+  const usd = num(prices?.usd) ?? num(prices?.usd_foil) ?? num(prices?.usd_etched);
+  const pref = (settings.currency === "USD") ? "USD" : "EUR";
+
+  if(pref === "USD"){
+    if(Number.isFinite(usd)) return usd.toFixed(2) + "$";
+    if(Number.isFinite(eur)) return eur.toFixed(2) + "€";
+  }else{
+    if(Number.isFinite(eur)) return eur.toFixed(2) + "€";
+    if(Number.isFinite(usd)) return usd.toFixed(2) + "$";
+  }
+  return "No disponible";
+}
+
+function manaToEmojis(manaCost){
+  if(!manaCost) return "";
+  const tokens = manaCost.match(/\{[^}]+\}/g) || [];
+  return tokens.map(t=>{
+    const c = t.replace(/[{}]/g,"").toUpperCase();
+    if(/^\d+$/.test(c)) return c;
+    if(c==="X"||c==="Y"||c==="Z") return c;
+    const base = {W:"⚪",U:"🔵",B:"⚫",R:"🔴",G:"🟢",C:"🔘"};
+    if(base[c]) return base[c];
+    if(c.endsWith("/P")){
+      const col = c.split("/")[0];
+      return (base[col]||col)+"/☠️";
+    }
+    if(c.includes("/")){
+      const [a,b]=c.split("/");
+      return (base[a]||a)+"/"+(base[b]||b);
+    }
+    const special={S:"❄️",T:"↩️",Q:"↪️",E:"⚡"};
+    if(special[c]) return special[c];
+    return c;
+  }).join("");
+}
+
+function colorToEmojisFromCI(ci){
+  const emojis = { W:"⚪", U:"🔵", B:"⚫", R:"🔴", G:"🟢", C:"🔘" };
+  const order = ["W","U","B","R","G"];
+  const arr = Array.isArray(ci) ? ci.map(x=>String(x).toUpperCase()) : [];
+  if(!arr.length) return "🔘";
+  const set = new Set(arr);
+  return order.filter(c=>set.has(c)).map(c=>emojis[c]).join("") || "🔘";
+}
+
+const PASTEL = { W:"#FFF4C9", U:"#DDEBFF", B:"#E6E8EE", R:"#FFE1E6", G:"#DFF7E3", C:"#FFFFFF" };
+
+function normalizeColorId(colorId){
+  const order = ["W","U","B","R","G"];
+  const set = new Set((colorId||[]).map(x=>String(x).toUpperCase()).filter(x=>order.includes(x)));
+  return order.filter(x=>set.has(x));
+}
+
+function gradientFromColorIds(colorIds){
+  const ids = normalizeColorId(colorIds);
+  if(!ids.length) return "";
+  const cols = ids.map(id=>PASTEL[id] || "#FFFFFF");
+  if(cols.length === 1){
+    return `linear-gradient(90deg, ${cols[0]} 0%, ${cols[0]} 100%)`;
+  }
+  const n = cols.length;
+  const stops = [];
+  for(let i=0;i<n;i++){
+    const start = Math.round((i / n) * 100);
+    const end   = Math.round(((i+1) / n) * 100);
+    stops.push(`${cols[i]} ${start}%`, `${cols[i]} ${end}%`);
+  }
+  return `linear-gradient(90deg, ${stops.join(", ")})`;
+}
+
+function typesEs(typeLine){
+  const superMap = { Legendary:"legendaria", Basic:"básica", Snow:"nevada", World:"mundial", Token:"ficha", Host:"anfitrión" };
+  const typeMap = { Creature:"Criatura", Instant:"Instantáneo", Sorcery:"Conjuro", Artifact:"Artefacto", Enchantment:"Encantamiento", Land:"Tierra", Planeswalker:"Planeswalker", Battle:"Batalla" };
+  const subMap = { Aura:"Aura", Equipment:"Equipo", Vehicle:"Vehículo", Elf:"Elfo", Human:"Humano", Wizard:"Hechicero", Dragon:"Dragón", Angel:"Ángel", Goblin:"Trasgo", Zombie:"Zombi", Vampire:"Vampiro", Spirit:"Espíritu", Knight:"Caballero", Cleric:"Clérigo", Beast:"Bestia", Elemental:"Elemental", Warrior:"Guerrero", Soldier:"Soldado", Ally:"Aliado", Scout:"Explorador", Cat:"Gato", Dog:"Perro", Island:"Isla", Mountain:"Montaña", Swamp:"Pantano", Forest:"Bosque", Plains:"Llanura" };
+
+  const parts = String(typeLine||"").split(" — ");
+  const left = (parts[0]||"").trim().split(/\s+/).filter(Boolean);
+  const right = parts[1] ? parts[1].trim().split(/\s+/).filter(Boolean) : [];
+
+  const supers=[], mains=[];
+  left.forEach(w=>{
+    if(superMap[w]) supers.push(superMap[w]);
+    else if(typeMap[w]) mains.push(typeMap[w]);
+  });
+
+  let main = mains.join(" ");
+  if(main && supers.length) main += " " + supers.join(" ");
+  const sub = right.map(w=>subMap[w]||w).join(" ");
+  return { main: main || "Tipo no disponible", sub: sub || "Sin subtipo" };
+}
+
+function mainTypeBucket(typeEs){
+  const t = String(typeEs||"").toLowerCase();
+  if(t.includes("criatura")) return "Criatura";
+  if(t.includes("planeswalker")) return "Planeswalker";
+  if(t.includes("instant")) return "Instantáneo";
+  if(t.includes("conjuro")) return "Conjuro";
+  if(t.includes("artefact")) return "Artefacto";
+  if(t.includes("encant")) return "Encantamiento";
+  if(t.includes("tierra")) return "Tierra";
+  if(t.includes("batalla")) return "Batalla";
+  return "Otro";
+}
+
+async function fetchCardExact(setCode, collectorNumber){
+  const url = `https://api.scryfall.com/cards/${encodeURIComponent(String(setCode).toLowerCase())}/${encodeURIComponent(String(collectorNumber))}`;
+  const r = await fetch(url);
+  const j = await r.json();
+  if(j.object==="error") throw new Error(j.details || "No se encontró esa impresión.");
+  return j;
+}
+
+async function fetchCardByName(name){
+  const url = `https://api.scryfall.com/cards/named?game=paper&fuzzy=${encodeURIComponent(name)}`;
+  const r = await fetch(url);
+  const j = await r.json();
+  if(j.object==="error") throw new Error(j.details || "No se encontró la carta por nombre.");
+  return j;
+}
+
+async function fetchOldestPrintingByName(name){
+  const base = await fetchCardByName(name);
+  let url = base.prints_search_uri;
+  if(!url) return base;
+
+  const all = [];
+  let guard = 0;
+  while(url && guard < 30){
+    guard++;
+    const r = await fetch(url);
+    const j = await r.json();
+    if(j.object === "error") throw new Error(j.details || "Error consultando impresiones.");
+    if(Array.isArray(j.data)) all.push(...j.data);
+    url = j.has_more ? j.next_page : null;
+  }
+
+  let oldest = null;
+  for(const c of all){
+    const d = c?.released_at;
+    if(!d) continue;
+    if(!oldest || d < oldest.released_at) oldest = c;
+  }
+  return oldest || all[0] || base;
+}
+
+async function fetchSetIconUrl(setCode){
+  const r = await fetch(`https://api.scryfall.com/sets/${encodeURIComponent(String(setCode).toLowerCase())}`);
+  const j = await r.json();
+  if(j.object==="error") return "";
+  return j.icon_svg_uri || "";
+}
+
+function computeColorId(card){
+  const colorId = (
+    (card.type_line?.includes("Land") && Array.isArray(card.produced_mana) && card.produced_mana.length)
+      ? card.produced_mana
+      : (card.color_identity || [])
+  ).map(x=>String(x).toUpperCase());
+  return colorId.filter(x=>["W","U","B","R","G"].includes(x));
+}
+
+function manaValueFromCard(card){
+  const mv = card?.mana_value;
+  if(typeof mv === "number" && Number.isFinite(mv)) return mv;
+  const cost = card?.mana_cost || card?.card_faces?.[0]?.mana_cost || "";
+  const tokens = String(cost).match(/\{[^}]+\}/g) || [];
+  let sum = 0;
+  for(const t of tokens){
+    const c = t.replace(/[{}]/g,"").toUpperCase();
+    if(/^\d+$/.test(c)) sum += parseInt(c,10);
+    else if(c==="X"||c==="Y"||c==="Z") sum += 0;
+    else sum += 1;
+  }
+  return sum;
+}
+
+/************************************************************
+ * Cartas - Ordenación
+ ************************************************************/
+let sortState = { key:"added", dir:"desc" };
+try{
+  const raw = localStorage.getItem(LS_SORT);
+  if(raw) sortState = {...sortState, ...JSON.parse(raw)};
+}catch{}
+function saveSortState(){ localStorage.setItem(LS_SORT, JSON.stringify(sortState)); }
+
+function ensureAddedAt(){
+  let changed = false;
+  for(const c of cards){
+    if(typeof c._addedAt !== "number"){ c._addedAt = Date.now() - Math.floor(Math.random()*1000); changed = true; }
+    if(!Array.isArray(c.colorId)) c.colorId = [];
+    if(typeof c.manaValue !== "number" || !Number.isFinite(c.manaValue)) c.manaValue = 0;
+    if(!c.color) c.color = colorToEmojisFromCI(c.colorId);
+  }
+  if(changed) saveCards();
+}
+ensureAddedAt();
+
+function sortedCardsView(){
+  const dir = (sortState.dir === "asc") ? 1 : -1;
+  const key = sortState.key;
+  const arr = [...cards];
+  const rarityOrder = {"Común":1,"Poco común":2,"Rara":3,"Mítica":4,"Especial":5};
+
+  arr.sort((a,b)=>{
+    const val = (obj)=>{
+      if(key==="added") return obj._addedAt || 0;
+      if(key==="name") return String(obj.name||"");
+      if(key==="set") return String(obj.setCode||"");
+      if(key==="price") {
+        const p = parseEuro(obj.priceText);
+        return Number.isFinite(p) ? p : -1;
+      }
+      if(key==="mv") return Number.isFinite(obj.manaValue) ? obj.manaValue : -1;
+      if(key==="rarity") return rarityOrder[obj.rarity] || 999;
+      if(key==="qty") return obj.qty || 1;
+      return 0;
+    };
+
+    const A = val(a), B = val(b);
+    if(typeof A === "string" || typeof B === "string"){
+      const cmp = String(A).localeCompare(String(B), "es", {sensitivity:"base"});
+      return cmp * dir;
+    }else{
+      if(A===B) return 0;
+      return (A < B ? -1 : 1) * dir;
+    }
+  });
+
+  return arr;
+}
+
+/************************************************************
+ * Cartas - UI
+ ************************************************************/
+const errBox = document.getElementById("errBox");
+function showErr(msg){
+  if(!errBox) return;
+  errBox.style.display = msg ? "block" : "none";
+  errBox.textContent = msg || "";
+}
+
+function clearAddForm(){
+  document.getElementById("inName").value="";
+  document.getElementById("inSet").value="";
+  document.getElementById("inCn").value="";
+  document.getElementById("inQty").value="1";
+  document.getElementById("inProxy").checked=false;
+  document.getElementById("inFoil").checked=false;
+  document.getElementById("inPromo").checked=false;
+  document.getElementById("inPromoPre").checked=false;
+  const s=document.getElementById("inSale"); if(s) s.checked=false;
+}
+
+function toTitleCase(str){
+  if(!str) return "";
+  return String(str).trim().replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+}
+
+function updateCardsMetrics(){
+  let totalUnits=0;
+  let sumEur=0;
+  for(const c of cards){
+    totalUnits += (c.qty||1);
+    const eur = parseEuro(c.priceText);
+    if(Number.isFinite(eur)) sumEur += eur * (c.qty||1);
+  }
+  document.getElementById("countCards").textContent = String(cards.length);
+  document.getElementById("countUnits").textContent = String(totalUnits);
+  document.getElementById("sumEur").textContent = sumEur.toFixed(2);
+}
+
+function computeInvestmentTotals(){
+  let invReal = 0, invAll = 0;
+  for(const c of cards){
+    const qty = c.qty || 1;
+    const eur = parseEuro(c.priceText);
+    if(Number.isFinite(eur)){
+      invAll += eur * qty;
+      if(!c.proxy) invReal += eur * qty;
+    }
+  }
+  return { invReal, invAll };
+}
+
+function updateInvestmentUI(){
+  const t = computeInvestmentTotals();
+  const elInvReal = document.getElementById("invReal");
+  const elInvAll  = document.getElementById("invAll");
+  if(elInvReal) elInvReal.textContent = `${t.invReal.toFixed(2)}€`;
+  if(elInvAll)  elInvAll.textContent  = `${t.invAll.toFixed(2)}€`;
+}
+
+function renderCardsTableFull(){
+  const tbody = document.querySelector("#tbl tbody");
+  if(!tbody) return;
+  tbody.innerHTML = "";
+
+  let view = sortedCardsView();
+
+  // Nota: el filtro de favoritos es solo para la pestaña "Colección".
+  // En "Cartas" siempre mostramos todo.
+
+
+  for(const c of view){
+    const tr = document.createElement("tr");
+    tr.dataset.id = c.id;
+
+    const bg = gradientFromColorIds(c.colorId);
+    tr.style.backgroundImage = bg || "none";
+    if(!bg) tr.style.backgroundColor = PASTEL.C;
+
+    tr.innerHTML = `
+      <td class="center"><button class="starBtn" data-star="1" title="Favorito">${c.fav ? "★" : "☆"}</button></td>
+      <td><b>${escapeHtml(c.name)}</b><div class="small">${escapeHtml(c.inputName||"")}</div></td>
+      <td class="mono">${escapeHtml(c.setCode||"")}</td>
+      <td class="mono">${escapeHtml(c.collectorNumber||"")}</td>
+      <td>${escapeHtml(c.type||"")}</td>
+      <td>${escapeHtml(c.subtype||"")}</td>
+      <td>${escapeHtml(c.color||"")}</td>
+      <td>${escapeHtml(c.mana||"")}</td>
+      <td class="mono">${Number.isFinite(c.manaValue) ? c.manaValue : ""}</td>
+
+      <td class="rarity-cell"><span class="tag ${rarityClass(c.rarity)}">${escapeHtml(c.rarity||"")}</span></td>
+
+      <td>${c.logoUrl ? `<img class="icon" src="${c.logoUrl}" alt="logo">` : ""}</td>
+      <td class="right mono">${escapeHtml(c.priceText||"")}</td>
+
+      <td><input class="chk" type="checkbox" ${c.proxy?"checked":""} data-k="proxy"></td>
+      <td><input class="chk" type="checkbox" ${c.foil?"checked":""} data-k="foil"></td>
+      <td><input class="chk" type="checkbox" ${c.promo?"checked":""} data-k="promo"></td>
+      <td><input class="chk" type="checkbox" ${c.promoPre?"checked":""} data-k="promoPre"></td>
+
+      <td>
+        <select data-k="lang">
+          ${["es","en","fr","de","it","pt","ja","ko","zhs","zht"].map(l=>`<option value="${l}" ${c.lang===l?"selected":""}>${l}</option>`).join("")}
+        </select>
+      </td>
+
+      <td class="right">
+        <input type="number" min="1" value="${c.qty||1}" style="width:70px" data-k="qty">
+      </td>
+
+      <td class="right mono">${escapeHtml(c.bestSell||"")}</td>
+      <td class="center"><input class="chk" type="checkbox" ${c.sale?"checked":""} data-k="sale" title="A la venta"></td>
+      <td class="right"><button class="btn ghost" data-del="1">Eliminar</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  updateCardsMetrics();
+  updateInvestmentUI();
+  renderSalesTable();
+}
+
+function renderColeccion(){
+  const grid = document.getElementById("collectionGrid");
+  if(!grid) return;
+
+  grid.innerHTML = "";
+
+  // Filtro de favoritos (solo aplica en Colección)
+  const favSel = document.getElementById("colFavFilter");
+  const favMode = favSel ? favSel.value : ((settings && settings.colFavFilter) ? settings.colFavFilter : "all");
+  let view = sortedCardsView();
+  if(favMode === "fav") view = view.filter(c=>isFav(c));
+  else if(favMode === "nofav") view = view.filter(c=>!isFav(c));
+
+  let totalUnits = 0;
+  let sumEur = 0;
+
+  for(const c of view){
+    totalUnits += (c.qty||1);
+    const eur = parseEuro(c.priceText);
+    if(Number.isFinite(eur)) sumEur += eur * (c.qty||1);
+
+    const bg = gradientFromColorIds(c.colorId);
+    const flags = [c.proxy?"Proxy":"", c.foil?"Foil":"", c.promo?"Promo":"", c.promoPre?"Pre":"",].filter(Boolean);
+    const el = document.createElement("div");
+    el.className = "cCard";
+    el.dataset.id = c.id;
+    el.style.backgroundImage = bg || "none";
+    if(!bg) el.style.backgroundColor = PASTEL.C;
+
+    el.innerHTML = `
+      <div class="cTop">
+        <div>
+          <div class="cName">${escapeHtml(c.name||"")}</div>
+          <div class="cSub mono">${escapeHtml(c.setCode||"")} · #${escapeHtml(c.collectorNumber||"")} · ${escapeHtml(c.lang||"")}</div>
+          <div class="cSub">${escapeHtml(c.type||"")} · ${escapeHtml(c.subtype||"")}</div>
+        </div>
+        <div class="cRight">
+          <button class="starBtn" data-colstar="1" title="Favorito" style="margin-right:6px;">${c.fav ? "★" : "☆"}</button>
+          ${c.logoUrl ? `<img class="cIcon" src="${c.logoUrl}" alt="set">` : ""}
+        </div>
+      </div>
+
+      <div class="cBadges">
+        <span class="tag ${rarityClass(c.rarity)}">${escapeHtml(c.rarity||"")}</span>
+        <span class="tag">${escapeHtml(c.color||"")}</span>
+        <span class="tag mono">${escapeHtml(c.mana||"")}</span>
+        <span class="tag mono">MV ${Number.isFinite(c.manaValue) ? c.manaValue : ""}</span>
+        ${flags.map(t=>`<span class="tag">${t}</span>`).join("")}
+      </div>
+
+      <div class="cBody">
+        <div class="cField"><div class="k">Cantidad</div><div class="v mono">${escapeHtml(c.qty||1)}</div></div>
+        <div class="cField"><div class="k">Precio</div><div class="v mono">${escapeHtml(c.priceText||"")}</div></div>
+        <div class="cField"><div class="k">Mejor venta</div><div class="v mono">${escapeHtml(c.bestSell||"")}</div></div>
+        <div class="cField"><div class="k">Nombre introducido</div><div class="v">${escapeHtml(c.inputName||"")}</div></div>
+      </div>
+    `;
+    grid.appendChild(el);
+  }
+
+  document.getElementById("colCountCards").textContent = String(view.length);
+  document.getElementById("colCountUnits").textContent = String(totalUnits);
+  document.getElementById("colSumEur").textContent = sumEur.toFixed(2);
+}
+
+// Listener para favoritos en Colección (una sola vez)
+let _colFavBound = false;
+(function bindColFav(){
+  const grid = document.getElementById("collectionGrid");
+  if(!grid || _colFavBound) return;
+  _colFavBound = true;
+  grid.addEventListener("click", (e)=>{
+    const star = e.target.closest("button[data-colstar]");
+    if(!star) return;
+    const cardEl = star.closest(".cCard");
+    const id = cardEl && cardEl.dataset ? cardEl.dataset.id : null;
+    if(!id) return;
+    const item = cards.find(x=>x.id===id);
+    if(!item) return;
+    item.fav = !item.fav;
+    saveCards();
+    // refrescos relacionados
+    renderCardsTableFull();
+    renderSalesTable();
+    renderColeccion();
+  });
+})();
+
+/* tabla cartas listeners */
+const cardsTbody = document.querySelector("#tbl tbody");
+cardsTbody.addEventListener("change", (e)=>{
+  const tr = e.target.closest("tr[data-id]");
+  if(!tr) return;
+  const item = cards.find(x=>x.id===tr.dataset.id);
+  if(!item) return;
+
+  const k = e.target.dataset.k;
+  if(!k) return;
+
+  if(e.target.type === "checkbox") item[k] = e.target.checked;
+  else if(k === "qty") item.qty = Math.max(1, parseInt(e.target.value||"1",10));
+  else item[k] = e.target.value;
+
+  saveCards();
+  updateCardsMetrics();
+  updateInvestmentUI();
+  renderSalesTable();
+});
+
+cardsTbody.addEventListener("click", (e)=>{
+  const starBtn = e.target.closest("button[data-star]");
+  if(starBtn){
+    const tr = starBtn.closest("tr[data-id]");
+    if(tr){
+      const item = cards.find(x=>x.id===tr.dataset.id);
+      if(item){ item.fav = !item.fav; saveCards(); renderCardsTableFull(); renderSalesTable(); }
+    }
+    return;
+  }
+  const btn = e.target.closest("button[data-del]");
+  if(!btn) return;
+  const tr = btn.closest("tr[data-id]");
+  if(!tr) return;
+
+  cards = cards.filter(x=>x.id!==tr.dataset.id);
+  saveCards();
+  tr.remove();
+  updateCardsMetrics();
+  updateInvestmentUI();
+  renderSalesTable();
+});
+
+
+const salesTbody = document.querySelector("#tblSales tbody");
+if(salesTbody){
+  salesTbody.addEventListener("click", (e)=>{
+    const starBtn = e.target.closest("button[data-star]");
+    if(starBtn){
+      const tr = starBtn.closest("tr[data-id]");
+      if(tr){
+        const item = cards.find(x=>x.id===tr.dataset.id);
+        if(item){ item.fav = !item.fav; saveCards(); renderCardsTableFull(); renderSalesTable(); }
+      }
+      return;
+    }
+    const soldBtn = e.target.closest("button[data-sold]");
+    if(!soldBtn) return;
+    const tr = soldBtn.closest("tr[data-id]");
+    if(!tr) return;
+    const item = cards.find(x=>x.id===tr.dataset.id);
+    if(!item) return;
+    item.qty = Math.max(0, (item.qty||1) - 1);
+    if(item.qty<=0){
+      cards = cards.filter(x=>x.id!==item.id);
+    }
+    saveCards();
+    renderCardsTableFull();
+    renderSalesTable();
+    updateCardsMetrics();
+    updateInvestmentUI();
+  });
+}
+
+
+/************************************************************
+ * Buscador
+ ************************************************************/
+function buildColorComboOptions(){
+  const colors = ["W","U","B","R","G"];
+  const out = [];
+  for(let mask=1; mask < (1<<colors.length); mask++){
+    let s="";
+    for(let i=0;i<colors.length;i++){
+      if(mask & (1<<i)) s += colors[i];
+    }
+    out.push(s);
+  }
+  out.sort((a,b)=> a.length - b.length || a.localeCompare(b));
+  return out;
+}
+
+function ensureSearchOptions(){
+  const sel = document.getElementById("searchColors");
+  if(!sel || sel.dataset.ready==="1") return;
+
+  const options = [
+    {v:"", t:"(cualquiera)"},
+    {v:"C", t:"Incoloro (sin WUBRG)"},
+    ...buildColorComboOptions().map(s=>({v:s, t:s}))
+  ];
+  sel.innerHTML = options.map(o=>`<option value="${o.v}">${o.t}</option>`).join("");
+  sel.dataset.ready = "1";
+}
+
+function readSearchStateFromUI(){
+  return {
+    q: document.getElementById("searchQ")?.value?.trim() || "",
+    set: document.getElementById("searchSet")?.value?.trim().toUpperCase() || "",
+    rarity: document.getElementById("searchRarity")?.value || "",
+    colors: document.getElementById("searchColors")?.value || "",
+    type: document.getElementById("searchType")?.value || "",
+    mvMin: document.getElementById("searchMvMin")?.value ?? "",
+    mvMax: document.getElementById("searchMvMax")?.value ?? "",
+  };
+}
+
+function writeSearchStateToUI(s){
+  document.getElementById("searchQ").value = s.q ?? "";
+  document.getElementById("searchSet").value = s.set ?? "";
+  document.getElementById("searchRarity").value = s.rarity ?? "";
+  document.getElementById("searchColors").value = s.colors ?? "";
+  document.getElementById("searchType").value = s.type ?? "";
+  document.getElementById("searchMvMin").value = s.mvMin ?? "";
+  document.getElementById("searchMvMax").value = s.mvMax ?? "";
+}
+
+function saveSearchState(){
+  try{ localStorage.setItem(LS_SEARCH, JSON.stringify(readSearchStateFromUI())); }catch{}
+}
+function loadSearchStateToUI(){
+  try{
+    const raw = localStorage.getItem(LS_SEARCH);
+    if(!raw) return;
+    const s = JSON.parse(raw);
+    if(!s) return;
+    writeSearchStateToUI(s);
+  }catch{}
+}
+function clearSearchFilters(){
+  writeSearchStateToUI({q:"",set:"",rarity:"",colors:"",type:"",mvMin:"",mvMax:""});
+  saveSearchState();
+  renderSearchResults();
+}
+
+function colorMatchExact(combo, colorId){
+  const ids = normalizeColorId(colorId);
+  const s = ids.join("");
+  if(combo === "C") return s === "";
+  return s === combo;
+}
+
+let searchTimer = null;
+function renderSearchResultsDebounced(){
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(()=> renderSearchResults(), 120);
+}
+
+function renderSearchResults(){
+  ensureSearchOptions();
+  const s = readSearchStateFromUI();
+  saveSearchState();
+
+  const q = s.q.toLowerCase();
+  const set = s.set;
+  const rar = s.rarity;
+  const col = s.colors;
+  const type = s.type;
+
+  const mvMin = (s.mvMin === "") ? null : Math.max(0, parseFloat(s.mvMin));
+  const mvMax = (s.mvMax === "") ? null : Math.max(0, parseFloat(s.mvMax));
+
+  const res = cards.filter(c=>{
+    const okQ = !q || (c.name||"").toLowerCase().includes(q) || (c.inputName||"").toLowerCase().includes(q);
+    const okS = !set || (c.setCode||"")===set;
+    const okR = !rar || (c.rarity||"")===rar;
+
+    let okC = true;
+    if(col) okC = colorMatchExact(col, c.colorId);
+
+    let okT = true;
+    if(type) okT = mainTypeBucket(c.type) === type;
+
+    let okMV = true;
+    const mv = (typeof c.manaValue === "number" && Number.isFinite(c.manaValue)) ? c.manaValue : null;
+    if(mvMin != null) okMV = okMV && (mv != null ? mv >= mvMin : false);
+    if(mvMax != null) okMV = okMV && (mv != null ? mv <= mvMax : false);
+
+    return okQ && okS && okR && okC && okT && okMV;
+  });
+
+  document.getElementById("searchCount").textContent = String(res.length);
+
+  const box = document.getElementById("searchResults");
+  box.innerHTML = "";
+  if(!res.length){
+    box.innerHTML = `<div class="hint">No hay resultados.</div>`;
+    return;
+  }
+
+  res.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""), "es", {sensitivity:"base"}));
+
+  res.slice(0,150).forEach(c=>{
+    const div = document.createElement("div");
+    div.className="cardrow";
+    div.innerHTML = `
+      <div>
+        <b>${escapeHtml(c.name)}</b>
+        <div class="mini">
+          <span class="mono">${escapeHtml(c.setCode)} #${escapeHtml(c.collectorNumber)}</span>
+          <span>${escapeHtml(c.color||"")}</span>
+          <span class="pill">MV: <b class="mono">${Number.isFinite(c.manaValue) ? c.manaValue : "?"}</b></span>
+          <span class="tag ${rarityClass(c.rarity)}">${escapeHtml(c.rarity||"")}</span>
+          <span class="mono">${escapeHtml(c.priceText||"")}</span>
+        </div>
+      </div>
+      <div class="mini">${c.logoUrl ? `<img class="icon" src="${c.logoUrl}" alt="logo">` : ""}</div>
+    `;
+    div.onclick=()=> showPage("cartas");
+    box.appendChild(div);
+  });
+}
+
+/************************************************************
+ * Stats
+ ************************************************************/
+let chartColors = null;
+let chartTypes = null;
+let chartRarity = null;
+
+function colorBucketFromColorId(colorId){
+  const ids = normalizeColorId(colorId);
+  if(ids.length === 0) return "Incoloro";
+  if(ids.length === 1){
+    const m = {W:"Blanco",U:"Azul",B:"Negro",R:"Rojo",G:"Verde"};
+    return m[ids[0]] || "Incoloro";
+  }
+  return "Multicolor";
+}
+
+function renderColorStats(){
+  const buckets = ["Blanco","Azul","Negro","Rojo","Verde","Multicolor","Incoloro"];
+  const counts = Object.fromEntries(buckets.map(b=>[b,0]));
+  let total = 0;
+
+  for(const c of cards){
+    const qty = c.qty || 1;
+    total += qty;
+    const b = colorBucketFromColorId(c.colorId);
+    counts[b] = (counts[b] || 0) + qty;
+  }
+
+  const labels = buckets;
+  const data = labels.map(l=>counts[l]||0);
+  const accent = getCssVar("--pink");
+  const accent2 = getCssVar("--pink2");
+
+  const ctx = document.getElementById("chartColors");
+  if(!ctx) return;
+  if(chartColors) chartColors.destroy();
+  chartColors = new Chart(ctx, {
+    type: "bar",
+    data: { labels, datasets: [{ label: "Cartas por identidad de color (por cantidad)", data, backgroundColor: hexToRgba(accent, 0.30), borderColor: hexToRgba(accent2, 0.90), borderWidth: 1 }]},
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { color: hexToRgba(getCssVar("--pink"), 0.08) } }, y: { grid: { color: hexToRgba(getCssVar("--pink"), 0.08) } } } }
+  });
+
+  const sumDiv = document.getElementById("colorsSummary");
+  if(sumDiv){
+    sumDiv.innerHTML =
+      labels.map(l=>`<div>${l}: <b>${counts[l]||0}</b></div>`).join("") +
+      `<div style="margin-top:8px;">Total unidades: <b>${total}</b></div>`;
+  }
+}
+
+function renderTypeStats(){
+  const typeCounts = new Map();
+  const rarCounts = new Map();
+
+  for(const c of cards){
+    const qty = c.qty || 1;
+    const bucket = mainTypeBucket(c.type);
+    typeCounts.set(bucket, (typeCounts.get(bucket)||0) + qty);
+
+    const r = c.rarity || "—";
+    rarCounts.set(r, (rarCounts.get(r)||0) + qty);
+  }
+
+  const typeLabels = Array.from(typeCounts.keys()).sort((a,b)=>(typeCounts.get(b)-typeCounts.get(a)));
+  const typeData = typeLabels.map(k=>typeCounts.get(k));
+
+  const accent = getCssVar("--pink");
+  const accent2 = getCssVar("--pink2");
+
+  const ctxT = document.getElementById("chartTypes");
+  if(ctxT){
+    if(chartTypes) chartTypes.destroy();
+    chartTypes = new Chart(ctxT, {
+      type: "bar",
+      data: { labels: typeLabels, datasets: [{ label: "Tipos (por cantidad)", data: typeData, backgroundColor: hexToRgba(accent, 0.22), borderColor: hexToRgba(accent2, 0.90), borderWidth: 1 }]},
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { color: hexToRgba(getCssVar("--pink"), 0.08) } }, y: { grid: { color: hexToRgba(getCssVar("--pink"), 0.08) } } } }
+    });
+  }
+
+  const rarLabels = Array.from(rarCounts.keys());
+  const rarData = rarLabels.map(k=>rarCounts.get(k));
+
+  const ctxR = document.getElementById("chartRarity");
+  if(ctxR){
+    if(chartRarity) chartRarity.destroy();
+    chartRarity = new Chart(ctxR, {
+      type: "doughnut",
+      data: { labels: rarLabels, datasets: [{ label: "Rarezas (por cantidad)", data: rarData,
+        backgroundColor: [
+          "rgba(255, 255, 255, 0.95)",
+          "rgba(220, 220, 220, 0.95)",
+          "rgba(255, 225, 160, 0.95)",
+          "rgba(255, 170, 120, 0.95)",
+          "rgba(248, 187, 208, 0.95)"
+        ],
+        borderColor: "rgba(216, 27, 96, 0.35)",
+        borderWidth: 1
+      }]},
+      options: { responsive: true }
+    });
+  }
+
+  updateInvestmentUI();
+  renderSalesTable();
+}
+
+/************************************************************
+ * Mazos + Commander + Mejoras 1-5 y 8
+ ************************************************************/
+function uniqueDeckName(name){
+  const base = String(name||"Mazo").trim() || "Mazo";
+  if(!decks.some(d=>d.name.toLowerCase()===base.toLowerCase())) return base;
+  let i = 2;
+  while(true){
+    const candidate = `${base} (${i})`;
+    if(!decks.some(d=>d.name.toLowerCase()===candidate.toLowerCase())) return candidate;
+    i++;
+  }
+}
+
+function selectedDeck(){
+  const deckId = document.getElementById("deckSelect")?.value;
+  return decks.find(x=>x.id===deckId) || null;
+}
+
+function setCommanderLabelForSelectedDeck(){
+  const label = document.getElementById("deckCommanderLabel");
+  if(!label) return;
+  const d = selectedDeck();
+  if(!d || !d.commander){ label.textContent = "—"; return; }
+  const c = d.commander;
+  label.textContent = c.set && c.cn ? `${c.name} (${c.set} #${c.cn})` : c.name;
+}
+
+function updateDeckSelectOptions(keepId=null){
+  const sel = document.getElementById("deckSelect");
+  if(!sel) return;
+  sel.innerHTML = "";
+  decks.forEach(d=>{
+    const opt = document.createElement("option");
+    opt.value = d.id;
+    opt.textContent = d.name;
+    sel.appendChild(opt);
+  });
+  if(keepId && decks.some(d=>d.id===keepId)) sel.value = keepId;
+}
+
+function renderDecks(){
+  const list = document.getElementById("deckList");
+  const sel = document.getElementById("deckSelect");
+  if(!list || !sel) return;
+
+  const q = (document.getElementById("deckListQ")?.value || "").trim().toLowerCase();
+  const sort = document.getElementById("deckListSort")?.value || "recent";
+
+  list.innerHTML = "";
+  updateDeckSelectOptions(sel.value || null);
+
+  let view = decks.slice();
+
+  if(q){
+    view = view.filter(d => String(d.name||"").toLowerCase().includes(q));
+  }
+
+  if(sort === "az"){
+    view.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"es",{sensitivity:"base"}));
+  }else if(sort === "za"){
+    view.sort((a,b)=>String(b.name||"").localeCompare(String(a.name||""),"es",{sensitivity:"base"}));
+  }else{
+    // recientes
+    view.sort((a,b)=>(b._updatedAt||b._createdAt||0) - (a._updatedAt||a._createdAt||0));
+  }
+
+  for(const d of view){
+    const cmd = d.commander?.name ? ` · CMD: ${d.commander.name}` : "";
+    const row = document.createElement("div");
+    row.className = "cardrow";
+    row.innerHTML = `
+      <div>
+        <b>${escapeHtml(d.name)}</b>
+        <div class="small mono">${d.items?.length || 0} entradas${escapeHtml(cmd)}</div>
+      </div>
+      <div class="row" style="gap:6px; justify-content:flex-end;">
+        <button class="btn ghost tiny" data-act="open">Abrir</button>
+        <button class="btn ghost tiny" data-act="rename">Renombrar</button>
+        <button class="btn ghost tiny" data-act="dup">Duplicar</button>
+        <button class="btn danger tiny" data-act="del">Eliminar</button>
+      </div>
+    `;
+
+    row.querySelector('[data-act="open"]').onclick = (e)=>{ e.stopPropagation(); openDeckView(d.id); };
+    row.querySelector('[data-act="rename"]').onclick = (e)=>{ e.stopPropagation(); renameDeck(d.id); };
+    row.querySelector('[data-act="dup"]').onclick = (e)=>{ e.stopPropagation(); duplicateDeck(d.id); };
+    row.querySelector('[data-act="del"]').onclick = (e)=>{ e.stopPropagation(); deleteDeck(d.id); };
+
+    // click en toda la fila = abrir
+    row.onclick = ()=> openDeckView(d.id);
+    list.appendChild(row);
+  }
+
+  document.getElementById("deckCount").textContent = decks.length;
+
+  // si no hay nada seleccionado, selecciona el primero
+  if(decks.length && !sel.value) sel.value = decks[0].id;
+
+  setCommanderLabelForSelectedDeck();
+}
+
+function renameDeck(deckId){
+  const d = decks.find(x=>x.id===deckId) || selectedDeck();
+  if(!d) return alert("No hay mazo seleccionado.");
+  const next = prompt("Nuevo nombre del mazo:", d.name);
+  if(next == null) return;
+  const name = String(next).trim();
+  if(!name) return alert("Nombre inválido.");
+  d.name = uniqueDeckName(name);
+  touchDeck(d);
+  saveDecks();
+  renderDecks();
+}
+
+function duplicateDeck(deckId){
+  const d = decks.find(x=>x.id===deckId) || selectedDeck();
+  if(!d) return alert("No hay mazo seleccionado.");
+  const clone = JSON.parse(JSON.stringify(d));
+  clone.id = crypto.randomUUID();
+  clone.name = uniqueDeckName(`${d.name} (copia)`);
+  clone._createdAt = Date.now();
+  clone._updatedAt = Date.now();
+  decks.push(clone);
+  saveDecks();
+  renderDecks();
+  // selecciona el clon
+  document.getElementById("deckSelect").value = clone.id;
+  setCommanderLabelForSelectedDeck();
+}
+
+function deleteDeck(deckId){
+  const d = decks.find(x=>x.id===deckId) || selectedDeck();
+  if(!d) return alert("No hay mazo para eliminar.");
+  if(!confirm(`¿Eliminar el mazo "${d.name}"?`)) return;
+
+  const currentSel = document.getElementById("deckSelect")?.value || null;
+  decks = decks.filter(x=>x.id !== d.id);
+  saveDecks();
+
+  // ajusta selección
+  const sel = document.getElementById("deckSelect");
+  if(sel){
+    const still = decks.find(x=>x.id===currentSel);
+    if(still) sel.value = still.id;
+    else sel.value = decks[0]?.id || "";
+  }
+  renderDecks();
+
+  // si estás en deck_view del que borraste, vuelve a mazos
+  if(deckViewState.deckId === d.id){
+    deckViewState.deckId = null;
+    showPage("mazos");
+  }
+}
+
+function parseDecksJson(text){
+  const data = JSON.parse(text);
+  if(!Array.isArray(data)) throw new Error("JSON inválido: no es un array de mazos.");
+
+  const normalizeCardRef = (it)=>{
+    const set = String(it?.set||"").toUpperCase();
+    const cn  = String(it?.cn||"").trim();
+    const name = String(it?.name||"").trim();
+    const qty = Math.max(1, parseInt(it?.qty||"1",10));
+    const key = it?.key || ((set && cn) ? `${set}#${cn}` : name);
+    return { key, name, set, cn, qty };
+  };
+
+  const normalizeCommander = (c)=>{
+    if(!c) return null;
+    const name = String(c.name||"").trim();
+    const set = String(c.set||"").toUpperCase();
+    const cn = String(c.cn||"").trim();
+    const key = c.key || ((set && cn) ? `${set}#${cn}` : name);
+    if(!name && !key) return null;
+    return { name, set, cn, key };
+  };
+
+  data.forEach(d=>{
+    d.name = String(d.name||"Mazo").trim() || "Mazo";
+    d.items = Array.isArray(d.items) ? d.items.map(normalizeCardRef) : [];
+    d.commander = normalizeCommander(d.commander);
+    if(typeof d._createdAt !== "number") d._createdAt = Date.now();
+    if(typeof d._updatedAt !== "number") d._updatedAt = Date.now();
+  });
+
+  return data;
+}
+
+function parseDecksTxt(text){
+  const lines = String(text||"").replace(/\r/g,"").split("\n");
+  const out = [];
+  let current = null;
+
+  const flush = ()=>{
+    if(current && current.name && (current.items.length || current.commander)){
+      out.push(current);
+    }
+    current = null;
+  };
+
+  const ensureDeck = ()=>{
+    if(!current) current = { name: "Mazo importado", items: [], commander: null, _createdAt: Date.now(), _updatedAt: Date.now() };
+  };
+
+  const mkKey = (set, cn)=> (set && cn) ? `${String(set).toUpperCase()}#${String(cn).trim()}` : "";
+
+  const setCommander = (name, set, cn)=>{
+    ensureDeck();
+    const S = String(set||"").toUpperCase();
+    const N = String(cn||"").trim();
+    current.commander = {
+      name: String(name||"").trim(),
+      set: S,
+      cn: N,
+      key: mkKey(S, N) || String(name||"").trim()
+    };
+    current._updatedAt = Date.now();
+  };
+
+  const addItem = (qty, name, set, cn)=>{
+    ensureDeck();
+    qty = Math.max(1, parseInt(qty||"1",10));
+    const S = String(set||"").toUpperCase();
+    const N = String(cn||"").trim();
+    const nm = String(name||"").trim();
+    const key = mkKey(S, N);
+
+    const existing = current.items.find(it=>{
+      const sameRef = (key && it.key===key);
+      const sameName = it.name.toLowerCase()===nm.toLowerCase();
+      return (sameRef && sameName) || (!key && !it.key && sameName);
+    });
+
+    if(existing) existing.qty += qty;
+    else current.items.push({ key: key || nm, name: nm, set: S, cn: N, qty });
+
+    current._updatedAt = Date.now();
+  };
+
+  for(let raw of lines){
+    let line = raw.trim();
+    if(!line) continue;
+    if(line.startsWith("#") || line.startsWith("//")) continue;
+    if(/^[-]{3,}$/.test(line)) continue;
+
+    const mDeck = line.match(/^mazo:\s*(.+)$/i);
+    if(mDeck){
+      flush();
+      current = { name: mDeck[1].trim() || "Mazo", items: [], commander: null, _createdAt: Date.now(), _updatedAt: Date.now() };
+      continue;
+    }
+
+    const mCmd = line.match(/^(comandante|commander)\s*:\s*(.+)$/i);
+    if(mCmd){
+      ensureDeck();
+      const rest = mCmd[2].trim();
+
+      let m = rest.match(/^(.+?)\s*\(\s*([A-Za-z0-9]{2,10})\s*#?\s*([A-Za-z0-9]+)\s*\)\s*$/i);
+      if(m){ setCommander(m[1], m[2], m[3]); continue; }
+
+      m = rest.match(/^(.+?)\s*\(\s*([A-Za-z0-9]{2,10})\s*\)\s*([A-Za-z0-9]+)\s*$/i);
+      if(m){ setCommander(m[1], m[2], m[3]); continue; }
+
+      setCommander(rest, "", "");
+      continue;
+    }
+
+    ensureDeck();
+
+    let m = line.match(/^(\d+)\s*x\s*(.+?)\s*\(\s*([A-Za-z0-9]{2,10})\s*#?\s*([A-Za-z0-9]+)\s*\)\s*$/i);
+    if(m){ addItem(m[1], m[2], m[3], m[4]); continue; }
+
+    m = line.match(/^(\d+)\s*x?\s*(.+?)\s*\(\s*([A-Za-z0-9]{2,10})\s*\)\s*([A-Za-z0-9]+)\s*$/i);
+    if(m){ addItem(m[1], m[2], m[3], m[4]); continue; }
+
+    m = line.match(/^(\d+)\s*x\s*(.+?)\s*$/i);
+    if(m){ addItem(m[1], m[2], "", ""); continue; }
+  }
+
+  flush();
+  return out;
+}
+
+function deckToText(d){
+  const lines = [];
+  lines.push(`Mazo: ${d.name}`);
+
+  if(d.commander){
+    const c = d.commander;
+    if(c.set && c.cn) lines.push(`Comandante: ${c.name} (${c.set} #${c.cn})`);
+    else lines.push(`Comandante: ${c.name}`);
+    lines.push("");
+  }
+
+  for(const it of (d.items||[])){
+    if(it.set && it.cn) lines.push(`${it.qty}x ${it.name} (${it.set} #${it.cn})`);
+    else lines.push(`${it.qty}x ${it.name}`);
+  }
+
+  return lines.join("\n");
+}
+
+function exportOneDeckTxt(deckId){
+  const d = decks.find(x=>x.id===deckId) || selectedDeck();
+  if(!d) return alert("No hay mazo seleccionado.");
+  const txt = deckToText(d);
+  const blob = new Blob([txt], {type:"text/plain;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `mazo_${(d.name||"mazo").replace(/\s+/g,"_")}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function exportOneDeckJson(deckId){
+  const d = decks.find(x=>x.id===deckId) || selectedDeck();
+  if(!d) return alert("No hay mazo seleccionado.");
+  const blob = new Blob([JSON.stringify(d,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `mazo_${(d.name||"mazo").replace(/\s+/g,"_")}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function copyDeckTxt(deckId){
+  const d = decks.find(x=>x.id===deckId) || selectedDeck();
+  if(!d) return alert("No hay mazo seleccionado.");
+  const txt = deckToText(d);
+  try{
+    await navigator.clipboard.writeText(txt);
+    alert("TXT copiado al portapapeles ✅");
+  }catch{
+    // fallback
+    const ta = document.createElement("textarea");
+    ta.value = txt;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+    alert("TXT copiado ✅");
+  }
+}
+
+// =========================
+// Deck View (tipo Archidekt) + Mejor orden de tipos (8)
+// =========================
+let deckViewState = {
+  deckId: null,
+  q: "",
+  group: "type",
+  selectedKey: null,
+};
+
+const DECK_TYPE_ORDER = [
+  "Criatura",
+  "Planeswalker",
+  "Instantáneo",
+  "Conjuro",
+  "Artefacto",
+  "Encantamiento",
+  "Tierra",
+  "Batalla",
+  "Otro",
+];
+
+const deckCardCache = new Map(); // key -> card data (scryfall)
+const deckTypeCache = new Map(); // key -> bucket
+
+function findOwnedCardForDeckItem(it){
+  if(!it) return null;
+
+  const nameKey = String(it.name||"").trim().toLowerCase();
+  const setKey  = String(it.set||"").trim().toUpperCase();
+  const cnKey   = String(it.cn||"").trim();
+
+  let exact = cards.find(c =>
+    String(c.name||"").trim().toLowerCase() === nameKey &&
+    String(c.setCode||"").trim().toUpperCase() === setKey &&
+    String(c.collectorNumber||"").trim() === cnKey
+  );
+  if(exact) return exact;
+
+  let byName = cards.find(c =>
+    String(c.name||"").trim().toLowerCase() === nameKey
+  );
+
+  return byName || null;
+}
+
+function collectionStatusForDeckItem(it){
+  const nameKey = String(it.name||"").trim().toLowerCase();
+  const setKey  = String(it.set||"").trim().toUpperCase();
+  const cnKey   = String(it.cn||"").trim();
+
+  const exact = cards.find(c =>
+    String(c.name||"").trim().toLowerCase() === nameKey &&
+    String(c.setCode||"").trim().toUpperCase() === setKey &&
+    String(c.collectorNumber||"").trim() === cnKey
+  );
+
+  if(exact){
+    const have = exact.qty || 1;
+    const need = it.qty || 1;
+    if(have >= need) return { cls:"ok", text:"✓", title:`En colección (exacta): ${have}/${need}` };
+    return { cls:"warn", text:`${have}/${need}`, title:`En colección (exacta): ${have}/${need}` };
+  }
+
+  const sameName = cards.find(c => String(c.name||"").trim().toLowerCase() === nameKey);
+  if(sameName){
+    return { cls:"alt", text:"✓", title:`En colección pero otra impresión: ${sameName.setCode}#${sameName.collectorNumber}` };
+  }
+
+  return { cls:"no", text:"0", title:"No está en tu colección" };
+}
+
+async function fetchDeckCardDetails(it){
+  const cacheKey = it.key || String(it.name||"").toLowerCase();
+  if(deckCardCache.has(cacheKey)) return deckCardCache.get(cacheKey);
+
+  try{
+    let card = null;
+    if(it.set && it.cn) card = await fetchCardExact(it.set, it.cn);
+    else card = await fetchCardByName(it.name);
+
+    deckCardCache.set(cacheKey, card);
+    return card;
+  }catch{
+    deckCardCache.set(cacheKey, null);
+    return null;
+  }
+}
+
+// Prefetch de tipos para mejorar agrupación incluso si no está en colección
+async function prefetchDeckTypes(items){
+  const pending = [];
+  for(const it of items){
+    const key = it.key || String(it.name||"").toLowerCase();
+    if(deckTypeCache.has(key)) continue;
+
+    // si está en colección, saco tipo de ahí
+    const owned = findOwnedCardForDeckItem(it);
+    if(owned?.type){
+      deckTypeCache.set(key, mainTypeBucket(owned.type));
+      continue;
+    }
+
+    // si no, intentar con scryfall
+    pending.push((async ()=>{
+      const card = await fetchDeckCardDetails(it);
+      if(card?.type_line){
+        const t = typesEs(card.type_line);
+        deckTypeCache.set(key, mainTypeBucket(t.main));
+      }else{
+        deckTypeCache.set(key, "Otro");
+      }
+    })());
+  }
+
+  if(pending.length){
+    try{ await Promise.allSettled(pending); }catch{}
+  }
+}
+
+function getMainTypeForDeckItem(it){
+  const key = it.key || String(it.name||"").toLowerCase();
+
+  // 1) cache ya calculada
+  if(deckTypeCache.has(key)) return deckTypeCache.get(key);
+
+  // 2) colección
+  const owned = findOwnedCardForDeckItem(it);
+  if(owned?.type) return mainTypeBucket(owned.type);
+
+  // 3) fallback
+  return "Otro";
+}
+
+function groupDeckItemsByMainType(items){
+  const groups = new Map();
+  for(const t of DECK_TYPE_ORDER) groups.set(t, []);
+
+  for(const it of items){
+    const bucket = getMainTypeForDeckItem(it);
+    (groups.get(bucket) || groups.get("Otro")).push(it);
+  }
+
+  const out = [];
+  for(const t of DECK_TYPE_ORDER){
+    const arr = groups.get(t) || [];
+    if(!arr.length) continue;
+    arr.sort((a,b)=> String(a.name||"").localeCompare(String(b.name||""), "es", {sensitivity:"base"}));
+    out.push([t, arr]);
+  }
+  return out;
+}
+
+function openDeckView(deckId){
+  deckViewState.deckId = deckId;
+  deckViewState.q = "";
+  deckViewState.selectedKey = null;
+
+  const d = decks.find(x=>x.id===deckId);
+  document.getElementById("deckViewTitle").textContent = d ? d.name : "Mazo";
+
+  const q = document.getElementById("deckViewQ");
+  const g = document.getElementById("deckViewGroup");
+  if(q) q.value = "";
+  if(g) g.value = deckViewState.group;
+
+  renderDeckView(true);
+  showPage("deck_view");
+  // validar comandante (async)
+  const dNow = selectedDeck();
+  validateCommanderForDeck(dNow).then(renderCommanderWarnings);
+}
+
+function renderDeckRow(listEl, detailsEl, it, labelPrefix=""){
+  const row = document.createElement("div");
+  row.className = "cardrow";
+  row.dataset.key = it.key || it.name;
+
+  const st = collectionStatusForDeckItem(it);
+  const badgeClass = `ownBadge ${st.cls}`;
+
+  row.innerHTML = `
+    <div>
+      <b>${escapeHtml(labelPrefix)}${escapeHtml(it.qty)}x ${escapeHtml(it.name)}</b>
+      <div class="mini">
+        <span class="pill"><span class="mono">${escapeHtml(it.set||"")}${it.cn ? "#"+escapeHtml(it.cn) : ""}</span></span>
+        <span class="${badgeClass}" title="${escapeHtml(st.title||"")}">${escapeHtml(st.text)}</span>
+      </div>
+    </div>
+    <div class="mini"><span class="pill">Ver</span></div>
+  `;
+
+  row.onclick = async ()=>{
+    deckViewState.selectedKey = row.dataset.key;
+    detailsEl.innerHTML = `<div class="hint">Cargando…</div>`;
+
+    const card = await fetchDeckCardDetails(it);
+    if(!card){
+      detailsEl.innerHTML = `<div class="err" style="display:block;">No se pudo cargar información de Scryfall para esta carta.</div>`;
+      return;
+    }
+
+    const img =
+      card.image_uris?.normal ||
+      card.card_faces?.[0]?.image_uris?.normal ||
+      "";
+
+    const mana = manaToEmojis(card.mana_cost || card.card_faces?.[0]?.mana_cost || "");
+    const t = typesEs(card.type_line);
+
+    detailsEl.innerHTML = `
+      ${img ? `<img src="${escapeHtml(img)}" alt="" style="width:100%;border-radius:16px;border:1px solid var(--line);box-shadow:var(--shadow);margin-bottom:10px;" />` : ""}
+
+      <div><b>${escapeHtml(card.name||it.name)}</b></div>
+      <div class="mini" style="margin-top:6px;">
+        <span class="pill">${escapeHtml(it.set||card.set||"")}${it.cn ? "#"+escapeHtml(it.cn) : ""}</span>
+        ${mana ? `<span class="pill">${escapeHtml(mana)}</span>` : ""}
+        <span class="pill">${escapeHtml(t.main)}</span>
+      </div>
+
+      <div class="hint" style="margin-top:10px;white-space:pre-wrap;">${escapeHtml(card.oracle_text || card.card_faces?.[0]?.oracle_text || "")}</div>
+    `;
+  };
+
+  listEl.appendChild(row);
+}
+
+async function renderDeckView(doPrefetch=false){
+  const d = decks.find(x=>x.id===deckViewState.deckId);
+  const listEl = document.getElementById("deckViewList");
+  const metaEl = document.getElementById("deckViewMeta");
+  const detailsEl = document.getElementById("deckViewDetails");
+  if(!d || !listEl || !metaEl || !detailsEl) return;
+
+  const q = deckViewState.q.trim().toLowerCase();
+  let items = Array.isArray(d.items) ? d.items.slice() : [];
+
+  if(q){
+    items = items.filter(it => String(it.name||"").toLowerCase().includes(q));
+  }
+
+  // Prefetch (mejora agrupación por tipos)
+  if(doPrefetch){
+    await prefetchDeckTypes(items);
+  }
+
+  const totalCards = items.reduce((a,it)=> a + (it.qty||1), 0);
+  metaEl.textContent = `Entradas: ${items.length} · Total cartas: ${totalCards}`;
+
+  listEl.innerHTML = "";
+
+  if(d.commander){
+    const cmd = d.commander;
+    const cmdHeader = document.createElement("div");
+    cmdHeader.className = "pill";
+    cmdHeader.style.justifyContent = "space-between";
+    cmdHeader.innerHTML = `<b>Comandante</b><span class="mono">1</span>`;
+    listEl.appendChild(cmdHeader);
+
+    renderDeckRow(listEl, detailsEl, { ...cmd, qty: 1 }, "👑 ");
+  }
+
+  const groups = (deckViewState.group === "none")
+    ? [["Cartas", items]]
+    : groupDeckItemsByMainType(items);
+
+  for(const [gname, arr] of groups){
+    const h = document.createElement("div");
+    h.className = "pill";
+    h.style.justifyContent = "space-between";
+    h.innerHTML = `<b>${escapeHtml(gname)}</b><span class="mono">${arr.reduce((a,it)=>a+(it.qty||1),0)}</span>`;
+    listEl.appendChild(h);
+
+    arr.forEach(it=> renderDeckRow(listEl, detailsEl, it));
+  }
+}
+
+
+/************************************************************
+ * Deseos (wishlist)
+ ************************************************************/
+function normalizeWishlist(){
+  let changed = false;
+  if(!Array.isArray(wishlist)) { wishlist = []; changed = true; }
+  for(const w of wishlist){
+    if(!w.id){ w.id = crypto.randomUUID(); changed = true; }
+    if(typeof w._addedAt !== "number"){ w._addedAt = Date.now(); changed = true; }
+    if(typeof w.qty !== "number" || w.qty < 1){ w.qty = 1; changed = true; }
+    if(!Array.isArray(w.priceHist)){ w.priceHist = []; changed = true; }
+  }
+  if(changed) saveWishlist();
+}
+normalizeWishlist();
+
+function haveQtyForWish(w){
+  if(!w) return 0;
+  const nameKey = String(w.name||"").trim().toLowerCase();
+  const setKey  = String(w.set||"").trim().toUpperCase();
+  const cnKey   = String(w.cn||"").trim();
+
+  // exact match first
+  if(setKey && cnKey){
+    const exact = cards.find(c =>
+      String(c.name||"").trim().toLowerCase() === nameKey &&
+      String(c.setCode||"").trim().toUpperCase() === setKey &&
+      String(c.collectorNumber||"").trim() === cnKey
+    );
+    return exact ? (exact.qty||1) : 0;
+  }
+
+  // any printing by name
+  const byName = cards.find(c => String(c.name||"").trim().toLowerCase() === nameKey);
+  return byName ? (byName.qty||1) : 0;
+}
+
+function renderWishlist(){
+  const list = document.getElementById("wishlistList");
+  if(!list) return;
+
+  const q = (document.getElementById("wishQ")?.value || "").trim().toLowerCase();
+  list.innerHTML = "";
+
+  let view = wishlist.slice();
+  if(q){
+    view = view.filter(w => String(w.name||"").toLowerCase().includes(q));
+  }
+  view.sort((a,b)=> (b._addedAt||0) - (a._addedAt||0));
+
+  let covered = 0, missing = 0;
+  for(const w of view){
+    const have = haveQtyForWish(w);
+    const need = w.qty || 1;
+    const ok = have >= need;
+    if(ok) covered++; else missing++;
+
+    const badgeCls = ok ? "ok" : (have>0 ? "warn" : "bad");
+    const badgeTxt = ok ? "✓" : `${have}/${need}`;
+
+    const hist = Array.isArray(w.priceHist) ? w.priceHist : [];
+    const last5 = hist.slice(-5).reverse().map(fmtHistLine).filter(Boolean);
+
+    const row = document.createElement("div");
+    row.className = "cardrow";
+    row.innerHTML = `
+      <div>
+        <b>${escapeHtml(w.qty||1)}x ${escapeHtml(w.name||"")}</b>
+        <div class="mini">
+          <span class="pill"><span class="mono">${escapeHtml(String(w.set||"").toUpperCase())}</span> <span class="mono">${escapeHtml(w.cn||"")}</span></span>
+          <span class="pill">${escapeHtml(w.priceText||"")}</span>
+          <span class="ownBadge ${badgeCls}" title="En colección: ${have}/${need}">${escapeHtml(badgeTxt)}</span>
+        </div>
+        ${last5.length ? `
+          <details style="margin-top:6px;">
+            <summary class="small">Historial (últimos ${last5.length})</summary>
+            <div class="small mono" style="margin-top:6px; line-height:1.5;">${last5.map(x=>escapeHtml(x)).join("<br>")}</div>
+          </details>
+        ` : ``}
+      </div>
+      <div class="row" style="gap:6px; justify-content:flex-end;">
+        <button class="btn ghost tiny" data-act="toAdd">Pasar a colección</button>
+        <button class="btn danger tiny" data-act="del">Eliminar</button>
+      </div>
+    `;
+
+    row.querySelector('[data-act="del"]').onclick = ()=>{
+      if(!confirm(`¿Eliminar "${w.name}" de deseos?`)) return;
+      wishlist = wishlist.filter(x=>x.id !== w.id);
+      saveWishlist();
+      renderWishlist();
+    };
+
+    row.querySelector('[data-act="toAdd"]').onclick = ()=>{
+      // Prefill formulario de añadir carta
+      document.getElementById("inName").value = w.name || "";
+      document.getElementById("inSet").value = w.set || "";
+      document.getElementById("inCn").value = w.cn || "";
+      document.getElementById("inQty").value = String(w.qty || 1);
+      showPage("cartas");
+    };
+
+    list.appendChild(row);
+  }
+
+  const elCount = document.getElementById("wishCount");
+  const elMiss = document.getElementById("wishMissingCount");
+  const elCov = document.getElementById("wishCoveredCount");
+  if(elCount) elCount.textContent = String(view.length);
+  if(elMiss) elMiss.textContent = String(missing);
+  if(elCov) elCov.textContent = String(covered);
+}
+
+async function refreshWishlistPrices(){
+  showErr("");
+  for(const w of wishlist){
+    try{
+      let card = null;
+      if(w.set && w.cn) card = await fetchCardExact(w.set, w.cn);
+      else card = await fetchOldestPrintingByName(w.name);
+
+      const price = priceTextFromPrices(card?.prices);
+      w.priceText = price;
+      updatePriceHistory(w, w.priceText);
+    }catch{}
+  }
+  saveWishlist();
+  renderWishlist();
+}
+
+function addWishFromInputs(){
+  const name = document.getElementById("wishName").value.trim();
+  const set  = document.getElementById("wishSet").value.trim().toUpperCase();
+  const cn   = document.getElementById("wishCn").value.trim();
+  const qty  = Math.max(1, parseInt(document.getElementById("wishQty").value||"1",10));
+
+  if(!name && !(set && cn)){
+    showErr("En deseos: escribe un nombre o pon SetCode + Nº.");
+    return;
+  }
+
+  const item = {
+    id: crypto.randomUUID(),
+    _addedAt: Date.now(),
+    name: name,
+    set: set,
+    cn: cn,
+    qty: qty,
+    priceText: "",
+    priceHist: []
+  };
+
+  wishlist.unshift(item);
+  saveWishlist();
+  document.getElementById("wishName").value = "";
+  document.getElementById("wishSet").value = "";
+  document.getElementById("wishCn").value = "";
+  document.getElementById("wishQty").value = "1";
+  renderWishlist();
+
+  // intento suave de traer precio
+  refreshWishlistPrices();
+}
+
+
+function addMissingDeckToWishlist(d){
+  if(!d) return;
+  const added = [];
+  for(const it of (d.items||[])){
+    const need = it.qty || 1;
+    const owned = findOwnedCardForDeckItem(it);
+    const have = owned ? (owned.qty||owned.have||owned.qtyHave||0) : 0; // fallback
+    // findOwnedCardForDeckItem devuelve carta, no cantidades; así que recalculamos:
+    let have2 = 0;
+    const nameKey = String(it.name||"").trim().toLowerCase();
+    const setKey  = String(it.set||"").trim().toUpperCase();
+    const cnKey   = String(it.cn||"").trim();
+    if(setKey && cnKey){
+      const exact = cards.find(c =>
+        String(c.name||"").trim().toLowerCase() === nameKey &&
+        String(c.setCode||"").trim().toUpperCase() === setKey &&
+        String(c.collectorNumber||"").trim() === cnKey
+      );
+      have2 = exact ? (exact.qty||1) : 0;
+    }else{
+      const byName = cards.find(c => String(c.name||"").trim().toLowerCase() === nameKey);
+      have2 = byName ? (byName.qty||1) : 0;
+    }
+    if(have2 >= need) continue;
+
+    const missingQty = Math.max(1, need - have2);
+    const key = `${nameKey}__${setKey}__${cnKey}`;
+    const existing = wishlist.find(w =>
+      String(w.name||"").trim().toLowerCase()===nameKey &&
+      String(w.set||"").trim().toUpperCase()===setKey &&
+      String(w.cn||"").trim()===cnKey
+    );
+    if(existing){
+      existing.qty = (existing.qty||1) + missingQty;
+      added.push(`${missingQty}x ${it.name}`);
+    }else{
+      wishlist.unshift({
+        id: crypto.randomUUID(),
+        _addedAt: Date.now(),
+        name: it.name,
+        set: setKey,
+        cn: cnKey,
+        qty: missingQty,
+        priceText: "",
+        priceHist: []
+      });
+      added.push(`${missingQty}x ${it.name}`);
+    }
+  }
+  saveWishlist();
+  renderWishlist();
+  if(added.length){
+    showPage("deseos");
+    refreshWishlistPrices();
+  }else{
+    showErr("No hay cartas faltantes para añadir a Deseos.");
+  }
+}
+
+/************************************************************
+ * Commander: validación básica (EDH)
+ ************************************************************/
+async function validateCommanderForDeck(d){
+  const out = [];
+  if(!d) return out;
+
+  if(!d.commander){
+    out.push({ level:"warn", msg:"No has configurado comandante." });
+    return out;
+  }
+
+  let cmdCard = null;
+  try{
+    if(d.commander.set && d.commander.cn) cmdCard = await fetchCardExact(d.commander.set, d.commander.cn);
+    else cmdCard = await fetchCardByName(d.commander.name);
+  }catch{
+    cmdCard = null;
+  }
+
+  if(!cmdCard){
+    out.push({ level:"bad", msg:`No pude validar el comandante: "${d.commander.name}".` });
+    return out;
+  }
+
+  const typeLine = String(cmdCard.type_line||"");
+  const oracle = String(cmdCard.oracle_text||"");
+  const isLegendary = typeLine.includes("Legendary");
+  const isCreature = typeLine.includes("Creature");
+  const isPlaneswalker = typeLine.includes("Planeswalker");
+  const saysCan = /can be your commander/i.test(oracle);
+
+  const legal = (isLegendary && isCreature) || (isPlaneswalker && saysCan) || saysCan;
+  if(!legal){
+    out.push({ level:"bad", msg:`El comandante no parece legal (según Scryfall): ${cmdCard.name} · ${typeLine}` });
+  }else{
+    out.push({ level:"ok", msg:`Comandante detectado: ${cmdCard.name} · ${typeLine}` });
+  }
+
+  const cmdCI = Array.isArray(cmdCard.color_identity) ? cmdCard.color_identity : [];
+  const cmdSet = new Set(cmdCI);
+
+  // tamaño mazo (100 incluyendo comandante)
+  const totalCards = (d.items||[]).reduce((a,it)=>a+(it.qty||1),0) + 1;
+  if(totalCards !== 100){
+    out.push({ level:"warn", msg:`Tamaño: ${totalCards}/100 cartas (incluyendo comandante).` });
+  }
+
+  // identidad de color (muestreo: revisa todas, usando cache y scryfall si hace falta)
+  const offenders = [];
+  for(const it of (d.items||[])){
+    try{
+      const card = await fetchDeckCardDetails(it);
+      const ci = Array.isArray(card?.color_identity) ? card.color_identity : [];
+      for(const c of ci){
+        if(!cmdSet.has(c)){
+          offenders.push(it);
+          break;
+        }
+      }
+    }catch{}
+    if(offenders.length >= 12) break; // no saturar
+  }
+  if(offenders.length){
+    out.push({ level:"bad", msg:`Hay cartas fuera de la identidad de color del comandante (ejemplos): ${offenders.slice(0,6).map(x=>x.name).join(", ")}${offenders.length>6?"…":""}` });
+  }
+
+  return out;
+}
+
+function renderCommanderWarnings(messages){
+  const box = document.getElementById("deckCmdWarnings");
+  if(!box) return;
+
+  if(!messages || !messages.length){
+    box.style.display = "none";
+    box.innerHTML = "";
+    return;
+  }
+
+  const icon = (lvl)=> lvl==="ok" ? "✅" : (lvl==="bad" ? "⛔" : "⚠️");
+  const cls = (lvl)=> lvl==="ok" ? "ownBadge ok" : (lvl==="bad" ? "ownBadge bad" : "ownBadge warn");
+
+  box.style.display = "";
+  box.innerHTML = `
+    <div class="row" style="gap:10px; align-items:flex-start; flex-wrap:wrap;">
+      <div style="min-width:220px;">
+        <b>Validación de comandante</b>
+        <div class="small muted">Comprobación rápida (tipo, 100 cartas, identidad de color).</div>
+      </div>
+      <div style="flex:1; min-width:260px;">
+        ${messages.map(m=>`<div class="mini" style="margin:4px 0;"><span class="${cls(m.level)}" style="margin-right:8px;">${icon(m.level)}</span>${escapeHtml(m.msg)}</div>`).join("")}
+      </div>
+    </div>
+  `;
+}
+
+
+/************************************************************
+ * Intro Sets
+ ************************************************************/
+const LS_INTRO_SETS = "mtg_rosita_intro_sets_v1";
+
+async function loadIntroSets(){
+  try{
+    const raw = localStorage.getItem(LS_INTRO_SETS);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(Array.isArray(parsed) && parsed.length){
+        renderIntroSets(parsed);
+        const info = document.getElementById("introSetsInfo");
+        if(info) info.textContent = `Colecciones cargadas: ${parsed.length}`;
+        return;
+      }
+    }
+  }catch{}
+
+  try{
+    const r = await fetch("https://api.scryfall.com/sets");
+    const j = await r.json();
+    if(!Array.isArray(j.data)) throw new Error("Respuesta inválida");
+
+    const sets = j.data.map(s=>({
+      name: s.name || "",
+      code: String(s.code || "").toUpperCase(),
+      icon: s.icon_svg_uri || ""
+    }));
+
+    localStorage.setItem(LS_INTRO_SETS, JSON.stringify(sets));
+    renderIntroSets(sets);
+
+    const info = document.getElementById("introSetsInfo");
+    if(info) info.textContent = `Colecciones cargadas: ${sets.length}`;
+  }catch{
+    const info = document.getElementById("introSetsInfo");
+    if(info) info.textContent = "No se pudieron cargar las colecciones.";
+  }
+}
+
+function renderIntroSets(sets){
+  const tbody = document.querySelector("#tblIntroSets tbody");
+  if(!tbody) return;
+
+  tbody.innerHTML = "";
+  sets
+    .slice()
+    .sort((a,b)=>a.name.localeCompare(b.name,"es",{sensitivity:"base"}))
+    .forEach(s=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${s.icon ? `<img class="setIcon" src="${s.icon}" alt="">` : ""}</td>
+        <td>${escapeHtml(s.name)}</td>
+        <td class="mono">${escapeHtml(s.code)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+}
+
+/************************************************************
+ * Import CSV (ManaBox) - parser
+ ************************************************************/
+function parseCsv(text){
+  const out = [];
+  let row = [];
+  let cur = "";
+  let inQ = false;
+
+  const s = String(text||"").replace(/\r/g,"");
+  for(let i=0;i<s.length;i++){
+    const ch = s[i];
+    const nx = s[i+1];
+
+    if(inQ){
+      if(ch === '"' && nx === '"'){ cur += '"'; i++; continue; }
+      if(ch === '"'){ inQ = false; continue; }
+      cur += ch;
+      continue;
+    }
+
+    if(ch === '"'){ inQ = true; continue; }
+    if(ch === ","){ row.push(cur); cur=""; continue; }
+    if(ch === "\n"){ row.push(cur); out.push(row); row=[]; cur=""; continue; }
+    cur += ch;
+  }
+  row.push(cur);
+  out.push(row);
+  return out.filter(r=>r.some(x=>String(x||"").trim()!==""));
+}
+
+/************************************************************
+ * UI wiring - Ajustes
+ ************************************************************/
+function initSettingsUI(){
+  const themeSel = document.getElementById("setTheme");
+  const fontRange = document.getElementById("setFontSize");
+  const fontLabel = document.getElementById("fontPxLabel");
+  const compactChk = document.getElementById("setCompact");
+  const motionChk = document.getElementById("setReducedMotion");
+  const currencySel = document.getElementById("setCurrency");
+
+  if(!themeSel) return;
+
+  themeSel.value = settings.theme;
+  fontRange.value = settings.fontPx;
+  fontLabel.textContent = String(settings.fontPx);
+  compactChk.checked = settings.density === "compact";
+  motionChk.checked = settings.motion === "reduced";
+  currencySel.value = settings.currency;
+
+  // Theme swatch clicks
+  document.querySelectorAll(".theme-swatch").forEach(sw=>{
+    sw.addEventListener("click", ()=>{
+      const t = sw.dataset.t;
+      settings.theme = t;
+      saveSettings();
+      applySettings();
+      if(themeSel) themeSel.value = t;
+      if(document.querySelector('section[data-page="stats_colores"]:not(.is-hidden)')) renderColorStats();
+      if(document.querySelector('section[data-page="stats_tipos"]:not(.is-hidden)')) renderTypeStats();
+      updateInvestmentUI();
+      renderSalesTable();
+    });
+  });
+
+  themeSel.onchange = ()=>{
+    settings.theme = themeSel.value;
+    saveSettings();
+    applySettings();
+    if(document.querySelector('section[data-page="stats_colores"]:not(.is-hidden)')) renderColorStats();
+    if(document.querySelector('section[data-page="stats_tipos"]:not(.is-hidden)')) renderTypeStats();
+    updateInvestmentUI();
+  renderSalesTable();
+  };
+
+  fontRange.oninput = ()=>{
+    const v = parseInt(fontRange.value, 10);
+    settings.fontPx = v;
+    fontLabel.textContent = String(v);
+    saveSettings();
+    applySettings();
+  };
+
+  compactChk.onchange = ()=>{
+    settings.density = compactChk.checked ? "compact" : "normal";
+    saveSettings();
+    applySettings();
+  };
+
+  motionChk.onchange = ()=>{
+    settings.motion = motionChk.checked ? "reduced" : "normal";
+    saveSettings();
+    applySettings();
+  };
+
+  currencySel.onchange = ()=>{
+    settings.currency = currencySel.value;
+    saveSettings();
+    renderCardsTableFull();
+    updateInvestmentUI();
+  renderSalesTable();
+    if(document.querySelector('section[data-page="coleccion"]:not(.is-hidden)')) renderColeccion();
+  };
+
+  document.getElementById("btnResetSettings").onclick = ()=>{
+    if(!confirm("¿Resetear ajustes (tema, letra, etc.)?")) return;
+    settings = {...DEFAULT_SETTINGS};
+    saveSettings();
+    applySettings();
+    initSettingsUI();
+    renderCardsTableFull();
+    renderDecks();
+    renderSearchResults();
+    renderColorStats();
+    renderTypeStats();
+    updateInvestmentUI();
+  renderSalesTable();
+  };
+
+  initBackupUI();
+}
+
+/************************************************************
+ * Eventos principales (botones)
+ ************************************************************/
+document.getElementById("btnAdd").onclick = async ()=>{
+  showErr("");
+
+  const inputName = toTitleCase(document.getElementById("inName").value);
+  const setCodeRaw = document.getElementById("inSet").value.trim();
+  const cnRaw = document.getElementById("inCn").value.trim();
+
+  const lang = document.getElementById("inLang").value;
+  const qty = Math.max(1, parseInt(document.getElementById("inQty").value||"1",10));
+  const proxy = !!document.getElementById("inProxy").checked;
+  const foil = !!document.getElementById("inFoil").checked;
+  const promo = !!document.getElementById("inPromo").checked;
+  const promoPre = !!document.getElementById("inPromoPre").checked;
+  const sale = !!document.getElementById("inSale")?.checked;
+
+  const hasExact = !!setCodeRaw && !!cnRaw;
+  if(!hasExact && !inputName){
+    showErr("Falta el nombre.\nSi no pones SetCode y Nº, necesitas escribir al menos el nombre.");
+    return;
+  }
+
+  try{
+    let card = null;
+    if(hasExact) card = await fetchCardExact(setCodeRaw, cnRaw);
+    else card = await fetchOldestPrintingByName(inputName);
+
+    const t = typesEs(card.type_line);
+    const price = priceTextFromPrices(card.prices);
+    const bestSell = bestSellPriceText(price);
+    const logoUrl = await fetchSetIconUrl(card.set);
+
+    const colorId = computeColorId(card);
+    const mv = manaValueFromCard(card);
+
+    const newItem = {
+      id: crypto.randomUUID(),
+      _addedAt: Date.now(),
+      inputName,
+      name: card.name || inputName,
+      setCode: String(card.set || setCodeRaw || "").toUpperCase(),
+      collectorNumber: String(card.collector_number || cnRaw || ""),
+      type: t.main,
+      subtype: t.sub,
+      colorId,
+      color: colorToEmojisFromCI(colorId),
+      mana: manaToEmojis(card.mana_cost || (card.card_faces?.[0]?.mana_cost||"")),
+      manaValue: mv,
+      rarity: rarityMap[card.rarity] || card.rarity || "",
+      logoUrl,
+      priceText: price,
+      proxy, foil, promo, promoPre,
+      lang,
+      qty,
+      bestSell,
+      fav:false,
+      sale
+    };
+
+    newItem.priceHist = Array.isArray(newItem.priceHist) ? newItem.priceHist : [];
+    updatePriceHistory(newItem, newItem.priceText);
+
+    cards.unshift(newItem);
+    saveCards();
+    clearAddForm();
+    renderCardsTableFull();
+    showPage("cartas");
+  }catch(e){
+    showErr("Error:\n" + (e?.message||e));
+  }
+};
+
+document.getElementById("btnRefreshPrices").onclick = async ()=>{
+  showErr("");
+  for(const c of cards){
+    try{
+      if(!c.setCode || !c.collectorNumber) continue;
+      const card = await fetchCardExact(c.setCode, c.collectorNumber);
+      const price = priceTextFromPrices(card.prices);
+      c.priceText = price;
+      updatePriceHistory(c, c.priceText);
+      c.bestSell = bestSellPriceText(c.priceText);
+      c.bestSell = bestSellPriceText(price);
+      c.colorId = computeColorId(card);
+      c.color = colorToEmojisFromCI(c.colorId);
+      c.manaValue = manaValueFromCard(card);
+    }catch{}
+  }
+  saveCards();
+  renderCardsTableFull();
+  updateInvestmentUI();
+  renderSalesTable();
+};
+
+document.getElementById("btnExport").onclick = ()=>{
+  const blob = new Blob([JSON.stringify(cards,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "cartas_mtg_rosita.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+document.getElementById("btnImport").onclick = ()=>{
+  const inp = document.createElement("input");
+  inp.type="file";
+  inp.accept="application/json";
+  inp.onchange = async ()=>{
+    const f = inp.files?.[0];
+    if(!f) return;
+    const txt = await f.text();
+    try{
+      const data = JSON.parse(txt);
+      if(!Array.isArray(data)) throw new Error("JSON inválido (no es array).");
+      data.forEach(it=>{
+        if(!Array.isArray(it.colorId)) it.colorId = [];
+        it.color = colorToEmojisFromCI(it.colorId || []);
+        if(typeof it._addedAt !== "number") it._addedAt = Date.now() - Math.floor(Math.random()*100000);
+        if(typeof it.manaValue !== "number" || !Number.isFinite(it.manaValue)) it.manaValue = 0;
+      });
+      cards = data;
+      saveCards();
+      renderCardsTableFull();
+      updateInvestmentUI();
+  renderSalesTable();
+    }catch(e){
+      alert("No se pudo importar: " + (e.message||e));
+    }
+  };
+  inp.click();
+};
+
+document.getElementById("btnImportManaBox").onclick = ()=>{
+  const inp = document.createElement("input");
+  inp.type = "file";
+  inp.accept = ".csv,text/csv";
+  inp.onchange = async ()=>{
+    const f = inp.files?.[0];
+    if(!f) return;
+
+    try{
+      const text = await f.text();
+      const rows = parseCsv(text);
+      if(!rows.length){ alert("CSV vacío."); return; }
+
+      const norm = (s)=>String(s||"").trim().toLowerCase();
+      const header = rows[0].map(norm);
+      const dataRows = rows.slice(1);
+
+      const col = (names)=>{
+        for(const cand of names){
+          const i = header.indexOf(norm(cand));
+          if(i !== -1) return i;
+        }
+        return -1;
+      };
+
+      const iName = col(["card name","name","nombre"]);
+      const iSet  = col(["set code","set","setcode","código","codigo","set name"]);
+      const iNum  = col(["card number","collector number","number","nº","no"]);
+      const iQty  = col(["quantity","qty","cantidad"]);
+      const iFoil = col(["foil"]);
+      const iLang = col(["language","lang","idioma"]);
+      const iSid  = col(["scryfall id","scryfall_id","scryfallid"]);
+
+      if(iName === -1 && iSid === -1){
+        alert("No encuentro columna 'Card name' ni 'Scryfall ID' en el CSV.");
+        return;
+      }
+
+      showErr("");
+
+      for(const r of dataRows){
+        const scryId = iSid !== -1 ? String(r[iSid]||"").trim() : "";
+        const name   = iName !== -1 ? String(r[iName]||"").trim() : "";
+        const setRaw = iSet !== -1 ? String(r[iSet]||"").trim() : "";
+        const cnRaw  = iNum !== -1 ? String(r[iNum]||"").trim() : "";
+        const qtyRaw = iQty !== -1 ? String(r[iQty]||"").trim() : "1";
+        const foilRaw= iFoil!== -1 ? String(r[iFoil]||"").trim() : "";
+        const langRaw= iLang!== -1 ? String(r[iLang]||"").trim() : "es";
+
+        const qty = Math.max(1, parseInt(qtyRaw||"1",10));
+        const foil = /^(1|true|yes|sí|si|foil)$/i.test(foilRaw);
+
+        try{
+          let card = null;
+          if(scryId){
+            const rr = await fetch(`https://api.scryfall.com/cards/${encodeURIComponent(scryId)}`);
+            const jj = await rr.json();
+            if(jj.object==="error") throw new Error(jj.details || "Scryfall ID inválido");
+            card = jj;
+          }else if(setRaw && cnRaw){
+            card = await fetchCardExact(setRaw, cnRaw);
+          }else{
+            card = await fetchOldestPrintingByName(name);
+          }
+
+          const t = typesEs(card.type_line);
+          const price = priceTextFromPrices(card.prices);
+          const bestSell = bestSellPriceText(price);
+          const logoUrl = await fetchSetIconUrl(card.set);
+
+          const colorId = computeColorId(card);
+          const mv = manaValueFromCard(card);
+
+          cards.unshift({
+            id: crypto.randomUUID(),
+            _addedAt: Date.now(),
+            inputName: name,
+            name: card.name || name,
+            setCode: String(card.set || setRaw || "").toUpperCase(),
+            collectorNumber: String(card.collector_number || cnRaw || ""),
+            type: t.main,
+            subtype: t.sub,
+            colorId,
+            color: colorToEmojisFromCI(colorId),
+            mana: manaToEmojis(card.mana_cost || (card.card_faces?.[0]?.mana_cost||"")),
+            manaValue: mv,
+            rarity: rarityMap[card.rarity] || card.rarity || "",
+            logoUrl,
+            priceText: price,
+            proxy:false,
+            foil,
+            promo:false,
+            promoPre:false,
+            lang:(langRaw || "es"),
+            qty,
+            bestSell
+          });
+
+        }catch(e){
+          console.warn("Fila fallida:", r, e);
+        }
+      }
+
+      saveCards();
+      renderCardsTableFull();
+      updateInvestmentUI();
+  renderSalesTable();
+      showPage("cartas");
+      alert("Importación ManaBox CSV terminada (las filas que fallen se omiten).");
+    }catch(e){
+      alert("No se pudo importar ManaBox CSV: " + (e?.message||e));
+    }
+  };
+  inp.click();
+};
+
+document.getElementById("btnClear").onclick = ()=>{
+  if(confirm("¿Borrar TODAS las cartas guardadas?")){
+    cards = [];
+    saveCards();
+    renderCardsTableFull();
+    updateInvestmentUI();
+  renderSalesTable();
+  }
+};
+
+document.getElementById("btnApplySort").onclick = ()=>{
+  sortState.key = document.getElementById("sortKey").value;
+  sortState.dir = document.getElementById("sortDir").value;
+  saveSortState();
+  renderCardsTableFull();
+};
+
+document.getElementById("btnSearch").onclick = renderSearchResults;
+document.getElementById("btnClearFilters").onclick = clearSearchFilters;
+
+["searchQ","searchSet","searchRarity","searchColors","searchType","searchMvMin","searchMvMax"].forEach(id=>{
+  const el = document.getElementById(id);
+  if(!el) return;
+  const evt = (el.tagName === "SELECT") ? "change" : "input";
+  el.addEventListener(evt, renderSearchResultsDebounced);
+  if(id === "searchQ") el.addEventListener("keydown", e=>{ if(e.key==="Enter") renderSearchResults(); });
+});
+
+document.getElementById("btnRecalcColors").onclick = renderColorStats;
+document.getElementById("btnRecalcTypes").onclick = renderTypeStats;
+document.getElementById("btnRecalcMoney").onclick = updateInvestmentUI;
+
+/* Mazos */
+document.getElementById("btnCreateDeck").onclick = ()=>{
+  const name = document.getElementById("deckName").value.trim();
+  if(!name){ alert("Pon un nombre de mazo."); return; }
+  const finalName = uniqueDeckName(name);
+  decks.push({ id: crypto.randomUUID(), name: finalName, commander: null, items: [], _createdAt: Date.now(), _updatedAt: Date.now() });
+  saveDecks();
+  document.getElementById("deckName").value="";
+  renderDecks();
+};
+
+document.getElementById("deckSelect").onchange = ()=>{
+  setCommanderLabelForSelectedDeck();
+  const d = selectedDeck();
+  document.getElementById("deckCmdName").value = d?.commander?.name || "";
+  document.getElementById("deckCmdSet").value  = d?.commander?.set || "";
+  document.getElementById("deckCmdCn").value   = d?.commander?.cn  || "";
+};
+
+document.getElementById("btnSetCommander").onclick = ()=>{
+  const d = selectedDeck();
+  if(!d){ alert("Selecciona un mazo."); return; }
+
+  const name = document.getElementById("deckCmdName").value.trim();
+  const set  = document.getElementById("deckCmdSet").value.trim().toUpperCase();
+  const cn   = document.getElementById("deckCmdCn").value.trim();
+  if(!name){ alert("Pon al menos el nombre del comandante."); return; }
+
+  d.commander = { name, set, cn, key: (set && cn) ? `${set}#${cn}` : "" };
+  touchDeck(d);
+  saveDecks();
+  renderDecks();
+  alert("Comandante guardado ✅");
+};
+
+document.getElementById("btnClearCommander").onclick = ()=>{
+  const d = selectedDeck();
+  if(!d){ alert("Selecciona un mazo."); return; }
+  d.commander = null;
+  touchDeck(d);
+  saveDecks();
+  document.getElementById("deckCmdName").value="";
+  document.getElementById("deckCmdSet").value="";
+  document.getElementById("deckCmdCn").value="";
+  renderDecks();
+};
+
+document.getElementById("btnAddToDeck").onclick = ()=>{
+  const d = selectedDeck();
+  if(!d){ alert("Selecciona un mazo."); return; }
+
+  const name = document.getElementById("deckCardName").value.trim();
+  const set = document.getElementById("deckCardSet").value.trim().toUpperCase();
+  const cn = document.getElementById("deckCardCn").value.trim();
+  const qty = Math.max(1, parseInt(document.getElementById("deckCardQty").value||"1",10));
+
+  if(!name || !set || !cn){ alert("Rellena nombre + setCode + nº."); return; }
+
+  const key = `${set}#${cn}`;
+  const existing = d.items.find(it=> (it.key===key && it.name.toLowerCase()===name.toLowerCase()));
+  if(existing) existing.qty += qty;
+  else d.items.push({ key, name, set, cn, qty });
+
+  touchDeck(d);
+  saveDecks();
+  renderDecks();
+};
+
+document.getElementById("btnDeckExport").onclick = ()=>{
+  const blob = new Blob([JSON.stringify(decks,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "mazos_mtg_rosita.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+document.getElementById("btnDeckImport").onclick = ()=>{
+  const inp = document.createElement("input");
+  inp.type="file";
+  inp.accept=".json,.txt,application/json,text/plain";
+  inp.onchange = async ()=>{
+    const f = inp.files?.[0];
+    if(!f) return;
+
+    const text = await f.text();
+    const ext = (f.name.split(".").pop() || "").toLowerCase();
+
+    try{
+      let imported = null;
+      if(ext === "json") imported = parseDecksJson(text);
+      else if(ext === "txt") imported = parseDecksTxt(text);
+      else {
+        try { imported = parseDecksJson(text); }
+        catch { imported = parseDecksTxt(text); }
+      }
+
+      if(!Array.isArray(imported) || !imported.length){
+        alert("No se detectaron mazos en el archivo.");
+        return;
+      }
+
+      imported.forEach(d=>{
+        const finalName = uniqueDeckName(d.name || "Mazo");
+        decks.push({
+          id: crypto.randomUUID(),
+          name: finalName,
+          items: Array.isArray(d.items) ? d.items : [],
+          commander: d.commander || null,
+          _createdAt: d._createdAt || Date.now(),
+          _updatedAt: Date.now()
+        });
+      });
+
+      saveDecks();
+      normalizeDecks();
+      renderDecks();
+      alert(`Importados: ${imported.length} mazo(s).`);
+    }catch(e){
+      alert("No se pudo importar: " + (e.message||e));
+    }
+  };
+  inp.click();
+};
+
+// Botones nuevos 1–5
+document.getElementById("btnDeckRename").onclick = ()=> renameDeck(selectedDeck()?.id);
+document.getElementById("btnDeckDuplicate").onclick = ()=> duplicateDeck(selectedDeck()?.id);
+document.getElementById("btnDeckDelete").onclick = ()=> deleteDeck(selectedDeck()?.id);
+
+document.getElementById("btnDeckExportOneTxt").onclick = ()=> exportOneDeckTxt(selectedDeck()?.id);
+document.getElementById("btnDeckExportOneJson").onclick = ()=> exportOneDeckJson(selectedDeck()?.id);
+document.getElementById("btnDeckCopyTxt").onclick = ()=> copyDeckTxt(selectedDeck()?.id);
+
+// buscador/orden lista mazos
+document.getElementById("deckListQ").addEventListener("input", ()=> renderDecks());
+document.getElementById("deckListSort").addEventListener("change", ()=> renderDecks());
+
+/* Deck view UI */
+document.getElementById("btnDeckBack").onclick = ()=> showPage("mazos");
+document.getElementById("deckViewQ").oninput = async (e)=>{ deckViewState.q = e.target.value; await renderDeckView(true); };
+document.getElementById("deckViewGroup").onchange = async (e)=>{ deckViewState.group = e.target.value; await renderDeckView(true); };
+
+document.getElementById("btnDeckViewExportTxt").onclick = ()=>{
+  const d = decks.find(x=>x.id===deckViewState.deckId);
+  if(!d) return;
+  const txt = deckToText(d);
+  const blob = new Blob([txt], {type:"text/plain;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `mazo_${(d.name||"mazo").replace(/\s+/g,"_")}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+document.getElementById("btnDeckViewDelete").onclick = ()=>{
+  if(!deckViewState.deckId) return;
+  deleteDeck(deckViewState.deckId);
+};
+
+/************************************************************
+ * Tabs render
+ ************************************************************/
+function initTabs(){
+  const tabsEl = document.getElementById("tabs");
+  tabsEl.innerHTML = "";
+  pages.forEach(p=>{
+    const b = document.createElement("button");
+    b.className = "tabbtn";
+    b.dataset.page = p.id;
+    b.textContent = p.label;
+    tabsEl.appendChild(b);
+  });
+
+  tabsEl.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".tabbtn");
+    if(!btn) return;
+    showPage(btn.dataset.page);
+  });
+}
+
+/************************************************************
+ * ARRANQUE
+ ************************************************************/
+document.addEventListener("DOMContentLoaded", ()=>{
+  applySettings();
+  initTabs();
+
+  // Colección: filtro por favoritos
+  const colFavSel = document.getElementById("colFavFilter");
+  if(colFavSel){
+    colFavSel.value = settings.colFavFilter || "all";
+    colFavSel.addEventListener("change", ()=>{
+      settings.colFavFilter = colFavSel.value;
+      saveSettings();
+      renderColeccion();
+    });
+  }
+
+
+
+  // Deseos
+  const bWishAdd = document.getElementById("btnWishAdd");
+  if(bWishAdd) bWishAdd.onclick = ()=> addWishFromInputs();
+  const bWishRef = document.getElementById("btnWishRefresh");
+  if(bWishRef) bWishRef.onclick = ()=> refreshWishlistPrices();
+  const wq = document.getElementById("wishQ");
+  if(wq) wq.oninput = ()=> renderWishlist();
+
+  const bDeckToWish = document.getElementById("btnDeckToWish");
+  if(bDeckToWish) bDeckToWish.onclick = ()=> addMissingDeckToWishlist(selectedDeck());
+
+  document.getElementById("sortKey").value = sortState.key;
+  document.getElementById("sortDir").value = sortState.dir;
+
+  ensureSearchOptions();
+  loadSearchStateToUI();
+
+  const startPage = getLastTab();
+  showPage(startPage);
+
+  renderCardsTableFull();
+  renderDecks();
+  updateInvestmentUI();
+  renderSalesTable();
+
+  loadIntroSets();
+});
+function renderSalesTable(){
+  const tbody = document.querySelector("#tblSales tbody");
+  const pill = document.getElementById("salesCountPill");
+  if(!tbody || !pill) return;
+
+  const list = cards.filter(c=>!!c.sale);
+  pill.textContent = "En venta: " + list.reduce((a,c)=>a+(c.qty||1),0);
+
+  tbody.innerHTML = "";
+  for(const c of list){
+    const tr = document.createElement("tr");
+    tr.dataset.id = c.id;
+
+    const bg = gradientFromColorIds(c.colorId);
+    tr.style.backgroundImage = bg || "none";
+    if(!bg) tr.style.backgroundColor = PASTEL.C;
+
+    tr.innerHTML = `
+      <td class="center"><button class="starBtn" data-star="1" title="Favorito">${c.fav ? "★" : "☆"}</button></td>
+      <td><b>${escapeHtml(c.name)}</b><div class="small">${escapeHtml(c.inputName||"")}</div></td>
+      <td class="mono">${escapeHtml(c.setCode||"")}</td>
+      <td class="mono">${escapeHtml(c.collectorNumber||"")}</td>
+      <td class="right"><span class="mono">${escapeHtml(c.qty||1)}</span></td>
+      <td class="right mono">${escapeHtml(c.priceText||"")}</td>
+      <td class="right mono">${escapeHtml(c.bestSell||"")}</td>
+      <td class="right"><button class="btn ghost" data-sold="1" onclick="markSoldById('${c.id}')">Vendida</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+/* === FIX: ventas "Vendida" (handler directo) === */
+function markSoldById(id){
+  const item = cards.find(x=>x.id===id);
+  if(!item) return;
+
+  // Descontar 1 unidad; si era la última, eliminar la carta
+  item.qty = Math.max(0, (item.qty||1) - 1);
+  if(item.qty<=0){
+    cards = cards.filter(x=>x.id!==item.id);
+  }
+
+  // Guardar y re-renderizar lo que ya existe en la app
+  saveCards();
+  renderCardsTableFull();
+  renderSalesTable();
+  updateCardsMetrics();
+  updateInvestmentUI();
+}
+
+
+/************************************************************
+ * Nube (desactivado): sin Supabase
+ * - Se mantiene el guardado local (localStorage)
+ * - Estas funciones quedan como no-ops para no romper el resto del código
+ ************************************************************/
+function getAppPayload(){
+  return { cards, decks, wishlist, settings, sortState };
+}
+
+// ====================================================
+// FIREBASE: Guardar y cargar datos en la nube
+// ====================================================
+
+async function cloudSaveAll() {
+  const user = window._fbCurrentUser;
+  if (!user) return;
+  const { doc, setDoc } = window._fbFns;
+  const db = window._fbDb;
+  try {
+    const payload = {
+      cards,
+      decks,
+      wishlist,
+      settings,
+      sortState,
+      updatedAt: Date.now()
+    };
+    await setDoc(doc(db, "users", user.uid, "data", "main"), payload);
+  } catch(e) {
+    console.error("Error al guardar en nube:", e);
+  }
+}
+
+async function cloudLoadAll() {
+  const user = window._fbCurrentUser;
+  if (!user) return false;
+  const { doc, getDoc } = window._fbFns;
+  const db = window._fbDb;
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid, "data", "main"));
+    if (!snap.exists()) return false;
+    const data = snap.data();
+    if (Array.isArray(data.cards))    cards    = data.cards;
+    if (Array.isArray(data.decks))    decks    = data.decks;
+    if (Array.isArray(data.wishlist)) wishlist = data.wishlist;
+    if (data.settings)  settings  = { ...DEFAULT_SETTINGS, ...data.settings };
+    if (data.sortState) sortState = data.sortState;
+    // Persistir localmente también
+    saveCards(); saveDecks(); saveWishlist(); saveSettings();
+    return true;
+  } catch(e) {
+    console.error("Error al cargar de nube:", e);
+    return false;
+  }
+}
+
+/************************************************************
+ * Auth local: login/registro + recordar
+ ************************************************************/
+const REMEMBER_KEY = "mtg_rosita_remember_v1";
+
+function showLogin(){
+  document.body.classList.add("not-authenticated");
+  document.body.classList.remove("app-enter");
+
+  const scr = document.getElementById("authScreen");
+  if(scr){
+    scr.style.display = "flex";
+    scr.classList.remove("is-exit");
+    void scr.offsetWidth;
+    scr.classList.add("is-enter");
+  }
+}
+
+function showApp(){
+  const scr = document.getElementById("authScreen");
+  if(scr){
+    scr.classList.remove("is-enter");
+    scr.classList.add("is-exit");
+    setTimeout(()=>{ scr.style.display = "none"; }, 380);
+  }
+  document.body.classList.remove("not-authenticated");
+  document.body.classList.add("app-enter");
+  setTimeout(()=> document.body.classList.remove("app-enter"), 450);
+}
+
+function setAuthTop(user){
+  const status = document.getElementById("authStatus");
+  const btnOut = document.getElementById("btnSignOutTop");
+  if(status){
+    status.textContent = user ? `👤 ${user.username || ""} ${user.email ? "("+user.email+")" : ""}`.trim() : "No logueado";
+  }
+  if(btnOut) btnOut.style.display = user ? "" : "none";
+}
+
+function setMsg(text, ok=false){
+  const msg = document.getElementById("authMsg");
+  if(!msg) return;
+  msg.style.color = ok ? "#16a34a" : "#ef4444";
+  msg.textContent = text || "";
+}
+
+function setMsg2(text, ok=false){
+  const msg = document.getElementById("authMsg2");
+  if(!msg) return;
+  msg.style.color = ok ? "#16a34a" : "#ef4444";
+  msg.textContent = text || "";
+}
+
+function showAuthView(which){
+  const login = document.getElementById("authLoginView");
+  const signup = document.getElementById("authSignupView");
+  if(!login || !signup) return;
+  if(which === "signup"){
+    login.style.display = "none";
+    signup.style.display = "grid";
+  }else{
+    signup.style.display = "none";
+    login.style.display = "grid";
+  }
+  try{ setMsg(""); }catch{}
+  try{ setMsg2(""); }catch{}
+}
+
+function isValidEmail(email){
+  const e = String(email||"").trim();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
+}
+
+function isStrongPassword(pw){
+  const p = String(pw||"");
+  if(p.length < 8) return false;
+  if(!/[A-Za-z]/.test(p)) return false;
+  if(!/\d/.test(p)) return false;
+  return true;
+}
+
+function getRememberPref(){
+  try{
+    const v = localStorage.getItem(REMEMBER_KEY);
+    return v !== "0";
+  }catch{ return true; }
+}
+function setRememberPref(v){
+  try{ localStorage.setItem(REMEMBER_KEY, v ? "1" : "0"); }catch{}
+}
+
+function signOutAndReturnToLogin(){
+  clearSession();
+  setAuthTop(null);
+  showLogin();
+}
+
+async function initAuth() {
+  const emailEl   = document.getElementById("authEmail");
+  const passEl    = document.getElementById("authPass");
+  const chkRem    = document.getElementById("authRemember");
+  const btnIn     = document.getElementById("btnSignIn");
+  const btnUp     = document.getElementById("btnSignUp");
+  const btnOutTop = document.getElementById("btnSignOutTop");
+
+  const suUserEl  = document.getElementById("suUsername");
+  const suEmailEl = document.getElementById("suEmail");
+  const suEmail2El= document.getElementById("suEmail2");
+  const suPassEl  = document.getElementById("suPass");
+  const suPass2El = document.getElementById("suPass2");
+  const btnCreate = document.getElementById("btnCreateAccount");
+  const btnBack   = document.getElementById("btnBackToLogin");
+
+  showLogin();
+  showAuthView("login");
+
+  // Volver al login
+  if (btnBack) btnBack.onclick = () => showAuthView("login");
+
+  // Mostrar registro
+  if (btnUp) btnUp.onclick = () => {
+    setMsg("");
+    showAuthView("signup");
+    if (emailEl?.value && suEmailEl) suEmailEl.value = emailEl.value;
+  };
+
+  // Cerrar sesión
+  if (btnOutTop) btnOutTop.onclick = async () => {
+    await window._fbFns.signOut(window._fbAuth);
+    clearSession();
+    setAuthTop(null);
+    showLogin();
+  };
+
+  // ── CREAR CUENTA ──
+  if (btnCreate) btnCreate.onclick = async () => {
+    setMsg2("");
+    const username = (suUserEl?.value || "").trim();
+    const email1   = (suEmailEl?.value || "").trim();
+    const email2   = (suEmail2El?.value || "").trim();
+    const pass1    = suPassEl?.value || "";
+    const pass2    = suPass2El?.value || "";
+
+    if (!username)       return setMsg2("Escribe un nombre de usuario.");
+    if (!email1 || !email2) return setMsg2("Completa y confirma el email.");
+    if (email1.toLowerCase() !== email2.toLowerCase()) return setMsg2("Los emails no coinciden.");
+    if (!isValidEmail(email1)) return setMsg2("El email no es válido.");
+    if (!pass1 || !pass2) return setMsg2("Completa y repite la contraseña.");
+    if (pass1 !== pass2) return setMsg2("Las contraseñas no coinciden.");
+    if (!isStrongPassword(pass1)) return setMsg2("Mínimo 8 caracteres, letras y números.");
+
+    try {
+      const { createUserWithEmailAndPassword, doc, setDoc } = window._fbFns;
+      const cred = await createUserWithEmailAndPassword(window._fbAuth, email1, pass1);
+      // Guardar username en Firestore
+      await setDoc(doc(window._fbDb, "users", cred.user.uid, "profile", "main"), {
+        username,
+        email: email1,
+        createdAt: Date.now()
+      });
+      showAuthView("login");
+      if (emailEl) emailEl.value = email1;
+      setMsg("Cuenta creada ✅ Ya puedes iniciar sesión.", true);
+    } catch(e) {
+      const msgs = {
+        "auth/email-already-in-use": "Ya existe una cuenta con ese email.",
+        "auth/weak-password": "Contraseña demasiado débil.",
+        "auth/invalid-email": "Email no válido."
+      };
+      setMsg2(msgs[e.code] || "Error al crear cuenta: " + e.message);
+    }
+  };
+
+  // ── INICIAR SESIÓN ──
+  if (btnIn) btnIn.onclick = async () => {
+    setMsg("");
+    const email    = (emailEl?.value || "").trim();
+    const password = passEl?.value || "";
+    if (!email || !password) return setMsg("Completa email y contraseña.");
+
+    try {
+      const { signInWithEmailAndPassword } = window._fbFns;
+      const cred = await signInWithEmailAndPassword(window._fbAuth, email, password);
+      window._fbCurrentUser = cred.user;
+      setAuthTop({ email: cred.user.email, username: cred.user.email.split("@")[0] });
+      await cloudLoadAll();
+      showApp();
+    } catch(e) {
+      const msgs = {
+        "auth/invalid-credential": "Email o contraseña incorrectos.",
+        "auth/user-not-found": "No existe esa cuenta.",
+        "auth/wrong-password": "Contraseña incorrecta.",
+        "auth/too-many-requests": "Demasiados intentos. Espera un momento."
+      };
+      setMsg(msgs[e.code] || "Error: " + e.message);
+    }
+  };
+
+  // El onAuthStateChanged del módulo de Firebase maneja el auto-login
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  initAuth();
+});
+
+
+</script>
+
+</body>
+</html>
