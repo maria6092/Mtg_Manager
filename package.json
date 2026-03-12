@@ -1,0 +1,29 @@
+{
+  "name": "mtg_manager",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maria6092/Mtg_Manager.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/maria6092/Mtg_Manager/issues"
+  },
+  "homepage": "https://github.com/maria6092/Mtg_Manager#readme",
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
+  }
+}
+{
+  "scripts": {
+    "deploy": "gh-pages -d ."
+  }
+}
