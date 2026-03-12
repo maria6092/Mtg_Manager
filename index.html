@@ -4843,12 +4843,23 @@ async function initAuth(){
 
       try{
         const { createUserWithEmailAndPassword, signOut, doc, setDoc } = window._fbFns;
+       const { signOut } = window._fbFns;
+
         const cred = await createUserWithEmailAndPassword(window._fbAuth, email1, pass1);
+
         await setDoc(doc(window._fbDb, "users", cred.user.uid, "profile", "main"), {
           username,
           email: email1,
           createdAt: Date.now()
         });
+
+        // Firebase inicia sesión automáticamente
+        // cerramos sesión para volver limpio al login
+        await signOut(window._fbAuth);
+        window._fbCurrentUser = null;
+
+        showLogin();
+        showAuthView("login");  
 
         await signOut(window._fbAuth);
         window._fbCurrentUser = null;
@@ -4902,7 +4913,35 @@ async function initAuth(){
     };
   }
 }
+btnLogin.onclick = async () => {
+  setMsg("");
+  const email = emailEl.value.trim();
+  const pass  = passEl.value;
+  if (!email || !pass) return setMsg("Introduce email y contraseña.");
 
+  try {
+    const { signInWithEmailAndPassword } = window._fbFns;
+    await signInWithEmailAndPassword(window._fbAuth, email, pass);
+
+    // NO cargar datos aquí
+    // Firebase lo hará en onAuthStateChanged
+  } catch(e) {
+    setMsg("No se pudo iniciar sesión: " + e.message);
+  }
+};
+onAuthStateChanged(window._fbAuth, async (user) => {
+
+  if (user) {
+    window._fbCurrentUser = user;
+
+    await cloudLoadAll();
+    showApp();
+
+  } else {
+    showLogin();
+  }
+
+});
 
 window.addEventListener("DOMContentLoaded", () => {
   initAuth();
