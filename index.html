@@ -4572,6 +4572,16 @@ function renderSalesTable(){
 }
 
 /* === FIX: ventas "Vendida" (handler directo) === */
+function renderTabs(){
+  initTabs();
+}
+
+async function renderDeckDetail(){
+  if(deckViewState?.deckId && document.querySelector('section[data-page="deck_view"]:not(.is-hidden)')){
+    await renderDeckView(true);
+  }
+}
+
 function markSoldById(id){
   const item = cards.find(x=>x.id===id);
   if(!item) return;
@@ -4646,14 +4656,14 @@ async function cloudLoadAll(){
     try{ normalizeCards(); }catch{}
     try{ normalizeDecks(); }catch{}
     try{ applySettings(); }catch{}
-    try{ renderTabs(); }catch{}
+    try{ initTabs(); }catch{}
     try{ renderCardsTableFull(); }catch{}
     try{ renderSalesTable(); }catch{}
     try{ updateCardsMetrics(); }catch{}
     try{ updateInvestmentUI(); }catch{}
     try{ renderWishlist(); }catch{}
     try{ renderDecks(); }catch{}
-    try{ renderDeckDetail(); }catch{}
+    try{ await renderDeckDetail(); }catch{}
     try{ renderColeccion(); }catch{}
     try{ renderSearchResults(); }catch{}
     try{ renderColorStats(); }catch{}
@@ -4845,6 +4855,12 @@ async function initAuth(){
         showAuthView("login");
         if(emailEl) emailEl.value = email1;
         if(passEl) passEl.value = "";
+        if(suUserEl) suUserEl.value = "";
+        if(suEmailEl) suEmailEl.value = "";
+        if(suEmail2El) suEmail2El.value = "";
+        if(suPassEl) suPassEl.value = "";
+        if(suPass2El) suPass2El.value = "";
+        setMsg2("");
         setMsg("Cuenta creada ✅ Ya puedes iniciar sesión.", true);
       }catch(e){
         const msgs = {
@@ -4871,10 +4887,9 @@ async function initAuth(){
         setRememberPref(remember);
         const { signInWithEmailAndPassword, setPersistence, browserLocalPersistence, browserSessionPersistence } = window._fbFns;
         await setPersistence(window._fbAuth, remember ? browserLocalPersistence : browserSessionPersistence);
-        const cred = await signInWithEmailAndPassword(window._fbAuth, email, password);
-        window._fbCurrentUser = cred.user;
-        await cloudLoadAll();
-        showApp();
+        setMsg("Entrando...", true);
+        await signInWithEmailAndPassword(window._fbAuth, email, password);
+        // onAuthStateChanged se encarga de cargar datos y mostrar la app de forma consistente.
       }catch(e){
         const msgs = {
           "auth/invalid-credential": "Email o contraseña incorrectos.",
