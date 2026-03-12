@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>💗 MTG Manager</title>
+  <title>MTG Manager</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -11,10 +11,10 @@
       --bg:#fff0f6;
       --card:#ffffff;
 
-      --pink:#f06292;
-      --pink2:#d81b60;
-      --soft:#f8bbd0;
-      --line:#f2c5d5;
+      --pink:#f25790;
+      --pink2:#d9115a;
+      --soft:#f2d8df;
+      --line:#f28db2;
 
       --text:#4a2c37;
       --muted:#7a4a5a;
@@ -28,15 +28,22 @@
       --table-bg:#ffffff;
 
       --base-font: 16px;
-    }
+    
+  /* Derived theme vars (computed in JS too) */
+  --accent-08: rgba(0,0,0,.08);
+  --accent-12: rgba(0,0,0,.12);
+  --accent-15: rgba(0,0,0,.15);
+  --card-85: rgba(255,255,255,.78);
+
+}
 
     html{ font-size: var(--base-font); }
     *{ box-sizing:border-box; }
 
     body{
       margin:0;
-      font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
-      background:linear-gradient(180deg, var(--bg), var(--card) 70%);
+      font-family: ui-rounded;
+      background: var(--bg);
       color:var(--text);
     }
 
@@ -56,33 +63,47 @@
 
     header{
       position:sticky; top:0; z-index:20;
-      background:var(--bg);
-      opacity:0.95;
-      backdrop-filter: blur(12px);
+      background: var(--card-85);
+      backdrop-filter: blur(10px);
       border-bottom:1px solid var(--line);
     }
-    body[data-theme="black"] header{
-      background: rgba(17,24,39,.78);
-      border-bottom:1px solid var(--line);
-    }
-
-    .wrap{max-width:1700px;margin:0 auto;padding:14px;}
+.wrap{max-width:1700px;margin:0 auto;padding:14px;}
     main .wrap{padding-top:18px;padding-bottom:30px}
 
     .topbar{
       display:flex;gap:12px;align-items:center;justify-content:space-between;
       flex-wrap:wrap;
     }
-    .brand{display:flex;align-items:center;gap:10px;}
+   .brand{
+      display:flex;
+      align-items:center;   
+    }
+    .brand h1{
+      line-height:1.1;
+    }
     .logo{
-      width:40px;height:40px;border-radius:14px;
-      background: linear-gradient(135deg, var(--card), var(--soft));
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      background: radial-gradient(circle at 30% 30%, #fff, var(--soft));
       border:1px solid var(--line);
       box-shadow: var(--shadow);
-      display:grid;place-items:center;
-      font-size:20px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       flex: 0 0 auto;
     }
+
+    .logo img{
+      max-width:100%;
+      max-height:100%;
+      width:auto;
+      height:auto;
+      object-fit:contain;
+      display:block;
+    }
+
+
     h1{font-size:18px;margin:0;color:var(--pink2)}
 
     .tabs{
@@ -97,21 +118,22 @@
       border:1px solid var(--line);
       background:var(--card);
       color:var(--text);
+      font-family: ui-rounded;
       padding:10px 12px;
       border-radius:999px;
       cursor:pointer;
       transition:.15s;
-      box-shadow: 0 6px 14px rgba(240,98,146,.08);
+      box-shadow: 0 6px 14px var(--accent-08);
       user-select:none;
       touch-action: manipulation;
       white-space:nowrap;
     }
     .tabbtn:hover{transform:translateY(-1px)}
     .tabbtn.active{
-      background:linear-gradient(180deg, var(--card), var(--soft));
+      background:linear-gradient(180deg,#fff, var(--soft));
       border-color:var(--soft);
       color:var(--pink2);
-      box-shadow: var(--shadow);
+      box-shadow: 0 10px 20px var(--accent-12);
     }
     body[data-theme="black"] .tabbtn.active{
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
@@ -128,7 +150,7 @@
     }
 
     .panel.soft{
-      background: linear-gradient(180deg, var(--bg), var(--card));
+      background: linear-gradient(180deg, color-mix(in srgb, var(--soft) 55%, white), #fff);
     }
 
     .h2{ margin:0 0 8px; color:var(--pink2); font-size:1rem; }
@@ -164,10 +186,11 @@
       font-size:.9rem;
       background:var(--input-bg);
       color:var(--input-text);
+      font-family:ui-rounded;
     }
     input:focus, select:focus{
       border-color:var(--pink);
-      box-shadow:0 0 0 3px rgba(240,98,146,.15);
+      box-shadow:0 0 0 3px var(--accent-15);
     }
 
     .btn{
@@ -180,6 +203,7 @@
       transition:.15s;
       font-weight:600;
       touch-action: manipulation;
+      font-family: ui-rounded;
     }
     .btn:hover{background:var(--pink2)}
     .btn.ghost{
@@ -187,6 +211,7 @@
       border:1px solid var(--line);
       color:var(--text);
       font-weight:600;
+      font-family: ui-rounded;
     }
     .btn.ghost:hover{border-color:var(--soft); color:var(--pink2)}
     body[data-theme="black"] .btn.ghost:hover{ color: var(--text); }
@@ -195,6 +220,7 @@
       padding:6px 10px;
       border-radius:999px;
       font-size:.78rem;
+      font-family: ui-rounded;
     }
     .btn.danger{
       background:#ef4444;
@@ -207,600 +233,1313 @@
     .spacer{flex:1 1 auto}
     .hint{font-size:.75rem;color:var(--muted);margin-top:8px;}
     .pill{
-      display:inline-block;
-      padding:3px 10px;
-      border-radius:999px;
-      font-size:.78rem;
-      font-weight:600;
-      background:var(--soft);
-      color:var(--pink2);
+      display:inline-flex;align-items:center;gap:8px;
+      padding:6px 10px;border-radius:999px;
+      background:rgba(255,255,255,.6);
       border:1px solid var(--line);
+      font-size:.75rem;color:var(--muted);
+    }
+    body[data-theme="black"] .pill{ background: rgba(255,255,255,.04); }
+
+    .pillRow{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+    .mono{font-family:var(--mono)}
+    .small{font-size:.75rem;color:var(--muted)}
+    .right{text-align:right}
+    .chk{width:18px;height:18px;accent-color: var(--pink);}
+
+input[type="range"]{ accent-color: var(--pink); }
+
+    .err{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      background:#fff3f5;
+      border:1px solid #ffd0da;
+      color:#8a1f35;
+      display:none;
+      white-space:pre-wrap;
+    }
+    body[data-theme="black"] .err{
+      background: rgba(220,38,38,.15);
+      border-color: rgba(220,38,38,.35);
+      color: #fecaca;
     }
 
+    .notice{
+      background: #fff1f6;
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      border-radius: 14px;
+      color: #8a1b3e;
+      font-size: .9rem;
+    }
+
+    .tablewrap{margin-top:12px; overflow:auto;}
     table{
       width:100%;
-      border-collapse:collapse;
-      font-size:.88rem;
-      background:var(--table-bg);
-      border-radius:var(--radius);
+      border-collapse:separate;
+      border-spacing:0;
       overflow:hidden;
-      box-shadow: var(--shadow);
-    }
-    thead{
-      background:linear-gradient(180deg, var(--soft), var(--card));
-      border-bottom:2px solid var(--line);
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:var(--table-bg);
+      min-width: 980px;
     }
     thead th{
-      padding:10px 8px;
-      font-weight:600;
-      text-align:left;
+      position:sticky;top:0;
+      background:linear-gradient(180deg,color-mix(in srgb, var(--soft) 30%, white),#fff);
       color:var(--pink2);
+      font-size:.75rem;
+      padding:10px 8px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
       white-space:nowrap;
+      z-index:1;
+    }
+    body[data-theme="black"] thead th{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      color: var(--text);
     }
     tbody td{
       padding:8px;
       border-bottom:1px solid var(--line);
+      vertical-align:middle;
+      font-size:.82rem;
+      background: transparent;
     }
-    tbody tr:hover{
-      background:rgba(240,98,146,.04);
+    body[data-theme="black"] tbody td{
+      border-bottom: 1px solid rgba(255,255,255,.06);
     }
+    tbody tr:hover{filter: brightness(0.985);}
 
-    .sortable{cursor:pointer;user-select:none;}
-    .sortable:hover{color:var(--pink);}
-
-    /* Auth */
-    #authScreen{
-      position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;
-      background:linear-gradient(135deg, var(--bg), var(--soft));
-      display:flex;align-items:center;justify-content:center;
-      padding:20px;
-    }
-    .auth-card{
+    .icon{
+      width:30px;height:30px;
+      display:inline-block;vertical-align:middle;
+      border-radius:10px;border:1px solid var(--line);
       background:var(--card);
+    }
+
+    .tag{
+      display:inline-block;
+      padding:4px 8px;border-radius:999px;
       border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      width:100%;max-width:420px;
-      padding:30px;
+      font-size:.75rem;
+      white-space:nowrap;
+    }
+    .tag.r-common   { background:#ffffff; border-color:#f2c5d5; color: #2b2b2b; }
+    .tag.r-uncommon { background:#f1f1f1; border-color:#d0d0d0; color:#444; }
+    .tag.r-rare     { background:#fff1b8; border-color:#e7c85f; color:#7a5600; }
+    .tag.r-mythic   { background:#ffd0a6; border-color:#ff9f5a; color:#7a2f00; }
+    .tag.r-special  { background:#ffe3ed; border-color:#f8bbd0; color:#b0184d; }
+
+    td.rarity-cell{
+      background: transparent !important;
+      background-image: none !important;
+    }
+    td.rarity-cell .tag{
+      box-shadow: 0 1px 0 rgba(0,0,0,.05);
+    }
+
+    .two{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media(max-width: 900px){ .two{grid-template-columns:1fr} }
+
+    .list{
       display:flex;
       flex-direction:column;
-      gap:16px;
+      gap:8px;
+      padding:6px;
     }
-    .auth-logo{
-      width:70px;height:70px;
-      margin:0 auto 10px;
-      border-radius:20px;
-      background:linear-gradient(135deg, var(--soft), var(--pink));
-      display:grid;place-items:center;
-      font-size:34px;
-      box-shadow:var(--shadow);
-    }
-    .auth-title{
-      text-align:center;
-      font-size:1.6rem;
-      margin:0 0 6px;
-      color:var(--pink2);
-    }
-    .auth-subtitle{
-      text-align:center;
-      font-size:.88rem;
-      color:var(--muted);
-      margin-bottom:12px;
-    }
-    #authMsg, #authMsg2{
-      font-size:.84rem;
-      text-align:center;
-      min-height:20px;
-    }
-    .auth-footer{
-      text-align:center;
-      font-size:.82rem;
-      color:var(--muted);
-      margin-top:8px;
-    }
-
-    #authScreen.is-enter .auth-card{
-      animation: slideInUp 0.4s ease-out;
-    }
-    #authScreen.is-exit .auth-card{
-      animation: slideOutDown 0.35s ease-in;
-    }
-    @keyframes slideInUp{
-      from{transform:translateY(30px);opacity:0}
-      to{transform:translateY(0);opacity:1}
-    }
-    @keyframes slideOutDown{
-      from{transform:translateY(0);opacity:1}
-      to{transform:translateY(30px);opacity:0}
-    }
-
-    body.not-authenticated header, body.not-authenticated main{
-      opacity:0; pointer-events:none;
-    }
-    body.app-enter header, body.app-enter main{
-      animation: fadeInContent 0.45s ease-out forwards;
-    }
-    @keyframes fadeInContent{
-      from{opacity:0}
-      to{opacity:1}
-    }
-
-    /* Dark theme adjustments */
-    body[data-theme="black"] {
-      background: linear-gradient(180deg, #111827, #1f2937);
-      color: #e5e7eb;
-    }
-    body[data-theme="black"] .panel,
-    body[data-theme="black"] table,
-    body[data-theme="black"] input,
-    body[data-theme="black"] select {
-      background: rgba(31, 41, 55, 0.8);
-      border-color: rgba(75, 85, 99, 0.3);
-      color: #e5e7eb;
-    }
-    body[data-theme="black"] thead {
-      background: linear-gradient(180deg, rgba(248,187,208,.08), rgba(31,41,55,.8));
-    }
-    body[data-theme="black"] th{ color: #f9a8d4; }
-    body[data-theme="black"] .h2,
-    body[data-theme="black"] .h3{ color: #f9a8d4; }
-    body[data-theme="black"] tbody tr:hover{
-      background: rgba(240,98,146,.06);
-    }
-    body[data-theme="black"] #authScreen{
-      background: linear-gradient(135deg, #111827, #1f2937);
-    }
-    body[data-theme="black"] .auth-card{
-      background: rgba(31, 41, 55, 0.95);
-      border-color: rgba(75, 85, 99, 0.3);
-    }
-    body[data-theme="black"] label{
-      color: #9ca3af;
-    }
+  
+    .deckListScrollFix{
+       max-height:480px;
+        overflow-y:auto;
+        overflow-x:hidden;
+        padding:8px;
+        position:relative;
+        contain: paint;
+        -webkit-mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
+        mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
+      }
 
     .cardrow{
       border:1px solid var(--line);
-      border-radius:12px;
+      border-radius:14px;
+      background:var(--card);
       padding:10px;
-      background:var(--card);
-      box-shadow:0 4px 12px rgba(240,98,146,.06);
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-    }
-    .cardrow-left{flex:0 0 80px;}
-    .cardrow-main{flex:1 1 auto;}
-    .cardimg{
-      width:80px;height:112px;border-radius:8px;object-fit:cover;
-      background:linear-gradient(135deg, var(--soft), var(--pink));
-    }
-    .cardrow-name{font-weight:600;color:var(--pink2);margin-bottom:4px}
-    .cardrow-info{font-size:.78rem;color:var(--muted);line-height:1.4}
-
-    .deck-card{
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:12px;
-      background:var(--card);
-      box-shadow:0 4px 12px rgba(240,98,146,.06);
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
       cursor:pointer;
-      transition:.15s;
     }
-    .deck-card:hover{
-      transform:translateY(-2px);
-      box-shadow:var(--shadow);
-    }
-    .deck-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-    .deck-icon{
-      width:34px;height:34px;border-radius:10px;
-      background:linear-gradient(135deg, var(--soft), var(--pink));
-      display:grid;place-items:center;
-      font-size:18px;
-    }
-    .deck-name{font-size:1rem;font-weight:600;color:var(--pink2)}
-    .deck-count{font-size:.78rem;color:var(--muted)}
+    .cardrow:hover{background: color-mix(in srgb, var(--soft) 55%, white)}
+    body[data-theme="black"] .cardrow:hover{ background: rgba(255,255,255,.03); }
 
-    .chart-panel{
-      background:var(--card);
+    .cardrow b{color:var(--pink2)}
+    body[data-theme="black"] .cardrow b{ color: var(--text); }
+
+    .mini{
+      display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+      color:var(--muted);font-size:.75rem;
+    }
+
+    .footerbar{
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+      margin-top:12px;
+    }
+
+    section[data-page]{
+      transition: opacity .18s ease, transform .18s ease;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    section[data-page].is-hidden{
+      opacity: 0;
+      transform: translateY(6px);
+      pointer-events:none;
+    }
+
+    .settingsGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 700px){ .settingsGrid{ grid-template-columns: 1fr; } }
+
+    .toggleRow{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
       border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:16px;
+      border-radius:14px;
+      background: var(--card);
     }
-    body[data-theme="black"] .chart-panel{
-      background: rgba(31,41,55,.8);
+    .toggleRow input{ width:18px; height:18px; }
+
+    .moneyGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
     }
-  </style>
+    @media (max-width: 700px){ .moneyGrid{ grid-template-columns: 1fr; } }
+
+    .moneyCard{ padding:20px 24px; min-height:110px; }
+
+    .collectionGrid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
+    }
+    @media (max-width: 980px){ .collectionGrid{ grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px){ .collectionGrid{ grid-template-columns: 1fr; } }
+
+    .cCard{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: var(--card);
+      box-shadow: 0 8px 18px rgba(0,0,0,.06);
+      overflow:hidden;
+    }
+    .cTop{
+      padding:10px 12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .cName{ font-weight:800; color: var(--pink2); line-height:1.1; }
+    .cSub{ font-size:.78rem; color: var(--muted); margin-top:4px; }
+    .cBadges{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      padding:0 12px 10px;
+    }
+    .cBody{
+      padding:10px 12px 12px;
+      border-top:1px solid var(--line);
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:8px 10px;
+    }
+    .cField .k{ font-size:.7rem; color:var(--muted); }
+    .cField .v{ font-size:.85rem; }
+    .cIcon{
+      width:28px;height:28px;border-radius:10px;border:1px solid var(--line);
+      background:var(--card); padding:3px; flex:0 0 auto;
+    }
+    .cRight{ display:flex; align-items:center; gap:8px; }
+
+    .setIcon{
+      width:26px;
+      height:26px;
+      border-radius:8px;
+      border:1px solid var(--line);
+      background:var(--card);
+      padding:3px;
+    }
+
+    /* ===== Deck View ===== */
+    .deckViewGrid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:12px;
+      height: calc(100vh - 220px);
+    }
+    @media (max-width: 900px){
+      .deckViewGrid{ grid-template-columns: 1fr; height:auto; }
+    }
+
+    .deckListPanel,
+    .deckDetailsPanel{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      overflow: hidden;
+      position: relative;
+      isolation: isolate;
+    }
+
+    #deckViewDetails{
+      flex: 1;
+      overflow: auto;
+      padding-right: 4px;
+      min-height: 0;
+    }
+
+    #deckViewDetails img{
+      display:block;
+      max-height: 70vh;
+      object-fit: contain;
+    }
+
+
+    .deckListScroll{
+      flex:1;
+      overflow-y:auto;
+      padding-right:4px;
+    }
+
+    .deckCommander{
+      border:2px solid var(--pink2);
+      background: linear-gradient(90deg, var(--accent-12), rgba(255,255,255,0));
+    }
+    .cmdBadge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      font-size:.72rem;
+      font-weight:800;
+      color:var(--pink2);
+      background: rgba(0,0,0,.03);
+    }
+
+    .ownBadge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width: 26px;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,.03);
+    }
+    .ownBadge.ok{
+      background: rgba(34,197,94,.18);
+      border-color: rgba(34,197,94,.55);
+    }
+    .ownBadge.warn{
+      background: rgba(245,158,11,.18);
+      border-color: rgba(245,158,11,.55);
+    }
+    .ownBadge.alt{
+      background: rgba(250,204,21,.22);
+      border-color: rgba(250,204,21,.70);
+    }
+    .ownBadge.no{ opacity:.7; }
+.deckGroup {
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--card);
+}
+
+.deckGroup .cardrow {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+}
+
+.deckGroup .cardrow:not(:last-child) {
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.deckGroup .cardrow:hover {
+  background: rgba(0,0,0,0.03);
+}
+
+.deckGroup{
+  border:1px solid var(--line);
+  border-radius:16px;
+  overflow:hidden;
+  background: var(--card);
+}
+.deckGroup .cardrow{
+  border:none;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.deckGroup .cardrow:not(:last-child){
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+body[data-theme="black"] .deckGroup .cardrow:not(:last-child){
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.deckGroup .cardrow:hover{
+  background: rgba(0,0,0,0.03);
+}
+body[data-theme="black"] .deckGroup .cardrow:hover{
+  background: rgba(255,255,255,.03);
+}
+
+.deckDetailsPanel{ min-height:0; }
+#deckViewDetails{
+  flex:1;
+  overflow:auto;
+  padding-right:4px;
+}
+#deckViewDetails img{
+  display:block;
+  width:100%;
+  height:auto;
+}
+.starBtn{
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  font-size:18px;
+  line-height:1;
+  padding:2px 6px;
+}
+.starBtn:hover{ transform: translateY(-1px); }
+.center{ text-align:center; }
+
+/* ===== AUTH SCREEN (login/registro) ===== */
+.auth-screen{
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity .35s ease;
+}
+
+.auth-card{
+  width: 100%;
+  max-width: 390px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(255,255,255,.55);
+  backdrop-filter: blur(10px);
+  border-radius: 22px;
+  padding: 32px 28px;
+  box-shadow: 0 30px 60px #b0184d 70%;
+  text-align: center;
+  transform: translateY(10px) scale(.985);
+  opacity: 0;
+  transition: transform .45s cubic-bezier(.2,.8,.2,1), opacity .45s ease;
+}
+
+/* animación de entrada */
+.auth-screen.is-enter .auth-card{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* animación de salida */
+.auth-screen.is-exit{ opacity: 0; }
+.auth-screen.is-exit .auth-card{
+  transform: translateY(-6px) scale(.99);
+  opacity: 0;
+}
+
+.auth-brand{
+  margin-bottom: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-logo{
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--pink), var(--pink2));
+  box-shadow: 0 18px 35px rgba(216,27,96,.25);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding:8px; 
+  overflow: hidden;
+}
+
+.auth-logo img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;  
+  object-fit: contain;
+  display: block;
+}
+
+.auth-title{ margin: 0; font-size: 22px; color: #111827; font-family: fangsong;}
+.auth-subtitle{ margin: 6px 0 0; font-size: 14px; color: #6b7280;font-family: ui-rounded; }
+
+.auth-form{ display: grid; gap: 12px; text-align: left; }
+.auth-form input{
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+  font-family: ui-rounded;
+  background: #fff;
+}
+.auth-form input:focus{
+  outline: none;
+  border-color: var(--pink);
+  box-shadow: 0 0 0 3px rgba(240,98,146,.15);
+}
+.auth-btn{ width: 100%; font-family: ui-rounded;}
+.auth-remember{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-family: ui-rounded;
+  color: #4b5563;
+  user-select: none;
+}
+.auth-remember input{ width: 18px; height: 18px; accent-color: var(--pink); }
+.auth-msg{
+  min-height: 18px;
+  font-size: 13px;
+  color: #ef4444;
+  text-align: center;
+}
+
+/* Oculta la app si no estás autenticado */
+body.not-authenticated header,
+body.not-authenticated main{
+  display:none;
+}
+
+/* transición de entrada para la app */
+body.app-enter header,
+body.app-enter main{
+  animation: appFadeIn .35s ease both;
+}
+@keyframes appFadeIn{
+  from{ opacity: 0; transform: translateY(6px); }
+  to  { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ===== Dark theme tuning (Scora-like) ===== */
+body[data-theme="black"] header{
+  background: rgba(15,20,32,.72);
+  border-bottom:1px solid var(--line);
+}
+body[data-theme="black"] .panel{
+  background: color-mix(in srgb, var(--card) 92%, black);
+  border-color: var(--line);
+  box-shadow: var(--shadow);
+}
+body[data-theme="black"] .panel.soft{
+  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+  border-color: var(--line);
+}
+body[data-theme="black"] .pill{
+  background: rgba(255,255,255,.04);
+  border-color: rgba(255,255,255,.10);
+  color: var(--muted);
+}
+body[data-theme="black"] .tabbtn{
+  background: rgba(255,255,255,.03);
+  border-color: rgba(255,255,255,.10);
+  color: var(--text);
+  box-shadow: none;
+}
+body[data-theme="black"] .tabbtn.active{
+  background: rgba(255,46,166,.10);
+  border-color: rgba(255,46,166,.28);
+  color: var(--text);
+  box-shadow: none;
+}
+body[data-theme="black"] thead th{
+  background: rgba(255,255,255,.03);
+  color: var(--text);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+body[data-theme="black"] tbody td{
+  background: transparent;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+body[data-theme="black"] .btn.ghost{
+  background: rgba(255,255,255,.03);
+  border-color: rgba(255,255,255,.10);
+  color: var(--text);
+}
+body[data-theme="black"] .btn.ghost:hover{
+  border-color: rgba(255,46,166,.35);
+  color: var(--text);
+}
+body[data-theme="black"] input,
+body[data-theme="black"] select{
+  border-color: rgba(255,255,255,.10);
+}
+
+</style>
 </head>
 
-<body>
+<body class="not-authenticated">
 
-<!-- PANTALLA DE AUTENTICACIÓN -->
-<div id="authScreen">
-  <div class="auth-card">
-    <div class="auth-logo">💗</div>
-    <h2 class="auth-title">MTG Manager</h2>
-    <p class="auth-subtitle">Accede a tu colección desde cualquier PC</p>
+  <!-- AUTH SCREEN (login/registro) -->
+  <section id="authScreen" class="auth-screen is-enter" aria-label="Inicio de sesión">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="auth-logo">
+          <img src="./logo.png" alt="">
+        </div>
+        <h1 class="auth-title">MTG Manager</h1>
+        <p class="auth-subtitle">Accede a tu colección desde cualquier dispositivo</p>
+      </div>
 
-    <!-- VISTA DE LOGIN -->
-    <div id="authLoginView">
-      <div>
-        <label>Email</label>
-        <input id="authEmail" type="email" placeholder="tu@email.com"/>
+      <!-- Vista: Login -->
+      <div id="authLoginView" class="auth-form">
+        <input id="authEmail" type="email" placeholder="Correo" autocomplete="email" />
+        <input id="authPass" type="password" placeholder="Contraseña" autocomplete="current-password" />
+
+        <label class="auth-remember">
+          <input id="authRemember" type="checkbox" checked />
+          <span>Recordarme</span>
+        </label>
+
+        <button class="btn auth-btn" id="btnSignIn">Iniciar sesión</button>
+        <button class="btn ghost auth-btn" id="btnSignUp">Crear cuenta</button>
+
+        <div class="auth-msg" id="authMsg"></div>
       </div>
-      <div>
-        <label>Contraseña</label>
-        <input id="authPass" type="password" placeholder="••••••••"/>
+
+      <!-- Vista: Registro -->
+      <div id="authSignupView" class="auth-form" style="display:none;">
+        <input id="suUsername" type="text" placeholder="Nombre de usuario" autocomplete="username" />
+
+        <input id="suEmail" type="email" placeholder="Correo" autocomplete="email" />
+        <input id="suEmail2" type="email" placeholder="Confirmar correo" autocomplete="email" />
+
+        <input id="suPass" type="password" placeholder="Contraseña" autocomplete="new-password" />
+        <input id="suPass2" type="password" placeholder="Repetir contraseña" autocomplete="new-password" />
+
+        <button class="btn auth-btn" id="btnCreateAccount">Crear cuenta</button>
+        <button class="btn ghost auth-btn" id="btnBackToLogin">← Volver</button>
+
+        <div class="auth-msg" id="authMsg2"></div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;font-size:.84rem">
-        <input id="authRemember" type="checkbox" style="width:auto" checked/>
-        <label for="authRemember" style="margin:0;color:var(--text)">Recordar sesión</label>
-      </div>
-      <button class="btn" id="btnSignIn">Iniciar sesión</button>
-      <button class="btn ghost" id="btnSignUp">Crear cuenta</button>
-      <div id="authMsg"></div>
     </div>
-
-    <!-- VISTA DE REGISTRO -->
-    <div id="authSignupView" style="display:none">
-      <div>
-        <label>Nombre de usuario</label>
-        <input id="suUsername" type="text" placeholder="MrsRia"/>
-      </div>
-      <div>
-        <label>Email</label>
-        <input id="suEmail" type="email" placeholder="mariarapsan@gmail.com"/>
-      </div>
-      <div>
-        <label>Confirmar email</label>
-        <input id="suEmail2" type="email" placeholder="mariarapsan@gmail.com"/>
-      </div>
-      <div>
-        <label>Contraseña</label>
-        <input id="suPass" type="password" placeholder="••••••••"/>
-      </div>
-      <div>
-        <label>Confirmar contraseña</label>
-        <input id="suPass2" type="password" placeholder="••••••••"/>
-      </div>
-      <button class="btn" id="btnCreateAccount">Crear cuenta</button>
-      <button class="btn ghost" id="btnBackToLogin">← Volver</button>
-      <div id="authMsg2"></div>
-    </div>
-
-    <div class="auth-footer">
-      Todos tus datos se guardan de forma segura en la nube.
-    </div>
-  </div>
-</div>
-
-<!-- APLICACIÓN PRINCIPAL -->
+  </section>
 <header>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo">💗</div>
+  <div class="wrap topbar">
+    <div class="brand">
+      <div class="logo">
+        <img src="./logo.png" alt="">
+      </div>
+      <div>
         <h1>MTG Manager</h1>
-        <span id="authStatus" style="font-size:.78rem;color:var(--muted)">No logueado</span>
-      </div>
-      <div class="row">
-        <button class="btn ghost tiny" id="btnSignOutTop" style="display:none">Cerrar sesión</button>
+        <div class="small">Por María Raposo Sánchez</div>
       </div>
     </div>
-    <div class="tabs">
-      <button class="tabbtn active" data-tab="cards">🗂️ Colección</button>
-      <button class="tabbtn" data-tab="search">🔍 Buscar carta</button>
-      <button class="tabbtn" data-tab="decks">🎴 Mazos</button>
-      <button class="tabbtn" data-tab="wishlist">⭐ Wishlist</button>
-      <button class="tabbtn" data-tab="stats">📊 Estadísticas</button>
-      <button class="tabbtn" data-tab="import">📥 Importar/Exportar</button>
-      <button class="tabbtn" data-tab="settings">⚙️ Configuración</button>
+    <div class="tabs" id="tabs"></div>
+    <div class="row" id="authTopBar" style="gap:8px;align-items:center;">
+      <span class="pill" id="authStatus">Sin identificar</span>
+      <button class="btn ghost tiny" id="btnSignOutTop" style="display:none;">Cerrar sesión</button>
     </div>
+    <div id="globalErrorBox" class="notice" style="display:none;margin:10px 0;"></div>
   </div>
 </header>
 
 <main>
   <div class="wrap">
 
-    <!-- TAB: Colección -->
-    <section id="tab_cards" style="display:none">
-      <div class="panel soft mb10">
-        <h2 class="h2">🗂️ Tu Colección</h2>
-        <div class="grid mb10">
-          <div>
-            <label>Carta</label>
-            <input id="newCardName" placeholder="Ej: Black Lotus"/>
-          </div>
-          <div>
-            <label>Edición</label>
-            <input id="newCardSet" placeholder="Ej: Alpha"/>
-          </div>
-          <div>
-            <label>Cantidad</label>
-            <input id="newCardQuantity" type="number" value="1" min="1"/>
-          </div>
-          <div>
-            <label>Precio unitario (€)</label>
-            <input id="newCardPrice" type="number" step="0.01" placeholder="0.00"/>
-          </div>
+    <!-- INTRO -->
+    <section class="panel" data-page="intro">
+      <h2 class="h2">Introducción</h2>
+
+      <div class="pill">Bienvenido al mejor gestor de cartas de Magic</div>
+
+      <p class="hint">
+        Aquí podrás guardar, gestionar y revisar tu colección de cartas de Magic.
+        Con un par de datos podremos almacenar tus cartas por colores, tipo, rareza, colección...
+        Además de ver estadísticas (colores, tipos) y dinero invertido. También guardamos datos de tus mazos.
+      </p>
+
+      <div class="two mt12">
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Modo de uso</h3>
+          <p class="hint" style="margin:0;">No sabemos adivinar cartas a la perfección, así que danos algunos datos:</p>
+          <ul class="hint" style="margin:0;padding-left:16px;">
+            <li>Nombre de la carta en español o en inglés</li>
+            <li>Código de la colección</li>
+            <li>Número de la carta</li>
+          </ul>
+          <p class="hint" style="margin:0;">Si no sabes código/número:</p>
+          <ul class="hint" style="margin:0;padding-left:16px;">
+            <li>Pon solo el nombre (se busca la impresión más antigua).</li>
+            <li>Revisa esta guía: <b>https://i.imgur.com/VHDtcZc.jpeg</b></li>
+            <li>Más abajo tienes una tabla con todas las colecciones y sus códigos.</li>
+          </ul>
         </div>
-        <div class="grid mb10">
-          <div>
-            <label>Idioma</label>
-            <select id="newCardLang">
-              <option value="Español">Español</option>
-              <option value="Inglés">Inglés</option>
-              <option value="Japonés">Japonés</option>
-              <option value="Alemán">Alemán</option>
-              <option value="Francés">Francés</option>
-              <option value="Italiano">Italiano</option>
-              <option value="Portugués">Portugués</option>
-              <option value="Chino">Chino</option>
-              <option value="Coreano">Coreano</option>
-              <option value="Ruso">Ruso</option>
-            </select>
-          </div>
-          <div>
-            <label>Estado</label>
-            <select id="newCardCondition">
-              <option value="Near Mint">Near Mint (NM)</option>
-              <option value="Slightly Played">Slightly Played (SP)</option>
-              <option value="Moderately Played">Moderately Played (MP)</option>
-              <option value="Heavily Played">Heavily Played (HP)</option>
-              <option value="Damaged">Damaged (D)</option>
-            </select>
-          </div>
-          <div>
-            <label>Foil</label>
-            <select id="newCardFoil">
-              <option value="No">No</option>
-              <option value="Sí">Sí</option>
-            </select>
-          </div>
-          <div style="display:flex;align-items:flex-end">
-            <button class="btn" style="width:100%" onclick="addCard()">Añadir</button>
+
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Ajustes y guardado</h3>
+          <p class="hint" style="margin:0;">Los datos se guardan en tu navegador. Puedes exportar/importar JSON.</p>
+          <p class="hint" style="margin:0;">También puedes importar tus mazos y cartas en JSON o TXT/CSV.</p>
+          <p class="hint" style="margin:0;">Tema, moneda, tamaño de letra y extras están en Ajustes.</p>
+          <div class="pillRow">
+            <span class="pill">💾 Guardado local</span>
+            <span class="pill">📤 Exportar</span>
+            <span class="pill">📥 Importar</span>
+            <span class="pill">🎨 Personalización</span>
           </div>
         </div>
       </div>
 
-      <div class="panel">
-        <div class="row mb10">
-          <h2 class="h2">📋 Listado</h2>
-          <div class="spacer"></div>
-          <button class="btn ghost tiny" onclick="exportCardsCSV()">📥 Exportar CSV</button>
-        </div>
-        <div style="overflow-x:auto">
-          <table id="cardsTable">
+      <div class="panel" style="box-shadow:none; margin-top:12px;">
+        <h3 class="h3">Colecciones de Magic</h3>
+        <p class="hint">Listado completo de colecciones oficiales de Magic: The Gathering (Scryfall).</p>
+        <div class="tablewrap" style="max-height:360px;">
+          <table id="tblIntroSets" style="min-width:520px;">
             <thead>
               <tr>
-                <th class="sortable" onclick="sortCards('name')">Nombre</th>
-                <th class="sortable" onclick="sortCards('set')">Edición</th>
-                <th class="sortable" onclick="sortCards('lang')">Idioma</th>
-                <th class="sortable" onclick="sortCards('condition')">Estado</th>
-                <th class="sortable" onclick="sortCards('foil')">Foil</th>
-                <th class="sortable" onclick="sortCards('quantity')">Cant.</th>
-                <th class="sortable" onclick="sortCards('price')">Precio u.</th>
-                <th>Total</th>
-                <th>Acciones</th>
+                <th>Logo</th>
+                <th>Nombre</th>
+                <th class="mono">Código</th>
               </tr>
             </thead>
-            <tbody id="cardsBody">
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
+        <div class="hint" id="introSetsInfo"></div>
       </div>
     </section>
 
-    <!-- TAB: Buscar carta -->
-    <section id="tab_search" style="display:none">
-      <div class="panel soft mb10">
-        <h2 class="h2">🔍 Buscar carta en Scryfall</h2>
-        <div class="grid-search-top mb10">
-          <div>
-            <label>Nombre de la carta</label>
-            <input id="searchCardName" placeholder="Ej: Lightning Bolt"/>
-          </div>
-          <div>
-            <label>Edición</label>
-            <input id="searchCardSet" placeholder="(Opcional)"/>
-          </div>
-          <div>
-            <label>Idioma</label>
-            <select id="searchLang">
-              <option value="">Cualquiera</option>
-              <option value="es">Español</option>
-              <option value="en">Inglés</option>
-              <option value="ja">Japonés</option>
-              <option value="de">Alemán</option>
-              <option value="fr">Francés</option>
-              <option value="it">Italiano</option>
-              <option value="pt">Portugués</option>
-              <option value="zh">Chino</option>
-              <option value="ko">Coreano</option>
-              <option value="ru">Ruso</option>
-            </select>
-          </div>
-          <div style="display:flex;align-items:flex-end">
-            <button class="btn" style="width:100%" onclick="searchCardScryfall()">Buscar</button>
-          </div>
+    <!-- CARTAS -->
+    <section class="panel is-hidden" data-page="cartas" style="display:none;">
+      <div class="row mb10">
+        <h2 class="h2" style="margin:0;">Cartas</h2>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btnExport">Exportar JSON</button>
+        <button class="btn ghost" id="btnImport">Importar JSON</button>
+        <button class="btn ghost" id="btnImportManaBox">Importar ManaBox (CSV)</button>
+        <button class="btn ghost" id="btnClear">Borrar todo</button>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label>Nombre (ES o EN)</label>
+          <input id="inName" placeholder="Sol Ring / Anillo solar"/>
+          <div class="hint">Si dejas SetCode y Nº vacíos, se añade la impresión más antigua.</div>
         </div>
-        <div id="searchResults"></div>
+        <div>
+          <label>SetCode (Recomendado)</label>
+          <input id="inSet" placeholder="cmm" class="mono"/>
+        </div>
+        <div>
+          <label>Nº colección (Recomendado)</label>
+          <input id="inCn" placeholder="001" class="mono"/>
+        </div>
+        <div style="display:flex;align-items:end;gap:10px;">
+          <button class="btn" id="btnAdd" style="width:100%;">Añadir carta</button>
+        </div>
+
+        <div>
+          <label>Idioma</label>
+          <select id="inLang">
+            <option value="es">Español</option>
+            <option value="en">Inglés</option>
+            <option value="fr">Francés</option>
+            <option value="de">Alemán</option>
+            <option value="it">Italiano</option>
+            <option value="pt">Portugués</option>
+            <option value="ja">Japonés</option>
+            <option value="ko">Coreano</option>
+            <option value="zhs">Chino (Simpl.)</option>
+            <option value="zht">Chino (Trad.)</option>
+          </select>
+        </div>
+        <div>
+          <label>Cantidad</label>
+          <input id="inQty" type="number" min="1" value="1"/>
+        </div>
+        <div><label>Proxy</label><input id="inProxy" type="checkbox" class="chk"/></div>
+        <div><label>Foil</label><input id="inFoil" type="checkbox" class="chk"/></div>
+        <div><label>Promo</label><input id="inPromo" type="checkbox" class="chk"/></div>
+        <div><label>Promo pre</label><input id="inPromoPre" type="checkbox" class="chk"/></div>
+        <div><label>A la venta</label><input id="inSale" type="checkbox" class="chk"/></div>
+      </div>
+
+      <div id="errBox" class="err"></div>
+
+      <div class="footerbar">
+        <span class="pill">Total cartas: <b id="countCards">0</b></span>
+        <span class="pill">Total unidades: <b id="countUnits">0</b></span>
+        <span class="pill">Valor estimado (€): <b id="sumEur">0.00</b></span>
+
+        <div class="spacer"></div>
+
+        <label style="margin:0;">
+          <span class="small">Ordenar</span>
+          <select id="sortKey" style="width:auto;min-width:180px;">
+            <option value="added">Añadidas (reciente primero)</option>
+            <option value="name">Nombre</option>
+            <option value="set">SetCode</option>
+            <option value="price">Precio</option>
+            <option value="mv">MV/CMC</option>
+            <option value="rarity">Rareza</option>
+            <option value="qty">Cantidad</option>
+          </select>
+        </label>
+
+        <select id="sortDir" style="width:auto;min-width:140px;">
+          <option value="desc">Desc</option>
+          <option value="asc">Asc</option>
+        </select>
+
+        <button class="btn ghost" id="btnApplySort">Aplicar</button>
+        <button class="btn ghost" id="btnRefreshPrices">Refrescar precios</button>
+      </div>
+
+      <div class="tablewrap">
+        <table id="tbl">
+          <thead>
+            <tr>
+              <th>★</th>
+              <th>Carta</th>
+              <th>Colección</th>
+              <th>Nº</th>
+              <th>Tipo</th>
+              <th>Subtipo</th>
+              <th>Color</th>
+              <th>Maná</th>
+              <th>MV</th>
+              <th>Rareza</th>
+              <th>Logo</th>
+              <th class="right">Precio</th>
+              <th>Proxy</th>
+              <th>Foil</th>
+              <th>Promo</th>
+              <th>Pre</th>
+              <th>Idioma</th>
+              <th class="right">Cant.</th>
+              <th class="right">Mejor venta</th>
+              <th>Venta</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
     </section>
 
-    <!-- TAB: Mazos -->
-    <section id="tab_decks" style="display:none">
-      <div class="panel soft mb10">
-        <h2 class="h2">🎴 Mis Mazos</h2>
-        <div class="row mb10">
-          <input id="newDeckName" placeholder="Nombre del mazo"/>
-          <button class="btn" onclick="createDeck()">Crear mazo</button>
+    <!-- STATS COLORES -->
+    <section class="panel is-hidden" data-page="stats_colores" style="display:none;">
+      <div class="row mb10">
+        <h2 class="h2" style="margin:0;">Estadísticas: Colores</h2>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btnRecalcColors">Recalcular</button>
+      </div>
+      <div class="two">
+        <div class="panel soft" style="box-shadow:none;">
+          <canvas id="chartColors"></canvas>
+        </div>
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Resumen</h3>
+          <div id="colorsSummary" class="hint"></div>
         </div>
       </div>
-      <div id="decksList" class="grid-4">
+    </section>
+
+    <!-- STATS TIPOS/RAREZAS + DINERO -->
+    <section class="panel is-hidden" data-page="stats_tipos" style="display:none;">
+      <div class="row mb10">
+        <h2 class="h2" style="margin:0;">Estadísticas: Tipos y rarezas</h2>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btnRecalcTypes">Recalcular</button>
       </div>
-      <div id="deckDetail" style="display:none">
-        <div class="panel soft mb10">
-          <div class="row">
-            <button class="btn ghost" onclick="closeDeck()">← Volver</button>
+      <div class="two">
+        <div class="panel soft" style="box-shadow:none;">
+          <canvas id="chartTypes"></canvas>
+        </div>
+        <div class="panel soft" style="box-shadow:none;">
+          <canvas id="chartRarity"></canvas>
+        </div>
+      </div>
+
+      <hr class="hr"/>
+
+      <div class="row mb10">
+        <h3 class="h3" style="margin:0;">Dineros</h3>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btnRecalcMoney">Recalcular</button>
+      </div>
+
+      <div class="moneyGrid">
+        <div class="panel soft moneyCard" style="box-shadow:none;">
+          <h3 class="h3">Dinero en cartones de colores</h3>
+          <div id="invReal" class="mono" style="font-size:1.4rem;color:var(--pink2);">0.00€</div>
+          <p class="hint">Suma de precios estimados excluyendo proxies.</p>
+        </div>
+        <div class="panel soft moneyCard" style="box-shadow:none;">
+          <h3 class="h3">Dinero virtual en cartones</h3>
+          <div id="invAll" class="mono" style="font-size:1.4rem;color:var(--pink2);">0.00€</div>
+          <p class="hint">Incluye proxies.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- BUSCADOR -->
+    <section class="panel is-hidden" data-page="buscador" style="display:none;">
+      <div class="row mb10">
+        <h2 class="h2" style="margin:0;">Buscador</h2>
+        <div class="spacer"></div>
+        <span class="pill">Resultados: <b id="searchCount">0</b></span>
+        <button class="btn ghost" id="btnClearFilters">Limpiar filtros</button>
+      </div>
+
+      <div class="grid-search-top">
+        <div>
+          <label>Nombre</label>
+          <input id="searchQ" placeholder="Nombre..."/>
+        </div>
+
+        <div>
+          <label>Colección (setCode)</label>
+          <input id="searchSet" placeholder="cmm" class="mono"/>
+        </div>
+
+        <div>
+          <label>Rareza</label>
+          <select id="searchRarity">
+            <option value="">(cualquiera)</option>
+            <option>Común</option>
+            <option>Poco común</option>
+            <option>Rara</option>
+            <option>Mítica</option>
+            <option>Especial</option>
+          </select>
+        </div>
+
+        <div style="display:flex;align-items:end;">
+          <button class="btn" id="btnSearch" style="width:100%;">Buscar</button>
+        </div>
+      </div>
+
+      <div class="grid-4 mt12">
+        <div>
+          <label>Color (identidad)</label>
+          <select id="searchColors"></select>
+        </div>
+
+        <div>
+          <label>Tipo</label>
+          <select id="searchType">
+            <option value="">(cualquiera)</option>
+            <option>Criatura</option>
+            <option>Instantáneo</option>
+            <option>Conjuro</option>
+            <option>Artefacto</option>
+            <option>Encantamiento</option>
+            <option>Tierra</option>
+            <option>Planeswalker</option>
+            <option>Batalla</option>
+            <option>Otro</option>
+          </select>
+        </div>
+
+        <div>
+          <label>MV/CMC mínimo</label>
+          <input id="searchMvMin" type="number" min="0" placeholder="0"/>
+        </div>
+
+        <div>
+          <label>MV/CMC máximo</label>
+          <input id="searchMvMax" type="number" min="0" placeholder="20"/>
+        </div>
+      </div>
+
+      <div class="list mt12" id="searchResults"></div>
+    </section>
+
+    <!-- COLECCIÓN -->
+    <section class="panel is-hidden" data-page="coleccion" style="display:none;">
+      <div class="row mb10">
+        <h2 class="h2" style="margin:0;">Colección</h2>
+        <div class="spacer"></div>
+        <span class="pill">Cartas: <b id="colCountCards">0</b></span>
+        <span class="pill">Unidades: <b id="colCountUnits">0</b></span>
+        <span class="pill">Valor (€): <b id="colSumEur">0.00</b></span>
+      </div>
+
+      <div class="hint mb10">Vista en “tarjetas” con todos los datos (se guarda igual que en Cartas).</div>
+      <div class="row mb10" style="gap:10px; flex-wrap:wrap;">
+        <div style="min-width:260px;">
+          <label>Filtrar por favoritos</label>
+          <select id="colFavFilter">
+            <option value="all">Todos</option>
+            <option value="fav">Solo favoritos</option>
+            <option value="nofav">Sin favoritos</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="collectionGrid" class="collectionGrid"></div>
+    </section>
+
+    <!-- MAZOS -->
+    <section class="panel is-hidden" data-page="mazos" style="display:none;">
+      <div class="row mb10">
+        <h2 class="h2" style="margin:0;">Mazos</h2>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btnDeckExport">Exportar mazos</button>
+        <button class="btn ghost" id="btnDeckImport">Importar mazos (JSON/TXT)</button>
+      </div>
+
+      <div class="two">
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Crear mazo</h3>
+          <label>Nombre del mazo</label>
+          <input id="deckName" placeholder="Mi mazo Commander"/>
+          <div class="row mt12">
+            <button class="btn" id="btnCreateDeck">Crear</button>
             <div class="spacer"></div>
-            <button class="btn danger tiny" onclick="deleteDeck()">Eliminar mazo</button>
+            <span class="pill">Mazos: <b id="deckCount">0</b></span>
           </div>
-        </div>
-        <div class="panel">
-          <h2 class="h2" id="deckDetailName"></h2>
-          <div class="grid mb10">
+
+          <hr class="hr"/>
+
+          <h3 class="h3">Seleccionar mazo</h3>
+          <label>Mazo</label>
+          <select id="deckSelect"></select>
+
+          <div class="row mt10">
+            <button class="btn ghost tiny" id="btnDeckRename">Renombrar</button>
+            <button class="btn ghost tiny" id="btnDeckDuplicate">Duplicar</button>
+            <button class="btn danger tiny" id="btnDeckDelete">Eliminar</button>
+          </div>
+
+          <hr class="hr"/>
+
+          <h3 class="h3">Comandante</h3>
+          <div class="grid" style="grid-template-columns:2fr 1fr 1fr; margin-top:10px;">
             <div>
-              <label>Añadir carta del buscador</label>
-              <input id="deckAddCardName" placeholder="Nombre de la carta"/>
+              <label>Nombre</label>
+              <input id="deckCmdName" placeholder="Atraxa, Praetors' Voice"/>
+            </div>
+            <div>
+              <label>SetCode (Recomendado)</label>
+              <input id="deckCmdSet" class="mono" placeholder="cmm"/>
+            </div>
+            <div>
+              <label>Nº (Recomendado)</label>
+              <input id="deckCmdCn" class="mono" placeholder="380"/>
+            </div>
+          </div>
+
+          <div class="row mt10">
+            <button class="btn" id="btnSetCommander">Guardar comandante</button>
+            <button class="btn ghost" id="btnClearCommander">Quitar comandante</button>
+            <div class="spacer"></div>
+            <span class="pill">Actual: <b id="deckCommanderLabel">—</b></span>
+          </div>
+          <div class="hint">Puedes poner solo el nombre. Si pones set+nº, se verá exacto al exportar y en detalles.</div>
+
+          <hr class="hr"/>
+
+          <h3 class="h3">Añadir carta al mazo</h3>
+          <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr; margin-top:10px;">
+            <div>
+              <label>Nombre</label>
+              <input id="deckCardName" placeholder="Sol Ring"/>
+            </div>
+            <div>
+              <label>SetCode</label>
+              <input id="deckCardSet" class="mono" placeholder="cmm"/>
+            </div>
+            <div>
+              <label>Nº</label>
+              <input id="deckCardCn" class="mono" placeholder="380"/>
             </div>
             <div>
               <label>Cantidad</label>
-              <input id="deckAddCardQty" type="number" value="1" min="1"/>
-            </div>
-            <div style="display:flex;align-items:flex-end">
-              <button class="btn" style="width:100%" onclick="addCardToDeck()">Añadir</button>
+              <input id="deckCardQty" type="number" min="1" value="1"/>
             </div>
           </div>
-          <div class="hr"></div>
-          <div id="deckCards"></div>
+
+          <button class="btn" id="btnAddToDeck" style="margin-top:10px;width:100%;">Añadir al mazo</button>
+          <div class="hint">No consulta Scryfall aquí: guarda referencia (nombre + set + nº) y cantidad.</div>
+
+          <hr class="hr"/>
+
+          <h3 class="h3">Acciones rápidas</h3>
+          <div class="row">
+            <button class="btn ghost" id="btnDeckExportOneTxt">Exportar mazo (TXT)</button>
+            <button class="btn ghost" id="btnDeckExportOneJson">Exportar mazo (JSON)</button>
+            <button class="btn ghost" id="btnDeckCopyTxt">Copiar TXT</button>
+          </div>
+          <div class="hint">Exporta el mazo seleccionado.</div>
+        </div>
+
+        <div class="panel soft" style="box-shadow:none;">
+          <div class="row" style="margin-bottom:8px;">
+            <h3 class="h3" style="margin:0;">Mis mazos</h3>
+            <div class="spacer"></div>
+          </div>
+
+          <div class="grid" style="grid-template-columns:2fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label>Buscar mazo</label>
+              <input id="deckListQ" placeholder="Escribe parte del nombre..." />
+            </div>
+            <div>
+              <label>Orden</label>
+              <select id="deckListSort">
+                <option value="recent">Recientes</option>
+                <option value="az">A–Z</option>
+                <option value="za">Z–A</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="deckListScrollFix">
+            <div id="deckList" class="list"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="hint mt12">
+        Formatos TXT soportados:
+        <div class="mono">Mazo: Nombre</div>
+        <div class="mono">Comandante: Nombre (SET #123)</div>
+        <div class="mono">2x Carta (SET #123)</div>
+        <div class="mono">2 Carta (SET) 123</div>
+        <div class="mono">2x Carta</div>
+        <div class="small">(Puedes usar comentarios con # o //)</div>
+      </div>
+    </section>
+
+    
+    <!-- VENTAS -->
+    <section class="panel is-hidden" data-page="ventas" style="display:none;">
+      <h2 class="h2">Ventas (Cardmarket)</h2>
+      <p class="hint">Aquí aparecen todas las cartas marcadas como <b>A la venta</b>. Cuando se venda una, pulsa <b>Vendida</b> para descontar 1 unidad o eliminar la carta si era la última.</p>
+      <div class="pill" id="salesCountPill" style="width:fit-content;">En venta: 0</div>
+
+      <div class="tablewrap mt12">
+        <table id="tblSales">
+          <thead>
+            <tr>
+              <th>★</th>
+              <th>Carta</th>
+              <th>Colección</th>
+              <th>Nº</th>
+              <th class="right">Cant.</th>
+              <th class="right">Precio</th>
+              <th class="right">Mejor venta</th>
+              <th class="right">Acción</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+<!-- DECK VIEW -->
+    <section class="panel is-hidden" data-page="deck_view" style="display:none;">
+      <div class="row mb10">
+        <button class="btn ghost" id="btnDeckBack">← Volver</button>
+        <h2 class="h2" style="margin:0;" id="deckViewTitle">Mazo</h2>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btnDeckViewExportTxt">Exportar TXT</button>
+        <button class="btn ghost" id="btnDeckToWish">Faltan → Deseos</button>
+        <button class="btn danger" id="btnDeckViewDelete">Eliminar mazo</button>
+      </div>
+
+      <div class="card" id="deckCmdWarnings" style="margin:10px 0; display:none;"></div>
+
+      <div class="deckViewGrid">
+        <div class="panel soft deckListPanel" style="box-shadow:none;">
+          <div class="grid" style="grid-template-columns:2fr 1fr;gap:12px;">
+            <div>
+              <label>Buscar</label>
+              <input id="deckViewQ" placeholder="Nombre..." />
+            </div>
+            <div>
+              <label>Agrupar</label>
+              <select id="deckViewGroup">
+                <option value="type">Por tipo</option>
+                <option value="none">Sin agrupar</option>
+              </select>
+            </div>
+          </div>
+          <div id="deckViewCommanderBox" class="hint" style="display:none;"></div>
+          <div class="hint mt10" id="deckViewMeta"></div>
+          <div class="deckListScroll mt10" id="deckViewList"></div>
+        </div>
+
+        <div class="panel soft deckDetailsPanel" style="box-shadow:none;">
+          <h3 class="h3">Detalles</h3>
+          <div id="deckViewDetails" class="hint">Selecciona una carta del mazo.</div>
         </div>
       </div>
     </section>
 
-    <!-- TAB: Wishlist -->
-    <section id="tab_wishlist" style="display:none">
-      <div class="panel soft mb10">
-        <h2 class="h2">⭐ Wishlist</h2>
-        <div class="grid mb10">
+    <!-- Deseos -->
+    <section class="is-hidden" data-page="deseos">
+      <h2>Lista de deseos</h2>
+      <p class="muted">Guarda cartas que quieres conseguir, compara con tu colección y registra historial de precios.</p>
+
+      <div class="card">
+        <div class="grid2">
           <div>
-            <label>Nombre de la carta</label>
-            <input id="wishCardName" placeholder="Ej: Mox Pearl"/>
+            <label>Nombre</label>
+            <input id="wishName" placeholder="Ej: Sol Ring">
           </div>
           <div>
-            <label>Edición</label>
-            <input id="wishCardSet" placeholder="(Opcional)"/>
+            <label>Cantidad</label>
+            <input id="wishQty" type="number" min="1" value="1">
           </div>
           <div>
-            <label>Prioridad</label>
-            <select id="wishPriority">
-              <option value="Alta">Alta</option>
-              <option value="Media">Media</option>
-              <option value="Baja">Baja</option>
-            </select>
+            <label>SetCode (opcional)</label>
+            <input id="wishSet" class="mono" placeholder="cmm">
           </div>
-          <div style="display:flex;align-items:flex-end">
-            <button class="btn" style="width:100%" onclick="addWish()">Añadir</button>
+          <div>
+            <label>Nº colección (opcional)</label>
+            <input id="wishCn" class="mono" placeholder="001">
           </div>
         </div>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button class="btn" id="btnWishAdd">Añadir a deseos</button>
+          <button class="btn ghost" id="btnWishRefresh">Actualizar precios</button>
+          <div class="spacer"></div>
+          <input id="wishQ" placeholder="Buscar en deseos..." style="max-width:260px;">
+        </div>
       </div>
-      <div class="panel">
-        <div id="wishlistDiv"></div>
+      <div class="card" style="margin-top:12px;">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span class="pill"><b id="wishCount">0</b> items</span>
+          <span class="pill">Faltan: <b id="wishMissingCount">0</b></span>
+          <span class="pill">Cubiertos: <b id="wishCoveredCount">0</b></span>
+        </div>
+        <div id="wishlistList" style="margin-top:10px;"></div>
       </div>
     </section>
+<!-- Ajustes -->
+    <section class="panel is-hidden" data-page="ajustes" style="display:none;">
+      <div class="row mb10">
+        <h2 class="h2" style="margin:0;">Ajustes</h2>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btnResetSettings">Reset ajustes</button>
+      </div>
 
-    <!-- TAB: Estadísticas -->
-    <section id="tab_stats" style="display:none">
-      <div class="panel soft mb10">
-        <h2 class="h2">📊 Estadísticas de tu colección</h2>
-        <div class="grid-4 mb10">
-          <div class="panel">
-            <div class="h3">Total de cartas</div>
-            <div style="font-size:2rem;font-weight:700;color:var(--pink2)" id="statTotal">0</div>
-          </div>
-          <div class="panel">
-            <div class="h3">Cartas únicas</div>
-            <div style="font-size:2rem;font-weight:700;color:var(--pink2)" id="statUnique">0</div>
-          </div>
-          <div class="panel">
-            <div class="h3">Valor total (€)</div>
-            <div style="font-size:2rem;font-weight:700;color:var(--pink2)" id="statValue">0</div>
-          </div>
-          <div class="panel">
-            <div class="h3">Foils</div>
-            <div style="font-size:2rem;font-weight:700;color:var(--pink2)" id="statFoils">0</div>
-          </div>
+      <div class="settingsGrid">
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Tema</h3>
+          <label>Elige tema</label>
+          <select id="setTheme">
+            <option value="pink">Rosa</option>
+            <option value="red">Rojo</option>
+            <option value="green">Verde</option>
+            <option value="yellow">Amarillo</option>
+            <option value="black">Negro</option>
+            <option value="blue">Azul</option>
+          </select>
+          <div class="hint">Cambia colores de toda la app. Negro es modo oscuro.</div>
         </div>
-      </div>
-      <div class="grid mb10">
-        <div class="chart-panel">
-          <h3 class="h3">Distribución por idioma</h3>
-          <canvas id="chartLang"></canvas>
-        </div>
-        <div class="chart-panel">
-          <h3 class="h3">Distribución por estado</h3>
-          <canvas id="chartCondition"></canvas>
-        </div>
-      </div>
-      <div class="chart-panel">
-        <h3 class="h3">Top 10 ediciones</h3>
-        <canvas id="chartSets"></canvas>
-      </div>
-    </section>
 
-    <!-- TAB: Importar/Exportar -->
-    <section id="tab_import" style="display:none">
-      <div class="panel soft mb10">
-        <h2 class="h2">📥 Importar CSV</h2>
-        <p class="hint">Formato: Nombre,Edición,Idioma,Estado,Foil,Cantidad,Precio</p>
-        <textarea id="importArea" rows="8" style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);font-family:var(--mono);font-size:.82rem"></textarea>
-        <div class="mt10">
-          <button class="btn" onclick="importCardsCSV()">Importar</button>
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Tamaño de letra</h3>
+          <label>Tamaño: <span class="mono" id="fontPxLabel">16</span>px</label>
+          <input id="setFontSize" type="range" min="12" max="20" step="1"/>
+          <div class="hint">Recomendado: 15–17 en PC, 16–18 en móvil.</div>
         </div>
-      </div>
-      <div class="panel">
-        <h2 class="h2">📤 Exportar/Backup</h2>
-        <div class="row">
-          <button class="btn ghost" onclick="exportCardsCSV()">Descargar colección (CSV)</button>
-          <button class="btn ghost" onclick="exportDecksJSON()">Descargar mazos (JSON)</button>
-          <button class="btn ghost" onclick="exportAllJSON()">Backup completo (JSON)</button>
-        </div>
-      </div>
-    </section>
 
-    <!-- TAB: Configuración -->
-    <section id="tab_settings" style="display:none">
-      <div class="panel soft mb10">
-        <h2 class="h2">⚙️ Configuración</h2>
-        <div class="grid mb10">
-          <div>
-            <label>Tamaño de fuente base</label>
-            <select id="settingFontSize" onchange="applySettings()">
-              <option value="14px">Pequeño</option>
-              <option value="16px">Normal</option>
-              <option value="18px">Grande</option>
-              <option value="20px">Extra grande</option>
-            </select>
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Comodidad</h3>
+
+          <div class="toggleRow" style="margin-top:8px;">
+            <input id="setCompact" type="checkbox" class="chk"/>
+            <div>
+              <b>Modo compacto</b>
+              <div class="hint" style="margin:2px 0 0;">Más “apretado” (mejor con muchas cartas).</div>
+            </div>
           </div>
-          <div>
-            <label>Densidad de la interfaz</label>
-            <select id="settingDensity" onchange="applySettings()">
-              <option value="normal">Normal</option>
-              <option value="compact">Compacto</option>
-            </select>
-          </div>
-          <div>
-            <label>Tema de color</label>
-            <select id="settingTheme" onchange="applySettings()">
-              <option value="default">Rosa (por defecto)</option>
-              <option value="black">Negro</option>
-            </select>
-          </div>
-          <div>
-            <label>Reducir movimiento</label>
-            <select id="settingMotion" onchange="applySettings()">
-              <option value="normal">Normal</option>
-              <option value="reduced">Reducido</option>
-            </select>
+
+          <div class="toggleRow" style="margin-top:10px;">
+            <input id="setReducedMotion" type="checkbox" class="chk"/>
+            <div>
+              <b>Reducir animaciones</b>
+              <div class="hint" style="margin:2px 0 0;">Útil si te marea o va lento en móvil.</div>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="panel">
-        <h2 class="h2">☁️ Sincronización en la nube</h2>
-        <p class="hint mb10">Tus datos se guardan automáticamente en Firebase cuando estás logueado.</p>
-        <div class="row">
-          <button class="btn" onclick="manualCloudSave()">Guardar ahora</button>
-          <button class="btn ghost" onclick="manualCloudLoad()">Cargar desde la nube</button>
+
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Precios</h3>
+          <label>Preferencia de moneda</label>
+          <select id="setCurrency">
+            <option value="EUR">Mostrar € primero</option>
+            <option value="USD">Mostrar $ primero</option>
+          </select>
+          <div class="hint">Si no hay precio en esa moneda, usa la otra.</div>
+        </div>
+
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Backups</h3>
+
+          <div class="toggleRow" style="margin-top:8px;">
+            <input id="setAutoBackup" type="checkbox" class="chk"/>
+            <div>
+              <b>Backup automático</b>
+              <div class="hint" style="margin:2px 0 0;">Guarda copia local periódica (cartas + mazos + ajustes).</div>
+            </div>
+          </div>
+
+          <label style="margin-top:10px;">Frecuencia</label>
+          <select id="setAutoBackupEvery">
+            <option value="5">Cada 5 min</option>
+            <option value="10">Cada 10 min</option>
+            <option value="30">Cada 30 min</option>
+            <option value="60">Cada 60 min</option>
+          </select>
+
+          <div class="footerbar" style="margin-top:10px;">
+            <button class="btn ghost" id="btnBackupNow">Guardar backup ahora</button>
+            <button class="btn ghost" id="btnBackupDownload">Descargar backup</button>
+            <button class="btn ghost" id="btnBackupRestore">Restaurar último</button>
+          </div>
+
+          <div class="hint" id="backupInfo" style="margin-top:8px;"></div>
         </div>
       </div>
     </section>
@@ -811,10 +1550,17 @@
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    setPersistence,
+    browserLocalPersistence,
+    browserSessionPersistence,
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyC2CyBcmqd4dhuNtIX2sjUk_dadwriF0x8",
@@ -826,1036 +1572,75 @@
     measurementId: "G-T3PQ24KKCF"
   };
 
-  const app   = initializeApp(firebaseConfig);
-  const auth  = getAuth(app);
-  const db    = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-  // Exponer globalmente para que el resto del código los use
   window._fbAuth = auth;
-  window._fbDb   = db;
-  window._fbFns  = {
+  window._fbDb = db;
+  window._fbFns = {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
     onAuthStateChanged,
+    setPersistence,
+    browserLocalPersistence,
+    browserSessionPersistence,
     doc,
     setDoc,
-    getDoc
+    getDoc,
   };
 
-  // Auto-login si hay sesión activa en Firebase
-  onAuthStateChanged(auth, (user) => {
+  async function loadUserProfile(user) {
+    try {
+      const snap = await getDoc(doc(db, "users", user.uid, "profile", "main"));
+      return snap.exists() ? snap.data() : null;
+    } catch {
+      return null;
+    }
+  }
+
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
       window._fbCurrentUser = user;
-      // Cargar datos de la nube cuando el usuario ya está logueado
-      if (typeof window.cloudLoadAll === "function") {
-        window.cloudLoadAll().then(() => {
-          if (typeof window.showApp === "function") window.showApp();
+      const profile = await loadUserProfile(user);
+      if (typeof window.setAuthTop === "function") {
+        window.setAuthTop({
+          email: user.email || "",
+          username: profile?.username || (user.email ? user.email.split("@")[0] : "")
         });
+      }
+      if (typeof window.cloudLoadAll === "function") {
+        await window.cloudLoadAll();
+      }
+      if (typeof window.showApp === "function") {
+        window.showApp();
       }
     } else {
       window._fbCurrentUser = null;
+      if (typeof window.setAuthTop === "function") window.setAuthTop(null);
+      if (typeof window.showLogin === "function") window.showLogin();
     }
   });
 </script>
 
 <script>
-/************************************************************
- * DATA MODELS
- ************************************************************/
-let cards = [];
-let decks = [];
-let wishlist = [];
-let currentDeckId = null;
-let sortState = { col: "name", asc: true };
 
-const DEFAULT_SETTINGS = {
-  fontSize: "16px",
-  density: "normal",
-  theme: "default",
-  motion: "normal"
-};
-let settings = { ...DEFAULT_SETTINGS };
+// ===== Firebase Auth + Firestore (GitHub Pages) =====
+// La rareza cuántica ahora vive en Firebase, no en Deno.
 
-/************************************************************
- * PERSISTENCIA LOCAL (localStorage)
- ************************************************************/
-function saveCards() {
-  try{ localStorage.setItem("mtg_cards", JSON.stringify(cards)); }catch{}
-}
-function loadCards() {
-  try{
-    const s = localStorage.getItem("mtg_cards");
-    if(s) cards = JSON.parse(s);
-  }catch{}
-}
-function saveDecks() {
-  try{ localStorage.setItem("mtg_decks", JSON.stringify(decks)); }catch{}
-}
-function loadDecks() {
-  try{
-    const s = localStorage.getItem("mtg_decks");
-    if(s) decks = JSON.parse(s);
-  }catch{}
-}
-function saveWishlist() {
-  try{ localStorage.setItem("mtg_wishlist", JSON.stringify(wishlist)); }catch{}
-}
-function loadWishlist() {
-  try{
-    const s = localStorage.getItem("mtg_wishlist");
-    if(s) wishlist = JSON.parse(s);
-  }catch{}
-}
-function saveSettings() {
-  try{ localStorage.setItem("mtg_settings", JSON.stringify(settings)); }catch{}
-}
-function loadSettings() {
-  try{
-    const s = localStorage.getItem("mtg_settings");
-    if(s) settings = { ...DEFAULT_SETTINGS, ...JSON.parse(s) };
-  }catch{}
-}
-function clearSession() {
+function clearSession(){
   cards = [];
   decks = [];
   wishlist = [];
   settings = { ...DEFAULT_SETTINGS };
-  try{
-    localStorage.removeItem("mtg_cards");
-    localStorage.removeItem("mtg_decks");
-    localStorage.removeItem("mtg_wishlist");
-    localStorage.removeItem("mtg_settings");
-  }catch{}
-}
-
-/************************************************************
- * COLECCIÓN: Añadir, eliminar, ordenar
- ************************************************************/
-function addCard() {
-  const name   = document.getElementById("newCardName").value.trim();
-  const set    = document.getElementById("newCardSet").value.trim();
-  const lang   = document.getElementById("newCardLang").value;
-  const cond   = document.getElementById("newCardCondition").value;
-  const foil   = document.getElementById("newCardFoil").value;
-  const qty    = parseInt(document.getElementById("newCardQuantity").value) || 1;
-  const price  = parseFloat(document.getElementById("newCardPrice").value) || 0;
-
-  if(!name){
-    alert("Escribe el nombre de la carta");
-    return;
-  }
-
-  const id = Date.now() + "_" + Math.random().toString(36).slice(2);
-  cards.push({ id, name, set, lang, condition:cond, foil, quantity:qty, price });
-  saveCards();
-  cloudSaveAll();
-  renderCards();
-  document.getElementById("newCardName").value = "";
-  document.getElementById("newCardSet").value = "";
-  document.getElementById("newCardQuantity").value = "1";
-  document.getElementById("newCardPrice").value = "";
-}
-
-function deleteCard(id) {
-  if(!confirm("¿Eliminar esta carta?")) return;
-  cards = cards.filter(c => c.id !== id);
-  saveCards();
-  cloudSaveAll();
-  renderCards();
-}
-
-function editCard(id) {
-  const c = cards.find(x => x.id === id);
-  if(!c) return;
-  const newName = prompt("Nombre:", c.name);
-  if(newName === null) return;
-  c.name = newName.trim() || c.name;
-
-  const newSet = prompt("Edición:", c.set);
-  if(newSet !== null) c.set = newSet.trim();
-
-  const newLang = prompt("Idioma:", c.lang);
-  if(newLang !== null) c.lang = newLang.trim();
-
-  const newCond = prompt("Estado:", c.condition);
-  if(newCond !== null) c.condition = newCond.trim();
-
-  const newFoil = prompt("Foil (Sí/No):", c.foil);
-  if(newFoil !== null) c.foil = newFoil.trim();
-
-  const newQty = prompt("Cantidad:", c.quantity);
-  if(newQty !== null) c.quantity = parseInt(newQty) || c.quantity;
-
-  const newPrice = prompt("Precio unitario:", c.price);
-  if(newPrice !== null) c.price = parseFloat(newPrice) || c.price;
-
-  saveCards();
-  cloudSaveAll();
-  renderCards();
-}
-
-function sortCards(col) {
-  if(sortState.col === col) {
-    sortState.asc = !sortState.asc;
-  } else {
-    sortState.col = col;
-    sortState.asc = true;
-  }
-  const mult = sortState.asc ? 1 : -1;
-  cards.sort((a,b)=>{
-    let A = a[col], B = b[col];
-    if(typeof A === "string") A = A.toLowerCase();
-    if(typeof B === "string") B = B.toLowerCase();
-    if(A < B) return -1*mult;
-    if(A > B) return 1*mult;
-    return 0;
-  });
-  renderCards();
-}
-
-function renderCards() {
-  const tbody = document.getElementById("cardsBody");
-  if(!tbody) return;
-  tbody.innerHTML = "";
-  cards.forEach(c => {
-    const tr = document.createElement("tr");
-    const total = (c.quantity * c.price).toFixed(2);
-    tr.innerHTML = `
-      <td>${c.name}</td>
-      <td>${c.set || "—"}</td>
-      <td>${c.lang || "—"}</td>
-      <td>${c.condition || "—"}</td>
-      <td>${c.foil || "—"}</td>
-      <td>${c.quantity}</td>
-      <td>${c.price.toFixed(2)}€</td>
-      <td>${total}€</td>
-      <td>
-        <button class="btn ghost tiny" onclick="editCard('${c.id}')">✏️</button>
-        <button class="btn danger tiny" onclick="deleteCard('${c.id}')">🗑️</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-/************************************************************
- * BUSCAR CARTA EN SCRYFALL
- ************************************************************/
-async function searchCardScryfall() {
-  const nameEl = document.getElementById("searchCardName");
-  const setEl  = document.getElementById("searchCardSet");
-  const langEl = document.getElementById("searchLang");
-  const resultsDiv = document.getElementById("searchResults");
-
-  if(!nameEl || !resultsDiv) return;
-  const cardName = nameEl.value.trim();
-  if(!cardName){
-    alert("Escribe el nombre de una carta");
-    return;
-  }
-
-  resultsDiv.innerHTML = "<p>Buscando...</p>";
-
-  try {
-    let query = `!"${cardName}"`;
-    const setV = (setEl?.value || "").trim();
-    if(setV) query += ` set:${setV}`;
-
-    const langV = (langEl?.value || "").trim();
-    if(langV) query += ` lang:${langV}`;
-
-    const url = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(query)}`;
-    const resp = await fetch(url);
-    const data = await resp.json();
-
-    if(!data.data || data.data.length === 0){
-      resultsDiv.innerHTML = "<p>No se encontraron resultados.</p>";
-      return;
-    }
-
-    let html = "";
-    data.data.slice(0,10).forEach(card => {
-      const imgUrl = card.image_uris ? card.image_uris.normal : (card.card_faces && card.card_faces[0].image_uris ? card.card_faces[0].image_uris.normal : "");
-      const setName = card.set_name || "";
-      const rarity = card.rarity || "";
-      const type = card.type_line || "";
-      const oracle = card.oracle_text || "";
-      const price = card.prices?.eur || "—";
-
-      html += `
-        <div class="cardrow mb10">
-          <div class="cardrow-left">
-            ${imgUrl ? `<img class="cardimg" src="${imgUrl}" alt="${card.name}"/>` : ""}
-          </div>
-          <div class="cardrow-main">
-            <div class="cardrow-name">${card.name}</div>
-            <div class="cardrow-info">
-              <strong>Edición:</strong> ${setName} (${card.set.toUpperCase()})<br>
-              <strong>Rareza:</strong> ${rarity}<br>
-              <strong>Tipo:</strong> ${type}<br>
-              <strong>Precio:</strong> ${price}€<br>
-              <strong>Texto:</strong> ${oracle.substring(0,120)}...
-            </div>
-          </div>
-        </div>
-      `;
-    });
-
-    resultsDiv.innerHTML = html;
-  } catch(e) {
-    resultsDiv.innerHTML = `<p style="color:#ef4444">Error: ${e.message}</p>`;
-  }
-}
-
-/************************************************************
- * MAZOS
- ************************************************************/
-function createDeck() {
-  const nameEl = document.getElementById("newDeckName");
-  if(!nameEl) return;
-  const name = nameEl.value.trim();
-  if(!name){
-    alert("Escribe un nombre para el mazo");
-    return;
-  }
-  const id = Date.now() + "_" + Math.random().toString(36).slice(2);
-  decks.push({ id, name, cards: [] });
-  saveDecks();
-  cloudSaveAll();
-  nameEl.value = "";
-  renderDecksList();
-}
-
-function renderDecksList() {
-  const div = document.getElementById("decksList");
-  if(!div) return;
-  div.innerHTML = "";
-  if(decks.length === 0){
-    div.innerHTML = "<p class='hint'>No tienes mazos. Crea uno arriba.</p>";
-    return;
-  }
-  decks.forEach(d => {
-    const count = d.cards.reduce((sum, c) => sum + c.quantity, 0);
-    const card = document.createElement("div");
-    card.className = "deck-card";
-    card.onclick = () => openDeck(d.id);
-    card.innerHTML = `
-      <div class="deck-header">
-        <div class="deck-icon">🎴</div>
-        <div class="deck-name">${d.name}</div>
-      </div>
-      <div class="deck-count">${count} cartas</div>
-    `;
-    div.appendChild(card);
-  });
-}
-
-function openDeck(id) {
-  currentDeckId = id;
-  const deck = decks.find(d => d.id === id);
-  if(!deck) return;
-  document.getElementById("decksList").style.display = "none";
-  document.getElementById("deckDetail").style.display = "block";
-  document.getElementById("deckDetailName").textContent = deck.name;
-  renderDeckCards();
-}
-
-function closeDeck() {
-  currentDeckId = null;
-  document.getElementById("decksList").style.display = "";
-  document.getElementById("deckDetail").style.display = "none";
-}
-
-function deleteDeck() {
-  if(!currentDeckId) return;
-  if(!confirm("¿Eliminar este mazo?")) return;
-  decks = decks.filter(d => d.id !== currentDeckId);
-  saveDecks();
-  cloudSaveAll();
-  closeDeck();
-  renderDecksList();
-}
-
-function addCardToDeck() {
-  if(!currentDeckId) return;
-  const deck = decks.find(d => d.id === currentDeckId);
-  if(!deck) return;
-
-  const nameEl = document.getElementById("deckAddCardName");
-  const qtyEl  = document.getElementById("deckAddCardQty");
-  if(!nameEl || !qtyEl) return;
-
-  const name = nameEl.value.trim();
-  const qty  = parseInt(qtyEl.value) || 1;
-  if(!name){
-    alert("Escribe el nombre de la carta");
-    return;
-  }
-
-  const existing = deck.cards.find(c => c.name.toLowerCase() === name.toLowerCase());
-  if(existing) {
-    existing.quantity += qty;
-  } else {
-    deck.cards.push({ name, quantity: qty });
-  }
-
-  saveDecks();
-  cloudSaveAll();
-  renderDeckCards();
-  nameEl.value = "";
-  qtyEl.value = "1";
-}
-
-function removeDeckCard(cardName) {
-  if(!currentDeckId) return;
-  const deck = decks.find(d => d.id === currentDeckId);
-  if(!deck) return;
-  deck.cards = deck.cards.filter(c => c.name !== cardName);
-  saveDecks();
-  cloudSaveAll();
-  renderDeckCards();
-}
-
-function renderDeckCards() {
-  if(!currentDeckId) return;
-  const deck = decks.find(d => d.id === currentDeckId);
-  if(!deck) return;
-
-  const div = document.getElementById("deckCards");
-  if(!div) return;
-  if(deck.cards.length === 0){
-    div.innerHTML = "<p class='hint'>No hay cartas en este mazo.</p>";
-    return;
-  }
-
-  let html = "<table><thead><tr><th>Carta</th><th>Cantidad</th><th>Acción</th></tr></thead><tbody>";
-  deck.cards.forEach(c => {
-    html += `
-      <tr>
-        <td>${c.name}</td>
-        <td>${c.quantity}</td>
-        <td><button class="btn danger tiny" onclick="removeDeckCard('${c.name}')">🗑️</button></td>
-      </tr>
-    `;
-  });
-  html += "</tbody></table>";
-  div.innerHTML = html;
-}
-
-/************************************************************
- * WISHLIST
- ************************************************************/
-function addWish() {
-  const nameEl = document.getElementById("wishCardName");
-  const setEl  = document.getElementById("wishCardSet");
-  const prioEl = document.getElementById("wishPriority");
-  if(!nameEl || !prioEl) return;
-
-  const name = nameEl.value.trim();
-  const set  = (setEl?.value || "").trim();
-  const prio = prioEl.value;
-
-  if(!name){
-    alert("Escribe el nombre de la carta");
-    return;
-  }
-
-  const id = Date.now() + "_" + Math.random().toString(36).slice(2);
-  wishlist.push({ id, name, set, priority: prio });
-  saveWishlist();
-  cloudSaveAll();
-  renderWishlist();
-  nameEl.value = "";
-  if(setEl) setEl.value = "";
-}
-
-function deleteWish(id) {
-  if(!confirm("¿Eliminar de la wishlist?")) return;
-  wishlist = wishlist.filter(w => w.id !== id);
-  saveWishlist();
-  cloudSaveAll();
-  renderWishlist();
-}
-
-function renderWishlist() {
-  const div = document.getElementById("wishlistDiv");
-  if(!div) return;
-  if(wishlist.length === 0){
-    div.innerHTML = "<p class='hint'>Tu wishlist está vacía.</p>";
-    return;
-  }
-
-  let html = "<table><thead><tr><th>Carta</th><th>Edición</th><th>Prioridad</th><th>Acción</th></tr></thead><tbody>";
-  wishlist.forEach(w => {
-    html += `
-      <tr>
-        <td>${w.name}</td>
-        <td>${w.set || "—"}</td>
-        <td><span class="pill">${w.priority}</span></td>
-        <td><button class="btn danger tiny" onclick="deleteWish('${w.id}')">🗑️</button></td>
-      </tr>
-    `;
-  });
-  html += "</tbody></table>";
-  div.innerHTML = html;
-}
-
-/************************************************************
- * ESTADÍSTICAS (Chart.js)
- ************************************************************/
-function renderStats() {
-  const totalCards = cards.reduce((sum, c) => sum + c.quantity, 0);
-  const uniqueCards = cards.length;
-  const totalValue = cards.reduce((sum, c) => sum + (c.quantity * c.price), 0);
-  const foilsCount = cards.filter(c => c.foil === "Sí").reduce((sum, c) => sum + c.quantity, 0);
-
-  document.getElementById("statTotal").textContent = totalCards;
-  document.getElementById("statUnique").textContent = uniqueCards;
-  document.getElementById("statValue").textContent = totalValue.toFixed(2) + "€";
-  document.getElementById("statFoils").textContent = foilsCount;
-
-  // Idiomas
-  const langMap = {};
-  cards.forEach(c => {
-    const lang = c.lang || "Desconocido";
-    langMap[lang] = (langMap[lang] || 0) + c.quantity;
-  });
-  const langLabels = Object.keys(langMap);
-  const langData = langLabels.map(l => langMap[l]);
-
-  const ctxLang = document.getElementById("chartLang");
-  if(ctxLang){
-    if(window.chartLangInst) window.chartLangInst.destroy();
-    window.chartLangInst = new Chart(ctxLang, {
-      type: "pie",
-      data: {
-        labels: langLabels,
-        datasets: [{
-          data: langData,
-          backgroundColor: ["#f06292","#f8bbd0","#d81b60","#ec407a","#f48fb1","#fce4ec"]
-        }]
-      },
-      options: { responsive:true, plugins: { legend:{ position:"bottom" } } }
-    });
-  }
-
-  // Estados
-  const condMap = {};
-  cards.forEach(c => {
-    const cond = c.condition || "Desconocido";
-    condMap[cond] = (condMap[cond] || 0) + c.quantity;
-  });
-  const condLabels = Object.keys(condMap);
-  const condData = condLabels.map(l => condMap[l]);
-
-  const ctxCond = document.getElementById("chartCondition");
-  if(ctxCond){
-    if(window.chartCondInst) window.chartCondInst.destroy();
-    window.chartCondInst = new Chart(ctxCond, {
-      type: "doughnut",
-      data: {
-        labels: condLabels,
-        datasets: [{
-          data: condData,
-          backgroundColor: ["#f06292","#f8bbd0","#d81b60","#ec407a","#f48fb1"]
-        }]
-      },
-      options: { responsive:true, plugins: { legend:{ position:"bottom" } } }
-    });
-  }
-
-  // Top 10 ediciones
-  const setMap = {};
-  cards.forEach(c => {
-    const set = c.set || "Desconocido";
-    setMap[set] = (setMap[set] || 0) + c.quantity;
-  });
-  const setEntries = Object.entries(setMap).sort((a,b) => b[1] - a[1]).slice(0,10);
-  const setLabels = setEntries.map(e => e[0]);
-  const setData = setEntries.map(e => e[1]);
-
-  const ctxSets = document.getElementById("chartSets");
-  if(ctxSets){
-    if(window.chartSetsInst) window.chartSetsInst.destroy();
-    window.chartSetsInst = new Chart(ctxSets, {
-      type: "bar",
-      data: {
-        labels: setLabels,
-        datasets: [{
-          label: "Cantidad",
-          data: setData,
-          backgroundColor: "#f06292"
-        }]
-      },
-      options: {
-        responsive:true,
-        scales: {
-          y: { beginAtZero:true }
-        },
-        plugins: { legend: { display:false } }
-      }
-    });
-  }
-}
-
-/************************************************************
- * IMPORTAR/EXPORTAR
- ************************************************************/
-function exportCardsCSV() {
-  let csv = "Nombre,Edición,Idioma,Estado,Foil,Cantidad,Precio\n";
-  cards.forEach(c => {
-    csv += `"${c.name}","${c.set || ""}","${c.lang}","${c.condition}","${c.foil}",${c.quantity},${c.price}\n`;
-  });
-  downloadFile("coleccion.csv", csv);
-}
-
-function importCardsCSV() {
-  const area = document.getElementById("importArea");
-  if(!area) return;
-  const text = area.value.trim();
-  if(!text){
-    alert("Pega el CSV en el área de texto");
-    return;
-  }
-
-  const lines = text.split("\n");
-  let imported = 0;
-  for(let i=0; i<lines.length; i++){
-    const line = lines[i].trim();
-    if(!line || line.startsWith("Nombre")) continue;
-
-    const parts = line.split(",").map(p => p.replace(/^"|"$/g,"").trim());
-    if(parts.length < 7) continue;
-
-    const [name, set, lang, condition, foil, quantity, price] = parts;
-    const qty = parseInt(quantity) || 1;
-    const pr = parseFloat(price) || 0;
-
-    const id = Date.now() + "_" + Math.random().toString(36).slice(2);
-    cards.push({ id, name, set, lang, condition, foil, quantity:qty, price:pr });
-    imported++;
-  }
-
-  if(imported > 0){
-    saveCards();
-    cloudSaveAll();
-    renderCards();
-    alert(`Importadas ${imported} cartas.`);
-    area.value = "";
-  } else {
-    alert("No se pudo importar ninguna carta.");
-  }
-}
-
-function exportDecksJSON() {
-  const json = JSON.stringify(decks, null, 2);
-  downloadFile("mazos.json", json);
-}
-
-function exportAllJSON() {
-  const all = { cards, decks, wishlist, settings };
-  const json = JSON.stringify(all, null, 2);
-  downloadFile("backup_completo.json", json);
-}
-
-function downloadFile(filename, text) {
-  const blob = new Blob([text], { type:"text/plain" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-}
-
-/************************************************************
- * CONFIGURACIÓN
- ************************************************************/
-function applySettings() {
-  const fsEl   = document.getElementById("settingFontSize");
-  const densEl = document.getElementById("settingDensity");
-  const themeEl= document.getElementById("settingTheme");
-  const motEl  = document.getElementById("settingMotion");
-
-  if(fsEl) settings.fontSize = fsEl.value;
-  if(densEl) settings.density = densEl.value;
-  if(themeEl) settings.theme = themeEl.value;
-  if(motEl) settings.motion = motEl.value;
-
-  saveSettings();
-  cloudSaveAll();
-  loadSettingsIntoUI();
-}
-
-function loadSettingsIntoUI() {
-  document.documentElement.style.setProperty("--base-font", settings.fontSize);
-  document.body.dataset.density = settings.density;
-  document.body.dataset.theme = settings.theme;
-  document.documentElement.dataset.motion = settings.motion;
-
-  const fsEl = document.getElementById("settingFontSize");
-  const densEl = document.getElementById("settingDensity");
-  const themeEl = document.getElementById("settingTheme");
-  const motEl = document.getElementById("settingMotion");
-  if(fsEl) fsEl.value = settings.fontSize;
-  if(densEl) densEl.value = settings.density;
-  if(themeEl) themeEl.value = settings.theme;
-  if(motEl) motEl.value = settings.motion;
-}
-
-async function manualCloudSave() {
-  await cloudSaveAll();
-  alert("Datos guardados en la nube ✅");
-}
-
-async function manualCloudLoad() {
-  const ok = await cloudLoadAll();
-  if(ok){
-    renderCards();
-    renderDecksList();
-    renderWishlist();
-    renderStats();
-    alert("Datos cargados desde la nube ✅");
-  } else {
-    alert("No hay datos en la nube o error al cargar.");
-  }
-}
-
-/************************************************************
- * TABS
- ************************************************************/
-function switchTab(tabName) {
-  const allSections = ["cards","search","decks","wishlist","stats","import","settings"];
-  allSections.forEach(t => {
-    const sec = document.getElementById("tab_" + t);
-    if(sec) sec.style.display = (t === tabName) ? "block" : "none";
-  });
-
-  document.querySelectorAll(".tabbtn").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.tab === tabName);
-  });
-
-  if(tabName === "stats") renderStats();
-  if(tabName === "cards") renderCards();
-  if(tabName === "decks") {
-    renderDecksList();
-    closeDeck();
-  }
-  if(tabName === "wishlist") renderWishlist();
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".tabbtn").forEach(btn => {
-    btn.onclick = () => switchTab(btn.dataset.tab);
-  });
-  loadCards();
-  loadDecks();
-  loadWishlist();
-  loadSettings();
-  loadSettingsIntoUI();
-  switchTab("cards");
-});
-
-// ====================================================
-// FIREBASE: Guardar y cargar datos en la nube
-// ====================================================
-
-async function cloudSaveAll() {
-  const user = window._fbCurrentUser;
-  if (!user) return;
-  const { doc, setDoc } = window._fbFns;
-  const db = window._fbDb;
-  try {
-    const payload = {
-      cards,
-      decks,
-      wishlist,
-      settings,
-      sortState,
-      updatedAt: Date.now()
-    };
-    await setDoc(doc(db, "users", user.uid, "data", "main"), payload);
-  } catch(e) {
-    console.error("Error al guardar en nube:", e);
-  }
-}
-
-async function cloudLoadAll() {
-  const user = window._fbCurrentUser;
-  if (!user) return false;
-  const { doc, getDoc } = window._fbFns;
-  const db = window._fbDb;
-  try {
-    const snap = await getDoc(doc(db, "users", user.uid, "data", "main"));
-    if (!snap.exists()) return false;
-    const data = snap.data();
-    if (Array.isArray(data.cards))    cards    = data.cards;
-    if (Array.isArray(data.decks))    decks    = data.decks;
-    if (Array.isArray(data.wishlist)) wishlist = data.wishlist;
-    if (data.settings)  settings  = { ...DEFAULT_SETTINGS, ...data.settings };
-    if (data.sortState) sortState = data.sortState;
-    // Persistir localmente también
-    saveCards(); saveDecks(); saveWishlist(); saveSettings();
-    return true;
-  } catch(e) {
-    console.error("Error al cargar de nube:", e);
-    return false;
-  }
-}
-
-// Exponer funciones necesarias globalmente
-window.cloudLoadAll = cloudLoadAll;
-window.showApp = showApp;
-
-/************************************************************
- * Auth local: login/registro + recordar
- ************************************************************/
-const REMEMBER_KEY = "mtg_rosita_remember_v1";
-
-function showLogin(){
-  document.body.classList.add("not-authenticated");
-  document.body.classList.remove("app-enter");
-
-  const scr = document.getElementById("authScreen");
-  if(scr){
-    scr.style.display = "flex";
-    scr.classList.remove("is-exit");
-    void scr.offsetWidth;
-    scr.classList.add("is-enter");
-  }
-}
-
-function showApp(){
-  const scr = document.getElementById("authScreen");
-  if(scr){
-    scr.classList.remove("is-enter");
-    scr.classList.add("is-exit");
-    setTimeout(()=>{ scr.style.display = "none"; }, 380);
-  }
-  document.body.classList.remove("not-authenticated");
-  document.body.classList.add("app-enter");
-  setTimeout(()=> document.body.classList.remove("app-enter"), 450);
-}
-
-function setAuthTop(user){
-  const status = document.getElementById("authStatus");
-  const btnOut = document.getElementById("btnSignOutTop");
-  if(status){
-    status.textContent = user ? `👤 ${user.username || ""} ${user.email ? "("+user.email+")" : ""}`.trim() : "No logueado";
-  }
-  if(btnOut) btnOut.style.display = user ? "" : "none";
-}
-
-function setMsg(text, ok=false){
-  const msg = document.getElementById("authMsg");
-  if(!msg) return;
-  msg.style.color = ok ? "#16a34a" : "#ef4444";
-  msg.textContent = text || "";
-}
-
-function setMsg2(text, ok=false){
-  const msg = document.getElementById("authMsg2");
-  if(!msg) return;
-  msg.style.color = ok ? "#16a34a" : "#ef4444";
-  msg.textContent = text || "";
-}
-
-function showAuthView(which){
-  const login = document.getElementById("authLoginView");
-  const signup = document.getElementById("authSignupView");
-  if(!login || !signup) return;
-  if(which === "signup"){
-    login.style.display = "none";
-    signup.style.display = "grid";
-  }else{
-    signup.style.display = "none";
-    login.style.display = "grid";
-  }
-  try{ setMsg(""); }catch{}
-  try{ setMsg2(""); }catch{}
-}
-
-function isValidEmail(email){
-  const e = String(email||"").trim();
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
-}
-
-function isStrongPassword(pw){
-  const p = String(pw||"");
-  if(p.length < 8) return false;
-  if(!/[A-Za-z]/.test(p)) return false;
-  if(!/\d/.test(p)) return false;
-  return true;
-}
-
-function getRememberPref(){
-  try{
-    const v = localStorage.getItem(REMEMBER_KEY);
-    return v !== "0";
-  }catch{ return true; }
-}
-function setRememberPref(v){
-  try{ localStorage.setItem(REMEMBER_KEY, v ? "1" : "0"); }catch{}
-}
-
-function signOutAndReturnToLogin(){
-  clearSession();
-  setAuthTop(null);
-  showLogin();
-}
-
-async function initAuth() {
-  const emailEl   = document.getElementById("authEmail");
-  const passEl    = document.getElementById("authPass");
-  const chkRem    = document.getElementById("authRemember");
-  const btnIn     = document.getElementById("btnSignIn");
-  const btnUp     = document.getElementById("btnSignUp");
-  const btnOutTop = document.getElementById("btnSignOutTop");
-
-  const suUserEl  = document.getElementById("suUsername");
-  const suEmailEl = document.getElementById("suEmail");
-  const suEmail2El= document.getElementById("suEmail2");
-  const suPassEl  = document.getElementById("suPass");
-  const suPass2El = document.getElementById("suPass2");
-  const btnCreate = document.getElementById("btnCreateAccount");
-  const btnBack   = document.getElementById("btnBackToLogin");
-
-  showLogin();
-  showAuthView("login");
-
-  // Volver al login
-  if (btnBack) btnBack.onclick = () => showAuthView("login");
-
-  // Mostrar registro
-  if (btnUp) btnUp.onclick = () => {
-    setMsg("");
-    showAuthView("signup");
-    if (emailEl?.value && suEmailEl) suEmailEl.value = emailEl.value;
-  };
-
-  // Cerrar sesión
-  if (btnOutTop) btnOutTop.onclick = async () => {
-    await window._fbFns.signOut(window._fbAuth);
-    clearSession();
-    setAuthTop(null);
-    showLogin();
-  };
-
-  // ── CREAR CUENTA ──
-  if (btnCreate) btnCreate.onclick = async () => {
-    setMsg2("");
-    const username = (suUserEl?.value || "").trim();
-    const email1   = (suEmailEl?.value || "").trim();
-    const email2   = (suEmail2El?.value || "").trim();
-    const pass1    = suPassEl?.value || "";
-    const pass2    = suPass2El?.value || "";
-
-    if (!username)       return setMsg2("Escribe un nombre de usuario.");
-    if (!email1 || !email2) return setMsg2("Completa y confirma el email.");
-    if (email1.toLowerCase() !== email2.toLowerCase()) return setMsg2("Los emails no coinciden.");
-    if (!isValidEmail(email1)) return setMsg2("El email no es válido.");
-    if (!pass1 || !pass2) return setMsg2("Completa y repite la contraseña.");
-    if (pass1 !== pass2) return setMsg2("Las contraseñas no coinciden.");
-    if (!isStrongPassword(pass1)) return setMsg2("Mínimo 8 caracteres, letras y números.");
-
-    try {
-      const { createUserWithEmailAndPassword, doc, setDoc } = window._fbFns;
-      const cred = await createUserWithEmailAndPassword(window._fbAuth, email1, pass1);
-      // Guardar username en Firestore
-      await setDoc(doc(window._fbDb, "users", cred.user.uid, "profile", "main"), {
-        username,
-        email: email1,
-        createdAt: Date.now()
-      });
-      showAuthView("login");
-      if (emailEl) emailEl.value = email1;
-      setMsg("Cuenta creada ✅ Ya puedes iniciar sesión.", true);
-    } catch(e) {
-      const msgs = {
-        "auth/email-already-in-use": "Ya existe una cuenta con ese email.",
-        "auth/weak-password": "Contraseña demasiado débil.",
-        "auth/invalid-email": "Email no válido."
-      };
-      setMsg2(msgs[e.code] || "Error al crear cuenta: " + e.message);
-    }
-  };
-
-  // ── INICIAR SESIÓN ──
-  if (btnIn) btnIn.onclick = async () => {
-    setMsg("");
-    const email    = (emailEl?.value || "").trim();
-    const password = passEl?.value || "";
-    if (!email || !password) return setMsg("Completa email y contraseña.");
-
-    try {
-      const { signInWithEmailAndPassword } = window._fbFns;
-      const cred = await signInWithEmailAndPassword(window._fbAuth, email, password);
-      window._fbCurrentUser = cred.user;
-      setAuthTop({ email: cred.user.email, username: cred.user.email.split("@")[0] });
-      await cloudLoadAll();
-      showApp();
-    } catch(e) {
-      const msgs = {
-        "auth/invalid-credential": "Email o contraseña incorrectos.",
-        "auth/user-not-found": "No existe esa cuenta.",
-        "auth/wrong-password": "Contraseña incorrecta.",
-        "auth/too-many-requests": "Demasiados intentos. Espera un momento."
-      };
-      setMsg(msgs[e.code] || "Error: " + e.message);
-    }
-  };
-
-  // El onAuthStateChanged del módulo de Firebase maneja el auto-login
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  initAuth();
-});
-
-</script>
-
-</body>
-</html>
-
-// ===== Auth local (sin Supabase) =====
-// Nota: esto SOLO gestiona login/registro en este archivo.
-// Los datos de la colección siguen guardándose en el navegador (localStorage), como antes.
-
-const USERS_KEY   = "mtg_rosita_users_v1";
-const SESSION_KEY = "mtg_rosita_session_v1";
-
-function loadUsers(){
-  try{ return JSON.parse(localStorage.getItem(USERS_KEY) || "[]"); }catch{ return []; }
-}
-function saveUsers(users){
-  try{ localStorage.setItem(USERS_KEY, JSON.stringify(users||[])); }catch{}
-}
-function setSession(user, remember){
-  const payload = { id: user.id, email: user.email, username: user.username };
-  try{
-    if(remember){
-      localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
-      sessionStorage.removeItem(SESSION_KEY);
-    }else{
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(payload));
-      localStorage.removeItem(SESSION_KEY);
-    }
-  }catch{}
-  return payload;
-}
-function clearSession(){
-  try{ localStorage.removeItem(SESSION_KEY); }catch{}
-  try{ sessionStorage.removeItem(SESSION_KEY); }catch{}
-}
-function getSession(){
-  try{
-    const a = localStorage.getItem(SESSION_KEY);
-    if(a) return JSON.parse(a);
-  }catch{}
-  try{
-    const b = sessionStorage.getItem(SESSION_KEY);
-    if(b) return JSON.parse(b);
-  }catch{}
-  return null;
+  sortState = { col: "name", asc: true };
+
+  try{ localStorage.removeItem("mtg_rosita_cards_v9"); }catch{}
+  try{ localStorage.removeItem("mtg_rosita_decks_v9"); }catch{}
+  try{ localStorage.removeItem("mtg_rosita_wishlist_v1"); }catch{}
+  try{ localStorage.removeItem("mtg_rosita_settings_v9"); }catch{}
+  try{ localStorage.removeItem("mtg_rosita_sort_v9"); }catch{}
 }
 
 /************************************************************
@@ -1897,22 +1682,27 @@ function loadWithMigration(primaryKey, oldKeys, fallback){
  * Ajustes (Tema + letra + extras)
  ************************************************************/
 const THEME_PRESETS = {
-  // Rosa (predeterminado)
-  pink:  { bg:"#fff0f6", card:"#ffffff", pink:"#f06292", pink2:"#d81b60", soft:"#f8bbd0", line:"#f2c5d5", text:"#4a2c37", muted:"#7a4a5a", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(216,27,96,.10)" },
-  // Blanco - Llanuras (W)
-  white: { bg:"#fafaf7", card:"#ffffff", pink:"#c8a84b", pink2:"#8b6914", soft:"#f5f0dc", line:"#e8dfc4", text:"#2a2416", muted:"#6b5a38", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(139,105,20,.10)" },
-  // Azul - Islas (U)
-  blue:  { bg:"#eff6ff", card:"#ffffff", pink:"#3b82f6", pink2:"#1d4ed8", soft:"#bfdbfe", line:"#c7d2fe", text:"#1e2a44", muted:"#4b5b7a", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(29,78,216,.12)" },
-  // Negro - Pantanos (B)
-  black: { bg:"#0b0b10", card:"#111827", pink:"#a78bfa", pink2:"#7c3aed", soft:"#1f2937", line:"#374151", text:"#e5e7eb", muted:"#9ca3af", inputBg:"#0f172a", inputText:"#e5e7eb", tableBg:"#0f172a", shadow:"0 10px 26px rgba(0,0,0,.45)" },
-  // Rojo - Montanas (R)
-  red:   { bg:"#fff1f1", card:"#ffffff", pink:"#ef4444", pink2:"#b91c1c", soft:"#fecaca", line:"#f5b5b5", text:"#3a1f1f", muted:"#7a4a4a", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(185,28,28,.12)" },
-  // Verde - Bosques (G)
+  
+  pink: {
+    bg:"#fff0f6",
+    card:"#ffffff",
+    pink:"#f06292",
+    pink2:"#d81b60",
+    soft:"#f8bbd0",
+    line:"#f2c5d5",
+    text:"#4a2c37",
+    muted:"#7a4a5a",
+    inputBg:"#ffffff",
+    inputText:"#111827",
+    tableBg:"#ffffff",
+    shadow:"0 10px 24px rgba(216,27,96,.10)"
+  },
+
+  red:   { bg:"#fff5f5", card:"#ffffff", pink:"#dc2626", pink2:"#991b1b", soft:"#fee2e2", line:"#fecaca", text:"#111827", muted:"#6b7280", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(220,38,38,.14)" },
   green: { bg:"#ecfdf5", card:"#ffffff", pink:"#22c55e", pink2:"#15803d", soft:"#bbf7d0", line:"#a7f3d0", text:"#15352a", muted:"#3f6b57", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(21,128,61,.12)" },
-  // Oro - Multicolor
-  gold:  { bg:"#fffbeb", card:"#ffffff", pink:"#d97706", pink2:"#92400e", soft:"#fde68a", line:"#fcd34d", text:"#3d2a08", muted:"#78550e", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(146,64,14,.12)" },
-  // Alias de compatibilidad
-  yellow: { bg:"#fffbeb", card:"#ffffff", pink:"#f59e0b", pink2:"#b45309", soft:"#fde68a", line:"#fcd34d", text:"#4a2c0f", muted:"#7a5a2f", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(180,83,9,.12)" },
+  yellow:{ bg:"#fffbeb", card:"#ffffff", pink:"#f59e0b", pink2:"#b45309", soft:"#fde68a", line:"#fcd34d", text:"#4a2c0f", muted:"#7a5a2f", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(180,83,9,.12)" },
+  blue:  { bg:"#eff6ff", card:"#ffffff", pink:"#3b82f6", pink2:"#1d4ed8", soft:"#bfdbfe", line:"#c7d2fe", text:"#1e2a44", muted:"#4b5b7a", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(29,78,216,.12)" },
+  black: { bg:"#0b0f17", card:"#141a24", pink:"#ff2ea6", pink2:"#d21a84", soft:"#1b2231", line:"#2a3447", text:"#e5e7eb", muted:"#9aa4b2", inputBg:"#0f1420", inputText:"#e5e7eb", tableBg:"#0f1420", shadow:"0 12px 28px rgba(0,0,0,.60)" },
 };
 
 const DEFAULT_SETTINGS = {
@@ -1936,6 +1726,13 @@ let settings = (() => {
   }
 })();
 
+
+if (!THEME_PRESETS[settings.theme]) {
+  settings.theme = "pink";
+  saveSettings();
+}
+
+
 function saveSettings(){ localStorage.setItem(LS_SETTINGS, JSON.stringify(settings)); 
   try{ cloudSaveAll(); }catch{}
 }
@@ -1955,7 +1752,13 @@ function applyThemePreset(key){
   root.style.setProperty("--input-text", preset.inputText);
   root.style.setProperty("--table-bg", preset.tableBg);
   root.style.setProperty("--shadow", preset.shadow);
-  document.body.dataset.theme = key;
+  
+  // Derived vars (theme-aware alphas)
+  root.style.setProperty("--accent-08", hexToRgba(preset.pink, 0.08));
+  root.style.setProperty("--accent-12", hexToRgba(preset.pink2, 0.12));
+  root.style.setProperty("--accent-15", hexToRgba(preset.pink, 0.15));
+  root.style.setProperty("--card-85",  hexToRgba(preset.card, 0.85));
+document.body.dataset.theme = key;
 }
 
 function applySettings(){
@@ -2019,17 +1822,24 @@ function normalizeDecks(){
 }
 normalizeDecks();
 
+// Evita bucles cuando aplicamos datos que vienen del backend
+let CLOUD_APPLYING = false;
+
 /************************************************************
  * Persist
  ************************************************************/
-function saveCards(){ localStorage.setItem(LS_KEY, JSON.stringify(cards)); try{ renderWishlist(); 
-  try{ cloudSaveAll(); }catch{}
-}catch{} }
-function saveDecks(){ localStorage.setItem(LS_DECKS, JSON.stringify(decks)); 
-  try{ cloudSaveAll(); }catch{}
+function saveCards(){
+  localStorage.setItem(LS_KEY, JSON.stringify(cards));
+  try{ renderWishlist(); }catch{}
+  try{ if(!CLOUD_APPLYING) cloudSaveAll(); }catch{}
 }
-function saveWishlist(){ localStorage.setItem(LS_WISHLIST, JSON.stringify(wishlist)); 
-  try{ cloudSaveAll(); }catch{}
+function saveDecks(){
+  localStorage.setItem(LS_DECKS, JSON.stringify(decks));
+  try{ if(!CLOUD_APPLYING) cloudSaveAll(); }catch{}
+}
+function saveWishlist(){
+  localStorage.setItem(LS_WISHLIST, JSON.stringify(wishlist));
+  try{ if(!CLOUD_APPLYING) cloudSaveAll(); }catch{}
 }
 
 function touchDeck(d){
@@ -2591,11 +2401,6 @@ function clearAddForm(){
   const s=document.getElementById("inSale"); if(s) s.checked=false;
 }
 
-function toTitleCase(str){
-  if(!str) return "";
-  return String(str).trim().replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-}
-
 function updateCardsMetrics(){
   let totalUnits=0;
   let sumEur=0;
@@ -3044,7 +2849,7 @@ function renderColorStats(){
   chartColors = new Chart(ctx, {
     type: "bar",
     data: { labels, datasets: [{ label: "Cartas por identidad de color (por cantidad)", data, backgroundColor: hexToRgba(accent, 0.30), borderColor: hexToRgba(accent2, 0.90), borderWidth: 1 }]},
-    options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { color: hexToRgba(getCssVar("--pink"), 0.08) } }, y: { grid: { color: hexToRgba(getCssVar("--pink"), 0.08) } } } }
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { color: "rgba(216, 27, 96, 0.08)" } }, y: { grid: { color: "rgba(216, 27, 96, 0.08)" } } } }
   });
 
   const sumDiv = document.getElementById("colorsSummary");
@@ -3080,7 +2885,7 @@ function renderTypeStats(){
     chartTypes = new Chart(ctxT, {
       type: "bar",
       data: { labels: typeLabels, datasets: [{ label: "Tipos (por cantidad)", data: typeData, backgroundColor: hexToRgba(accent, 0.22), borderColor: hexToRgba(accent2, 0.90), borderWidth: 1 }]},
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { color: hexToRgba(getCssVar("--pink"), 0.08) } }, y: { grid: { color: hexToRgba(getCssVar("--pink"), 0.08) } } } }
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { color: "rgba(216, 27, 96, 0.08)" } }, y: { grid: { color: "rgba(216, 27, 96, 0.08)" } } } }
     });
   }
 
@@ -4168,21 +3973,6 @@ function initSettingsUI(){
   motionChk.checked = settings.motion === "reduced";
   currencySel.value = settings.currency;
 
-  // Theme swatch clicks
-  document.querySelectorAll(".theme-swatch").forEach(sw=>{
-    sw.addEventListener("click", ()=>{
-      const t = sw.dataset.t;
-      settings.theme = t;
-      saveSettings();
-      applySettings();
-      if(themeSel) themeSel.value = t;
-      if(document.querySelector('section[data-page="stats_colores"]:not(.is-hidden)')) renderColorStats();
-      if(document.querySelector('section[data-page="stats_tipos"]:not(.is-hidden)')) renderTypeStats();
-      updateInvestmentUI();
-      renderSalesTable();
-    });
-  });
-
   themeSel.onchange = ()=>{
     settings.theme = themeSel.value;
     saveSettings();
@@ -4802,63 +4592,89 @@ function markSoldById(id){
 
 
 /************************************************************
- * Nube (desactivado): sin Supabase
- * - Se mantiene el guardado local (localStorage)
- * - Estas funciones quedan como no-ops para no romper el resto del código
+ * Nube (Firebase / Firestore)
  ************************************************************/
 function getAppPayload(){
   return { cards, decks, wishlist, settings, sortState };
 }
 
-// ====================================================
-// FIREBASE: Guardar y cargar datos en la nube
-// ====================================================
-
-async function cloudSaveAll() {
+let cloudSaveTimer = null;
+async function cloudSaveAll(){
   const user = window._fbCurrentUser;
-  if (!user) return;
-  const { doc, setDoc } = window._fbFns;
-  const db = window._fbDb;
-  try {
-    const payload = {
-      cards,
-      decks,
-      wishlist,
-      settings,
-      sortState,
-      updatedAt: Date.now()
-    };
-    await setDoc(doc(db, "users", user.uid, "data", "main"), payload);
-  } catch(e) {
-    console.error("Error al guardar en nube:", e);
-  }
+  if(!user || !window._fbDb || !window._fbFns) return;
+
+  if(cloudSaveTimer) clearTimeout(cloudSaveTimer);
+  cloudSaveTimer = setTimeout(async ()=>{
+    try{
+      const { doc, setDoc } = window._fbFns;
+      await setDoc(doc(window._fbDb, "users", user.uid, "app", "data"), {
+        ...getAppPayload(),
+        updatedAt: Date.now()
+      });
+    }catch(err){
+      console.warn("cloudSaveAll failed", err);
+    }
+  }, 800);
 }
 
-async function cloudLoadAll() {
+async function cloudLoadAll(){
   const user = window._fbCurrentUser;
-  if (!user) return false;
-  const { doc, getDoc } = window._fbFns;
-  const db = window._fbDb;
-  try {
-    const snap = await getDoc(doc(db, "users", user.uid, "data", "main"));
-    if (!snap.exists()) return false;
-    const data = snap.data();
-    if (Array.isArray(data.cards))    cards    = data.cards;
-    if (Array.isArray(data.decks))    decks    = data.decks;
-    if (Array.isArray(data.wishlist)) wishlist = data.wishlist;
-    if (data.settings)  settings  = { ...DEFAULT_SETTINGS, ...data.settings };
-    if (data.sortState) sortState = data.sortState;
-    // Persistir localmente también
-    saveCards(); saveDecks(); saveWishlist(); saveSettings();
+  if(!user || !window._fbDb || !window._fbFns) return false;
+
+  try{
+    const { doc, getDoc } = window._fbFns;
+    const snap = await getDoc(doc(window._fbDb, "users", user.uid, "app", "data"));
+    if(!snap.exists()) return false;
+
+    const payload = snap.data();
+    if(!payload || typeof payload !== "object") return false;
+
+    CLOUD_APPLYING = true;
+
+    if(Array.isArray(payload.cards)) cards = payload.cards;
+    if(Array.isArray(payload.decks)) decks = payload.decks;
+    if(Array.isArray(payload.wishlist)) wishlist = payload.wishlist;
+    if(payload.settings && typeof payload.settings === "object") settings = { ...DEFAULT_SETTINGS, ...payload.settings };
+    if(payload.sortState && typeof payload.sortState === "object") sortState = payload.sortState;
+
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(cards)); }catch{}
+    try{ localStorage.setItem(LS_DECKS, JSON.stringify(decks)); }catch{}
+    try{ localStorage.setItem(LS_WISHLIST, JSON.stringify(wishlist)); }catch{}
+    try{ localStorage.setItem(LS_SETTINGS, JSON.stringify(settings)); }catch{}
+    try{ localStorage.setItem(LS_SORT, JSON.stringify(sortState)); }catch{}
+
+    try{ normalizeCards(); }catch{}
+    try{ normalizeDecks(); }catch{}
+    try{ applySettings(); }catch{}
+    try{ renderTabs(); }catch{}
+    try{ renderCardsTableFull(); }catch{}
+    try{ renderSalesTable(); }catch{}
+    try{ updateCardsMetrics(); }catch{}
+    try{ updateInvestmentUI(); }catch{}
+    try{ renderWishlist(); }catch{}
+    try{ renderDecks(); }catch{}
+    try{ renderDeckDetail(); }catch{}
+    try{ renderColeccion(); }catch{}
+    try{ renderSearchResults(); }catch{}
+    try{ renderColorStats(); }catch{}
+    try{ renderTypeStats(); }catch{}
+
     return true;
-  } catch(e) {
-    console.error("Error al cargar de nube:", e);
+  }catch(err){
+    console.warn("cloudLoadAll failed", err);
     return false;
+  }finally{
+    CLOUD_APPLYING = false;
   }
 }
+
+window.cloudLoadAll = cloudLoadAll;
+window.showLogin = showLogin;
+window.showApp = showApp;
+window.setAuthTop = setAuthTop;
 
 /************************************************************
- * Auth local: login/registro + recordar
+ * Auth (Firebase): login/registro + recordar
  ************************************************************/
 const REMEMBER_KEY = "mtg_rosita_remember_v1";
 
@@ -4948,115 +4764,130 @@ function setRememberPref(v){
   try{ localStorage.setItem(REMEMBER_KEY, v ? "1" : "0"); }catch{}
 }
 
-function signOutAndReturnToLogin(){
+async function signOutAndReturnToLogin(){
+  try{
+    if(window._fbFns && window._fbAuth){
+      await window._fbFns.signOut(window._fbAuth);
+    }
+  }catch{}
   clearSession();
   setAuthTop(null);
   showLogin();
 }
 
-async function initAuth() {
-  const emailEl   = document.getElementById("authEmail");
-  const passEl    = document.getElementById("authPass");
-  const chkRem    = document.getElementById("authRemember");
-  const btnIn     = document.getElementById("btnSignIn");
-  const btnUp     = document.getElementById("btnSignUp");
+async function initAuth(){
+  const emailEl = document.getElementById("authEmail");
+  const passEl  = document.getElementById("authPass");
+  const chkRem  = document.getElementById("authRemember");
+  const btnUp   = document.getElementById("btnSignUp");
+  const btnIn   = document.getElementById("btnSignIn");
   const btnOutTop = document.getElementById("btnSignOutTop");
 
-  const suUserEl  = document.getElementById("suUsername");
+  const suUserEl = document.getElementById("suUsername");
   const suEmailEl = document.getElementById("suEmail");
-  const suEmail2El= document.getElementById("suEmail2");
-  const suPassEl  = document.getElementById("suPass");
+  const suEmail2El = document.getElementById("suEmail2");
+  const suPassEl = document.getElementById("suPass");
   const suPass2El = document.getElementById("suPass2");
   const btnCreate = document.getElementById("btnCreateAccount");
-  const btnBack   = document.getElementById("btnBackToLogin");
+  const btnBack = document.getElementById("btnBackToLogin");
 
   showLogin();
   showAuthView("login");
 
-  // Volver al login
-  if (btnBack) btnBack.onclick = () => showAuthView("login");
+  if(chkRem) chkRem.checked = getRememberPref();
 
-  // Mostrar registro
-  if (btnUp) btnUp.onclick = () => {
-    setMsg("");
-    showAuthView("signup");
-    if (emailEl?.value && suEmailEl) suEmailEl.value = emailEl.value;
-  };
+  if(btnUp){
+    btnUp.onclick = () => {
+      setMsg("");
+      showAuthView("signup");
+      if(emailEl?.value && suEmailEl) suEmailEl.value = emailEl.value;
+    };
+  }
 
-  // Cerrar sesión
-  if (btnOutTop) btnOutTop.onclick = async () => {
-    await window._fbFns.signOut(window._fbAuth);
-    clearSession();
-    setAuthTop(null);
-    showLogin();
-  };
+  if(btnBack){
+    btnBack.onclick = () => showAuthView("login");
+  }
 
-  // ── CREAR CUENTA ──
-  if (btnCreate) btnCreate.onclick = async () => {
-    setMsg2("");
-    const username = (suUserEl?.value || "").trim();
-    const email1   = (suEmailEl?.value || "").trim();
-    const email2   = (suEmail2El?.value || "").trim();
-    const pass1    = suPassEl?.value || "";
-    const pass2    = suPass2El?.value || "";
+  if(btnOutTop){
+    btnOutTop.onclick = async () => {
+      await signOutAndReturnToLogin();
+    };
+  }
 
-    if (!username)       return setMsg2("Escribe un nombre de usuario.");
-    if (!email1 || !email2) return setMsg2("Completa y confirma el email.");
-    if (email1.toLowerCase() !== email2.toLowerCase()) return setMsg2("Los emails no coinciden.");
-    if (!isValidEmail(email1)) return setMsg2("El email no es válido.");
-    if (!pass1 || !pass2) return setMsg2("Completa y repite la contraseña.");
-    if (pass1 !== pass2) return setMsg2("Las contraseñas no coinciden.");
-    if (!isStrongPassword(pass1)) return setMsg2("Mínimo 8 caracteres, letras y números.");
+  if(btnCreate){
+    btnCreate.onclick = async () => {
+      setMsg2("");
+      const username = (suUserEl?.value || "").trim();
+      const email1 = (suEmailEl?.value || "").trim();
+      const email2 = (suEmail2El?.value || "").trim();
+      const pass1 = suPassEl?.value || "";
+      const pass2 = suPass2El?.value || "";
 
-    try {
-      const { createUserWithEmailAndPassword, doc, setDoc } = window._fbFns;
-      const cred = await createUserWithEmailAndPassword(window._fbAuth, email1, pass1);
-      // Guardar username en Firestore
-      await setDoc(doc(window._fbDb, "users", cred.user.uid, "profile", "main"), {
-        username,
-        email: email1,
-        createdAt: Date.now()
-      });
-      showAuthView("login");
-      if (emailEl) emailEl.value = email1;
-      setMsg("Cuenta creada ✅ Ya puedes iniciar sesión.", true);
-    } catch(e) {
-      const msgs = {
-        "auth/email-already-in-use": "Ya existe una cuenta con ese email.",
-        "auth/weak-password": "Contraseña demasiado débil.",
-        "auth/invalid-email": "Email no válido."
-      };
-      setMsg2(msgs[e.code] || "Error al crear cuenta: " + e.message);
-    }
-  };
+      if(!username) return setMsg2("Escribe un nombre de usuario.");
+      if(!email1 || !email2) return setMsg2("Completa y confirma el email.");
+      if(email1.toLowerCase() !== email2.toLowerCase()) return setMsg2("Los emails no coinciden.");
+      if(!isValidEmail(email1)) return setMsg2("El email no es válido.");
+      if(!pass1 || !pass2) return setMsg2("Completa y repite la contraseña.");
+      if(pass1 !== pass2) return setMsg2("Las contraseñas no coinciden.");
+      if(!isStrongPassword(pass1)) return setMsg2("Mínimo 8 caracteres, letras y números.");
 
-  // ── INICIAR SESIÓN ──
-  if (btnIn) btnIn.onclick = async () => {
-    setMsg("");
-    const email    = (emailEl?.value || "").trim();
-    const password = passEl?.value || "";
-    if (!email || !password) return setMsg("Completa email y contraseña.");
+      try{
+        const { createUserWithEmailAndPassword, signOut, doc, setDoc } = window._fbFns;
+        const cred = await createUserWithEmailAndPassword(window._fbAuth, email1, pass1);
+        await setDoc(doc(window._fbDb, "users", cred.user.uid, "profile", "main"), {
+          username,
+          email: email1,
+          createdAt: Date.now()
+        });
 
-    try {
-      const { signInWithEmailAndPassword } = window._fbFns;
-      const cred = await signInWithEmailAndPassword(window._fbAuth, email, password);
-      window._fbCurrentUser = cred.user;
-      setAuthTop({ email: cred.user.email, username: cred.user.email.split("@")[0] });
-      await cloudLoadAll();
-      showApp();
-    } catch(e) {
-      const msgs = {
-        "auth/invalid-credential": "Email o contraseña incorrectos.",
-        "auth/user-not-found": "No existe esa cuenta.",
-        "auth/wrong-password": "Contraseña incorrecta.",
-        "auth/too-many-requests": "Demasiados intentos. Espera un momento."
-      };
-      setMsg(msgs[e.code] || "Error: " + e.message);
-    }
-  };
+        await signOut(window._fbAuth);
+        window._fbCurrentUser = null;
+        showAuthView("login");
+        if(emailEl) emailEl.value = email1;
+        if(passEl) passEl.value = "";
+        setMsg("Cuenta creada ✅ Ya puedes iniciar sesión.", true);
+      }catch(e){
+        const msgs = {
+          "auth/email-already-in-use": "Ya existe una cuenta con ese email.",
+          "auth/weak-password": "Contraseña demasiado débil.",
+          "auth/invalid-email": "Email no válido."
+        };
+        setMsg2(msgs[e.code] || ("Error al crear cuenta: " + (e.message || "desconocido")));
+      }
+    };
+  }
 
-  // El onAuthStateChanged del módulo de Firebase maneja el auto-login
+  if(btnIn){
+    btnIn.onclick = async () => {
+      setMsg("");
+      const email = (emailEl?.value || "").trim();
+      const password = passEl?.value || "";
+      const remember = !!chkRem?.checked;
+
+      if(!email || !password) return setMsg("Completa email y contraseña.");
+      if(!window._fbFns || !window._fbAuth) return setMsg("Firebase no está listo todavía.");
+
+      try{
+        setRememberPref(remember);
+        const { signInWithEmailAndPassword, setPersistence, browserLocalPersistence, browserSessionPersistence } = window._fbFns;
+        await setPersistence(window._fbAuth, remember ? browserLocalPersistence : browserSessionPersistence);
+        const cred = await signInWithEmailAndPassword(window._fbAuth, email, password);
+        window._fbCurrentUser = cred.user;
+        await cloudLoadAll();
+        showApp();
+      }catch(e){
+        const msgs = {
+          "auth/invalid-credential": "Email o contraseña incorrectos.",
+          "auth/user-not-found": "No existe esa cuenta.",
+          "auth/wrong-password": "Contraseña incorrecta.",
+          "auth/too-many-requests": "Demasiados intentos. Espera un momento."
+        };
+        setMsg(msgs[e.code] || ("Error: " + (e.message || "desconocido")));
+      }
+    };
+  }
 }
+
 
 window.addEventListener("DOMContentLoaded", () => {
   initAuth();
