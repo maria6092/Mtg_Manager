@@ -1,4 +1,3 @@
-// FASE 2: mueve aquí los listeners de .tabbtn.
 import { TABS } from '../core/constants.js';
 import { setSectionVisibility } from './router.js';
 import { renderCards } from './cards-ui.js';
@@ -9,13 +8,17 @@ import { renderStats } from './stats-ui.js';
 export function switchTab(tabName) {
   setSectionVisibility(tabName, TABS);
 
-  if (tabName === 'stats') renderStats();
+  document.querySelectorAll('.tabbtn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+
   if (tabName === 'cards') renderCards();
   if (tabName === 'decks') {
     renderDecksList();
     closeDeck();
   }
   if (tabName === 'wishlist') renderWishlist();
+  if (tabName === 'stats') renderStats();
 }
 
 export function initTabs() {

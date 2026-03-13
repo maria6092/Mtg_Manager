@@ -1,70 +1,54 @@
-// Reservado para una intro o dashboard inicial.
+import { escapeHtml } from '../core/utils.js';
 import { searchScryfallCards } from '../services/scryfall-service.js';
 
-export async function searchCardScryfall() {
-  const nameEl = document.getElementById('searchCardName');
-  const setEl = document.getElementById('searchCardSet');
-  const langEl = document.getElementById('searchLang');
-  const resultsDiv = document.getElementById('searchResults');
+export async function renderSearchResults() {
+  const cardName = document.getElementById('searchCardName')?.value.trim();
+  const setCode = document.getElementById('searchCardSet')?.value.trim();
+  const lang = document.getElementById('searchLang')?.value.trim();
+  const container = document.getElementById('searchResults');
+  if (!container) return;
 
-  if (!nameEl || !resultsDiv) return;
-
-  const cardName = nameEl.value.trim();
   if (!cardName) {
     alert('Escribe el nombre de una carta');
     return;
   }
 
-  resultsDiv.innerHTML = '<p>Buscando...</p>';
+  container.innerHTML = '<p class="hint">Buscando...</p>';
 
   try {
-    const data = await searchScryfallCards(cardName, setEl?.value || '', langEl?.value || '');
-
-    if (!data.length) {
-      resultsDiv.innerHTML = '<p>No se encontraron resultados.</p>';
+    const results = await searchScryfallCards(cardName, setCode, lang);
+    if (!results.length) {
+      container.innerHTML = '<p class="hint">No se encontraron resultados.</p>';
       return;
     }
 
-    let html = '';
-    data.forEach(card => {
-      const imgUrl = card.image_uris
-        ? card.image_uris.normal
-        : (card.card_faces && card.card_faces[0].image_uris
-            ? card.card_faces[0].image_uris.normal
-            : '');
-
-      const setName = card.set_name || '';
-      const rarity = card.rarity || '';
-      const type = card.type_line || '';
-      const oracle = card.oracle_text || '';
+    container.innerHTML = results.map(card => {
+      const image = card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal || '';
       const price = card.prices?.eur || '—';
-
-      html += `
-        <div class="cardrow mb10">
-          <div class="cardrow-left">
-            ${imgUrl ? `<img class="cardimg" src="${imgUrl}" alt="${card.name}"/>` : ''}
+      const oracle = (card.oracle_text || card.card_faces?.[0]?.oracle_text || '').slice(0, 120);
+      return `
+        <div class="cardrow mt10">
+          <div>
+            ${image ? `<img class="cardimg" src="${escapeHtml(image)}" alt="${escapeHtml(card.name)}">` : ''}
           </div>
-          <div class="cardrow-main">
-            <div class="cardrow-name">${card.name}</div>
+          <div>
+            <div class="cardrow-name">${escapeHtml(card.name)}</div>
             <div class="cardrow-info">
-              <strong>Edición:</strong> ${setName} (${(card.set || '').toUpperCase()})<br>
-              <strong>Rareza:</strong> ${rarity}<br>
-              <strong>Tipo:</strong> ${type}<br>
-              <strong>Precio:</strong> ${price}€<br>
-              <strong>Texto:</strong> ${oracle.substring(0, 120)}...
+              <strong>Edición:</strong> ${escapeHtml(card.set_name || '')} (${escapeHtml(String(card.set || '').toUpperCase())})<br>
+              <strong>Rareza:</strong> ${escapeHtml(card.rarity || '')}<br>
+              <strong>Tipo:</strong> ${escapeHtml(card.type_line || '')}<br>
+              <strong>Precio:</strong> ${escapeHtml(price)}€<br>
+              <strong>Texto:</strong> ${escapeHtml(oracle)}...
             </div>
           </div>
         </div>
       `;
-    });
-
-    resultsDiv.innerHTML = html;
-  } catch (e) {
-    resultsDiv.innerHTML = `<p style="color:#ef4444">Error: ${e.message}</p>`;
+    }).join('');
+  } catch (error) {
+    container.innerHTML = `<p class="hint" style="color:#ef4444;">Error: ${escapeHtml(error.message)}</p>`;
   }
 }
 
 export function initSearchUI() {
-  const btn = document.getElementById('btnSearchScryfall');
-  if (btn) btn.addEventListener('click', searchCardScryfall);
+  document.getElementById('btnSearchScryfall')?.addEventListener('click', renderSearchResults);
 }

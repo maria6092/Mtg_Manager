@@ -1,7 +1,6 @@
-// FASE 2: mueve aquí los listeners globales de arranque.
-import { loadCards, loadDecks, loadWishlist, loadSettings, clearSession } from './storage.js';
+import { loadCards, loadDecks, loadWishlist, loadSettings, clearLocalData } from './storage.js';
 import { initTabs, switchTab } from '../ui/tabs.js';
-import { initAuthUI, initAuthButtons } from '../ui/auth-ui.js';
+import { initAuthUI, initAuthButtons, handleAuthUser } from '../ui/auth-ui.js';
 import { initCardsUI, renderCards } from '../ui/cards-ui.js';
 import { initDecksUI, renderDecksList, closeDeck } from '../ui/decks-ui.js';
 import { initWishlistUI, renderWishlist } from '../ui/wishlist-ui.js';
@@ -10,16 +9,17 @@ import { initSettingsUI, loadSettingsIntoUI } from '../ui/settings-ui.js';
 import { initSearchUI } from '../ui/intro-ui.js';
 import { initImportUI } from '../ui/sales-ui.js';
 import { manualCloudLoad, manualCloudSave } from '../services/cloud-service.js';
+import { initFirebase, onFirebaseAuthChange } from '../services/firebase.js';
 
-export function initAppEvents() {
+export async function initAppEvents() {
   loadCards();
   loadDecks();
   loadWishlist();
   loadSettings();
 
+  initTabs();
   initAuthUI();
   initAuthButtons();
-  initTabs();
   initCardsUI();
   initDecksUI();
   initWishlistUI();
@@ -34,47 +34,34 @@ export function initAppEvents() {
   renderDecksList();
   closeDeck();
   renderWishlist();
+  renderStats();
 
-  const btnCloudSave = document.getElementById('btnCloudSave');
-  const btnCloudLoad = document.getElementById('btnCloudLoad');
-  const btnClearLocal = document.getElementById('btnClearLocal');
-  const btnLogout = document.getElementById('btnLogout');
+  document.getElementById('btnCloudSave')?.addEventListener('click', async () => {
+    await manualCloudSave();
+  });
 
-  if (btnCloudSave) {
-    btnCloudSave.addEventListener('click', async () => {
-      await manualCloudSave();
-    });
-  }
-
-  if (btnCloudLoad) {
-    btnCloudLoad.addEventListener('click', async () => {
-      const ok = await manualCloudLoad();
-      if (ok) {
-        renderCards();
-        renderDecksList();
-        renderWishlist();
-        renderStats();
-      }
-    });
-  }
-
-  if (btnClearLocal) {
-    btnClearLocal.addEventListener('click', () => {
-      if (!confirm('¿Borrar todos los datos locales?')) return;
-      clearSession();
+  document.getElementById('btnCloudLoad')?.addEventListener('click', async () => {
+    const ok = await manualCloudLoad();
+    if (ok) {
       renderCards();
       renderDecksList();
       renderWishlist();
       renderStats();
       loadSettingsIntoUI();
-      alert('Datos locales borrados.');
-    });
-  }
+    }
+  });
 
-  if (btnLogout) {
-    btnLogout.addEventListener('click', () => {
-      document.body.classList.remove('app-ready');
-      alert('Sesión cerrada.');
-    });
-  }
+  document.getElementById('btnClearLocal')?.addEventListener('click', () => {
+    if (!confirm('¿Borrar todos los datos locales?')) return;
+    clearLocalData();
+    renderCards();
+    renderDecksList();
+    renderWishlist();
+    renderStats();
+    loadSettingsIntoUI();
+    alert('Datos locales borrados.');
+  });
+
+  await initFirebase();
+  await onFirebaseAuthChange(handleAuthUser);
 }

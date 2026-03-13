@@ -1,4 +1,3 @@
-// FASE 2: mueve aquí save/load de localStorage.
 import { state, DEFAULT_SETTINGS } from './state.js';
 import { STORAGE_KEYS } from './constants.js';
 
@@ -52,7 +51,7 @@ export function loadSettings() {
   };
 }
 
-export function clearSession() {
+export function clearLocalData() {
   state.cards = [];
   state.decks = [];
   state.wishlist = [];

@@ -1,15 +1,11 @@
-// FASE 2: mueve aquí cloudSaveAll y cloudLoadAll.
 import { state, DEFAULT_SETTINGS } from '../core/state.js';
 import { saveCards, saveDecks, saveWishlist, saveSettings } from '../core/storage.js';
+import { fb, initFirebase } from './firebase.js';
 
 export async function cloudSaveAll() {
-  const user = window._fbCurrentUser;
-  if (!user) return false;
-
-  const { doc, setDoc } = window._fbFns || {};
-  const db = window._fbDb;
-
-  if (!doc || !setDoc || !db) return false;
+  await initFirebase();
+  const user = fb.currentUser;
+  if (!user || !fb.ready) return false;
 
   try {
     const payload = {
@@ -21,29 +17,24 @@ export async function cloudSaveAll() {
       updatedAt: Date.now()
     };
 
-    await setDoc(doc(db, 'users', user.uid, 'data', 'main'), payload);
+    await fb.fns.setDoc(fb.fns.doc(fb.db, 'users', user.uid, 'data', 'main'), payload);
     return true;
-  } catch (e) {
-    console.error('Error al guardar en nube:', e);
+  } catch (error) {
+    console.error('Error al guardar en nube:', error);
     return false;
   }
 }
 
 export async function cloudLoadAll() {
-  const user = window._fbCurrentUser;
-  if (!user) return false;
-
-  const { doc, getDoc } = window._fbFns || {};
-  const db = window._fbDb;
-
-  if (!doc || !getDoc || !db) return false;
+  await initFirebase();
+  const user = fb.currentUser;
+  if (!user || !fb.ready) return false;
 
   try {
-    const snap = await getDoc(doc(db, 'users', user.uid, 'data', 'main'));
+    const snap = await fb.fns.getDoc(fb.fns.doc(fb.db, 'users', user.uid, 'data', 'main'));
     if (!snap.exists()) return false;
 
     const data = snap.data();
-
     if (Array.isArray(data.cards)) state.cards = data.cards;
     if (Array.isArray(data.decks)) state.decks = data.decks;
     if (Array.isArray(data.wishlist)) state.wishlist = data.wishlist;
@@ -54,29 +45,20 @@ export async function cloudLoadAll() {
     saveDecks();
     saveWishlist();
     saveSettings();
-
     return true;
-  } catch (e) {
-    console.error('Error al cargar de nube:', e);
+  } catch (error) {
+    console.error('Error al cargar de nube:', error);
     return false;
   }
 }
 
 export async function manualCloudSave() {
   const ok = await cloudSaveAll();
-  if (ok) {
-    alert('Datos guardados en la nube ✅');
-  } else {
-    alert('No se pudo guardar en la nube.');
-  }
+  alert(ok ? 'Datos guardados en la nube ✅' : 'No se pudo guardar en la nube.');
 }
 
 export async function manualCloudLoad() {
   const ok = await cloudLoadAll();
-  if (ok) {
-    alert('Datos cargados desde la nube ✅');
-  } else {
-    alert('No hay datos en la nube o error al cargar.');
-  }
+  alert(ok ? 'Datos cargados desde la nube ✅' : 'No hay datos en la nube o error al cargar.');
   return ok;
 }

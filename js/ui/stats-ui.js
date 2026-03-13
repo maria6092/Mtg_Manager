@@ -1,34 +1,25 @@
-// FASE 2: mueve aquí renderStats y gráficos.
 import { state } from '../core/state.js';
 
 export function renderStats() {
-  const totalCards = state.cards.reduce((sum, c) => sum + (c.quantity || 0), 0);
+  const totalCards = state.cards.reduce((sum, card) => sum + (card.quantity || 0), 0);
   const uniqueCards = state.cards.length;
-  const totalValue = state.cards.reduce((sum, c) => sum + ((c.quantity || 0) * (c.price || 0)), 0);
+  const totalValue = state.cards.reduce((sum, card) => sum + ((card.quantity || 0) * (card.price || 0)), 0);
   const foilsCount = state.cards
-    .filter(c => c.foil === 'Sí')
-    .reduce((sum, c) => sum + (c.quantity || 0), 0);
+    .filter(card => card.foil === 'Sí')
+    .reduce((sum, card) => sum + (card.quantity || 0), 0);
 
-  const statTotal = document.getElementById('statTotal');
-  const statUnique = document.getElementById('statUnique');
-  const statValue = document.getElementById('statValue');
-  const statFoils = document.getElementById('statFoils');
-
-  if (statTotal) statTotal.textContent = totalCards;
-  if (statUnique) statUnique.textContent = uniqueCards;
-  if (statValue) statValue.textContent = totalValue.toFixed(2) + '€';
-  if (statFoils) statFoils.textContent = foilsCount;
+  document.getElementById('statTotal').textContent = String(totalCards);
+  document.getElementById('statUnique').textContent = String(uniqueCards);
+  document.getElementById('statValue').textContent = `${totalValue.toFixed(2)}€`;
+  document.getElementById('statFoils').textContent = String(foilsCount);
 
   const langMap = {};
-  state.cards.forEach(c => {
-    const lang = c.lang || 'Desconocido';
-    langMap[lang] = (langMap[lang] || 0) + (c.quantity || 0);
-  });
-
   const condMap = {};
-  state.cards.forEach(c => {
-    const cond = c.condition || 'Desconocido';
-    condMap[cond] = (condMap[cond] || 0) + (c.quantity || 0);
+  state.cards.forEach(card => {
+    const lang = card.lang || 'Desconocido';
+    const condition = card.condition || 'Desconocido';
+    langMap[lang] = (langMap[lang] || 0) + (card.quantity || 0);
+    condMap[condition] = (condMap[condition] || 0) + (card.quantity || 0);
   });
 
   const ctxLang = document.getElementById('chartLang');
@@ -40,7 +31,7 @@ export function renderStats() {
         labels: Object.keys(langMap),
         datasets: [{
           data: Object.values(langMap),
-          backgroundColor: ['#f06292','#f8bbd0','#d81b60','#ec407a','#f48fb1','#fce4ec']
+          backgroundColor: ['#f06292', '#f8bbd0', '#d81b60', '#ec407a', '#f48fb1', '#fce4ec']
         }]
       },
       options: { responsive: true, plugins: { legend: { position: 'bottom' } } }

@@ -1,14 +1,15 @@
-// FASE 2: mueve aquí createDeck, renderDecksList, openDeck, closeDeck, deleteDeck, addCardToDeck, removeDeckCard, renderDeckCards.
 import { state } from '../core/state.js';
-import { uid } from '../core/utils.js';
+import { uid, escapeHtml } from '../core/utils.js';
 import { saveDecks } from '../core/storage.js';
 import { cloudSaveAll } from '../services/cloud-service.js';
 
-export function createDeck() {
-  const nameEl = document.getElementById('newDeckName');
-  if (!nameEl) return;
+function getCurrentDeck() {
+  return state.decks.find(deck => deck.id === state.currentDeckId) || null;
+}
 
-  const name = nameEl.value.trim();
+export function createDeck() {
+  const input = document.getElementById('newDeckName');
+  const name = input?.value.trim();
   if (!name) {
     alert('Escribe un nombre para el mazo');
     return;
@@ -17,19 +18,17 @@ export function createDeck() {
   state.decks.push({ id: uid(), name, cards: [] });
   saveDecks();
   cloudSaveAll();
-  nameEl.value = '';
+  input.value = '';
   renderDecksList();
 }
 
-export function openDeck(id) {
-  state.currentDeckId = id;
-  const deck = state.decks.find(d => d.id === id);
-  const editor = document.getElementById('deckEditor');
-  const title = document.getElementById('deckEditorTitle');
+export function openDeck(deckId) {
+  state.currentDeckId = deckId;
+  const deck = getCurrentDeck();
+  if (!deck) return;
 
-  if (editor) editor.style.display = 'block';
-  if (title) title.textContent = `Editor de mazo: ${deck?.name || ''}`;
-
+  document.getElementById('deckEditor').style.display = '';
+  document.getElementById('deckEditorTitle').textContent = `Editor · ${deck.name}`;
   renderDeckCards();
 }
 
@@ -39,113 +38,114 @@ export function closeDeck() {
   if (editor) editor.style.display = 'none';
 }
 
-export function deleteDeck(id) {
+export function deleteDeck(deckId) {
   if (!confirm('¿Eliminar este mazo?')) return;
-  state.decks = state.decks.filter(d => d.id !== id);
-  if (state.currentDeckId === id) closeDeck();
+  state.decks = state.decks.filter(deck => deck.id !== deckId);
+  if (state.currentDeckId === deckId) closeDeck();
   saveDecks();
   cloudSaveAll();
   renderDecksList();
 }
 
 export function addCardToDeck() {
-  const deck = state.decks.find(d => d.id === state.currentDeckId);
+  const deck = getCurrentDeck();
   if (!deck) return;
 
-  const name = document.getElementById('deckCardName').value.trim();
-  const qty = parseInt(document.getElementById('deckCardQty').value) || 1;
+  const name = document.getElementById('deckCardName')?.value.trim();
+  const quantity = parseInt(document.getElementById('deckCardQty')?.value || '1', 10) || 1;
 
   if (!name) {
     alert('Escribe el nombre de la carta');
     return;
   }
 
-  deck.cards.push({ id: uid(), name, quantity: qty });
+  const existing = deck.cards.find(card => card.name.toLowerCase() === name.toLowerCase());
+  if (existing) existing.quantity += quantity;
+  else deck.cards.push({ name, quantity });
+
   saveDecks();
   cloudSaveAll();
   renderDeckCards();
+  renderDecksList();
 
   document.getElementById('deckCardName').value = '';
   document.getElementById('deckCardQty').value = '1';
 }
 
-export function removeDeckCard(cardId) {
-  const deck = state.decks.find(d => d.id === state.currentDeckId);
+export function removeDeckCard(cardName) {
+  const deck = getCurrentDeck();
   if (!deck) return;
-
-  deck.cards = deck.cards.filter(c => c.id !== cardId);
+  deck.cards = deck.cards.filter(card => card.name !== cardName);
   saveDecks();
   cloudSaveAll();
   renderDeckCards();
-}
-
-export function renderDecksList() {
-  const div = document.getElementById('decksDiv');
-  if (!div) return;
-
-  if (state.decks.length === 0) {
-    div.innerHTML = "<p class='hint'>No hay mazos creados.</p>";
-    return;
-  }
-
-  div.innerHTML = state.decks.map(d => `
-    <div class="deck-card">
-      <strong>${d.name}</strong>
-      <div class="row">
-        <button class="btn tiny" data-open-deck="${d.id}">Abrir</button>
-        <button class="btn danger tiny" data-delete-deck="${d.id}">Eliminar</button>
-      </div>
-    </div>
-  `).join('');
-
-  div.querySelectorAll('[data-open-deck]').forEach(btn => {
-    btn.addEventListener('click', () => openDeck(btn.dataset.openDeck));
-  });
-
-  div.querySelectorAll('[data-delete-deck]').forEach(btn => {
-    btn.addEventListener('click', () => deleteDeck(btn.dataset.deleteDeck));
-  });
+  renderDecksList();
 }
 
 export function renderDeckCards() {
-  const deck = state.decks.find(d => d.id === state.currentDeckId);
-  const div = document.getElementById('deckCardsDiv');
-  if (!div) return;
+  const deck = getCurrentDeck();
+  const container = document.getElementById('deckCardsDiv');
+  if (!container) return;
 
-  if (!deck) {
-    div.innerHTML = '';
+  if (!deck || !deck.cards.length) {
+    container.innerHTML = '<p class="hint">No hay cartas en este mazo.</p>';
     return;
   }
 
-  if (!deck.cards.length) {
-    div.innerHTML = "<p class='hint'>Este mazo todavía no tiene cartas.</p>";
-    return;
-  }
-
-  let html = "<table><thead><tr><th>Carta</th><th>Cantidad</th><th>Acción</th></tr></thead><tbody>";
-  deck.cards.forEach(c => {
+  let html = '<table><thead><tr><th>Carta</th><th>Cantidad</th><th>Acción</th></tr></thead><tbody>';
+  deck.cards.forEach(card => {
     html += `
       <tr>
-        <td>${c.name}</td>
-        <td>${c.quantity}</td>
-        <td><button class="btn danger tiny" data-remove-deck-card="${c.id}">🗑️</button></td>
+        <td>${escapeHtml(card.name)}</td>
+        <td>${card.quantity}</td>
+        <td><button class="btn danger tiny" data-remove-deck-card="${escapeHtml(card.name)}">🗑️</button></td>
       </tr>
     `;
   });
   html += '</tbody></table>';
-  div.innerHTML = html;
+  container.innerHTML = html;
 
-  div.querySelectorAll('[data-remove-deck-card]').forEach(btn => {
-    btn.addEventListener('click', () => removeDeckCard(btn.dataset.removeDeckCard));
+  container.querySelectorAll('[data-remove-deck-card]').forEach(button => {
+    button.addEventListener('click', () => removeDeckCard(button.dataset.removeDeckCard));
+  });
+}
+
+export function renderDecksList() {
+  const container = document.getElementById('decksDiv');
+  if (!container) return;
+
+  if (!state.decks.length) {
+    container.innerHTML = '<p class="hint">No tienes mazos todavía.</p>';
+    return;
+  }
+
+  container.innerHTML = state.decks.map(deck => {
+    const totalCards = deck.cards.reduce((sum, card) => sum + card.quantity, 0);
+    return `
+      <div class="deck-card">
+        <div>
+          <div><strong>${escapeHtml(deck.name)}</strong></div>
+          <div class="hint">${totalCards} cartas</div>
+        </div>
+        <div class="row">
+          <button class="btn ghost tiny" data-open-deck="${deck.id}">Abrir</button>
+          <button class="btn danger tiny" data-delete-deck="${deck.id}">Eliminar</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.querySelectorAll('[data-open-deck]').forEach(button => {
+    button.addEventListener('click', () => openDeck(button.dataset.openDeck));
+  });
+
+  container.querySelectorAll('[data-delete-deck]').forEach(button => {
+    button.addEventListener('click', () => deleteDeck(button.dataset.deleteDeck));
   });
 }
 
 export function initDecksUI() {
-  const btnCreateDeck = document.getElementById('btnCreateDeck');
-  const btnAddCardToDeck = document.getElementById('btnAddCardToDeck');
-  const btnCloseDeck = document.getElementById('btnCloseDeck');
-
-  if (btnCreateDeck) btnCreateDeck.addEventListener('click', createDeck);
-  if (btnAddCardToDeck) btnAddCardToDeck.addEventListener('click', addCardToDeck);
-  if (btnCloseDeck) btnCloseDeck.addEventListener('click', closeDeck);
+  document.getElementById('btnCreateDeck')?.addEventListener('click', createDeck);
+  document.getElementById('btnAddCardToDeck')?.addEventListener('click', addCardToDeck);
+  document.getElementById('btnCloseDeck')?.addEventListener('click', closeDeck);
 }

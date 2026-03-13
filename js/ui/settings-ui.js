@@ -1,4 +1,3 @@
-// FASE 2: mueve aquí applySettings, loadSettingsIntoUI, manualCloudSave, manualCloudLoad.
 import { state } from '../core/state.js';
 import { saveSettings } from '../core/storage.js';
 
@@ -24,40 +23,27 @@ export function loadSettingsIntoUI() {
 }
 
 export function initSettingsUI() {
-  const themeSelect = document.getElementById('themeSelect');
-  const densitySelect = document.getElementById('densitySelect');
-  const motionSelect = document.getElementById('motionSelect');
-  const fontSizeSelect = document.getElementById('fontSizeSelect');
+  document.getElementById('themeSelect')?.addEventListener('change', event => {
+    state.settings.theme = event.target.value;
+    saveSettings();
+    applySettings();
+  });
 
-  if (themeSelect) {
-    themeSelect.addEventListener('change', e => {
-      state.settings.theme = e.target.value;
-      applySettings();
-      saveSettings();
-    });
-  }
+  document.getElementById('densitySelect')?.addEventListener('change', event => {
+    state.settings.density = event.target.value;
+    saveSettings();
+    applySettings();
+  });
 
-  if (densitySelect) {
-    densitySelect.addEventListener('change', e => {
-      state.settings.density = e.target.value;
-      applySettings();
-      saveSettings();
-    });
-  }
+  document.getElementById('motionSelect')?.addEventListener('change', event => {
+    state.settings.motion = event.target.value;
+    saveSettings();
+    applySettings();
+  });
 
-  if (motionSelect) {
-    motionSelect.addEventListener('change', e => {
-      state.settings.motion = e.target.value;
-      applySettings();
-      saveSettings();
-    });
-  }
-
-  if (fontSizeSelect) {
-    fontSizeSelect.addEventListener('change', e => {
-      state.settings.fontSize = e.target.value;
-      applySettings();
-      saveSettings();
-    });
-  }
+  document.getElementById('fontSizeSelect')?.addEventListener('change', event => {
+    state.settings.fontSize = event.target.value;
+    saveSettings();
+    applySettings();
+  });
 }

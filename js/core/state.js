@@ -1,4 +1,3 @@
-// FASE 2: mueve aquí el estado global (cards, decks, wishlist, settings).
 export const DEFAULT_SETTINGS = {
   fontSize: '16px',
   density: 'normal',

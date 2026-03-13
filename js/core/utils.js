@@ -1,4 +1,3 @@
-// FASE 2: mueve aquí downloadFile y helpers comunes.
 export function qs(selector, parent = document) {
   return parent.querySelector(selector);
 }
@@ -9,6 +8,15 @@ export function qsa(selector, parent = document) {
 
 export function uid() {
   return `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+}
+
+export function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 export function downloadFile(filename, content, type = 'application/json') {

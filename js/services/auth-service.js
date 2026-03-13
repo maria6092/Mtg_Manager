@@ -1,11 +1,12 @@
-// FASE 2: mueve aquí login, registro, logout y remember session.
 import { REMEMBER_KEY } from '../core/constants.js';
+import { fb, initFirebase } from './firebase.js';
 
 export function getRememberPref() {
   try {
-    return localStorage.getItem(REMEMBER_KEY) === '1';
+    const value = localStorage.getItem(REMEMBER_KEY);
+    return value !== '0';
   } catch {
-    return false;
+    return true;
   }
 }
 
@@ -15,19 +16,31 @@ export function setRememberPref(value) {
   } catch {}
 }
 
-export function fakeLogin(email, password) {
-  if (!email || !password) {
-    throw new Error('Completa email y contraseña.');
-  }
-  return { email };
+export function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(email || '').trim());
 }
 
-export function fakeRegister(email, password) {
-  if (!email || !password) {
-    throw new Error('Completa email y contraseña.');
-  }
-  if (password.length < 6) {
-    throw new Error('La contraseña debe tener al menos 6 caracteres.');
-  }
-  return { email };
+export function isStrongPassword(password) {
+  const value = String(password || '');
+  return value.length >= 8 && /[A-Za-z]/.test(value) && /\d/.test(value);
+}
+
+export async function registerUser(email, password) {
+  await initFirebase();
+  if (!fb.ready) throw new Error('Firebase no está disponible.');
+  const result = await fb.fns.createUserWithEmailAndPassword(fb.auth, email, password);
+  return result.user;
+}
+
+export async function loginUser(email, password) {
+  await initFirebase();
+  if (!fb.ready) throw new Error('Firebase no está disponible.');
+  const result = await fb.fns.signInWithEmailAndPassword(fb.auth, email, password);
+  return result.user;
+}
+
+export async function logoutUser() {
+  await initFirebase();
+  if (!fb.ready) return;
+  await fb.fns.signOut(fb.auth);
 }
