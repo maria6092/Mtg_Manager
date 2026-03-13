@@ -1,146 +1,608 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>💗 MTG Manager</title>
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <link rel="stylesheet" href="./styles/main.css" />
-  <link rel="stylesheet" href="./styles/auth.css" />
-  <link rel="stylesheet" href="./styles/components.css" />
-  <link rel="stylesheet" href="./styles/pages.css" />
-  <link rel="stylesheet" href="./styles/themes.css" />
+  <style>
+    :root{
+      --bg:#fff0f6;
+      --card:#ffffff;
+
+      --pink:#f06292;
+      --pink2:#d81b60;
+      --soft:#f8bbd0;
+      --line:#f2c5d5;
+
+      --text:#4a2c37;
+      --muted:#7a4a5a;
+
+      --shadow: 0 10px 24px rgba(216,27,96,.10);
+      --radius: 16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+      --input-bg:#ffffff;
+      --input-text:#111827;
+      --table-bg:#ffffff;
+
+      --base-font: 16px;
+    }
+
+    html{ font-size: var(--base-font); }
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+      background:linear-gradient(180deg, var(--bg), var(--card) 70%);
+      color:var(--text);
+    }
+
+    body[data-density="compact"] .panel{ padding:12px; }
+    body[data-density="compact"] input,
+    body[data-density="compact"] select{ padding:8px 10px; }
+    body[data-density="compact"] .tabbtn{ padding:8px 10px; }
+    body[data-density="compact"] tbody td{ padding:6px; }
+    body[data-density="compact"] thead th{ padding:8px 6px; }
+    body[data-density="compact"] .cardrow{ padding:8px; }
+
+    html[data-motion="reduced"] *{
+      transition:none !important;
+      animation:none !important;
+      scroll-behavior:auto !important;
+    }
+
+    header{
+      position:sticky; top:0; z-index:20;
+      background:var(--bg);
+      opacity:0.95;
+      backdrop-filter: blur(12px);
+      border-bottom:1px solid var(--line);
+    }
+    body[data-theme="black"] header{
+      background: rgba(17,24,39,.78);
+      border-bottom:1px solid var(--line);
+    }
+
+    .wrap{max-width:1700px;margin:0 auto;padding:14px;}
+    main .wrap{padding-top:18px;padding-bottom:30px}
+
+    .topbar{
+      display:flex;gap:12px;align-items:center;justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .brand{display:flex;align-items:center;gap:10px;}
+    .logo{
+      width:40px;height:40px;border-radius:14px;
+      background: linear-gradient(135deg, var(--card), var(--soft));
+      border:1px solid var(--line);
+      box-shadow: var(--shadow);
+      display:grid;place-items:center;
+      font-size:20px;
+      flex: 0 0 auto;
+    }
+    h1{font-size:18px;margin:0;color:var(--pink2)}
+
+    .tabs{
+      display:flex;gap:8px;
+      overflow-x:auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom:6px;
+      max-width:100%;
+    }
+    .tabbtn{
+      flex: 0 0 auto;
+      border:1px solid var(--line);
+      background:var(--card);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      transition:.15s;
+      box-shadow: 0 6px 14px rgba(240,98,146,.08);
+      user-select:none;
+      touch-action: manipulation;
+      white-space:nowrap;
+    }
+    .tabbtn:hover{transform:translateY(-1px)}
+    .tabbtn.active{
+      background:linear-gradient(180deg, var(--card), var(--soft));
+      border-color:var(--soft);
+      color:var(--pink2);
+      box-shadow: var(--shadow);
+    }
+    body[data-theme="black"] .tabbtn.active{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border-color: rgba(255,255,255,.12);
+      color: var(--text);
+    }
+
+    .panel{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+
+    .panel.soft{
+      background: linear-gradient(180deg, var(--bg), var(--card));
+    }
+
+    .h2{ margin:0 0 8px; color:var(--pink2); font-size:1rem; }
+    .h3{ margin:0 0 8px; color:var(--pink2); font-size:.9rem; }
+    .mb10{margin-bottom:10px}
+    .mt12{margin-top:12px}
+    .mt10{margin-top:10px}
+    .hr{ border:none;border-top:1px solid var(--line); margin:14px 0; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr 1fr 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr 1fr} }
+    @media (max-width: 600px){ .grid{grid-template-columns:1fr} }
+
+    .grid-4{display:grid;grid-template-columns: 1fr 1fr 1fr 1fr;gap:12px;}
+    @media (max-width: 980px){ .grid-4{grid-template-columns:1fr 1fr} }
+    @media (max-width: 600px){ .grid-4{grid-template-columns:1fr} }
+
+    .grid-search-top{display:grid;grid-template-columns: 2fr 1fr 1fr 1fr;gap:12px;}
+    @media (max-width: 980px){ .grid-search-top{grid-template-columns:1fr 1fr} }
+    @media (max-width: 600px){ .grid-search-top{grid-template-columns:1fr} }
+
+    label{font-size:.75rem;color:var(--muted);display:block;margin-bottom:6px}
+    input, select{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      outline:none;
+      font-size:.9rem;
+      background:var(--input-bg);
+      color:var(--input-text);
+    }
+    input:focus, select:focus{
+      border-color:var(--pink);
+      box-shadow:0 0 0 3px rgba(240,98,146,.15);
+    }
+
+    .btn{
+      border:none;
+      background:var(--pink);
+      color:#fff;
+      padding:10px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.15s;
+      font-weight:600;
+      touch-action: manipulation;
+    }
+    .btn:hover{background:var(--pink2)}
+    .btn.ghost{
+      background:var(--card);
+      border:1px solid var(--line);
+      color:var(--text);
+      font-weight:600;
+    }
+    .btn.ghost:hover{border-color:var(--soft); color:var(--pink2)}
+    body[data-theme="black"] .btn.ghost:hover{ color: var(--text); }
+
+    .btn.tiny{
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:.78rem;
+    }
+    .btn.danger{
+      background:#ef4444;
+    }
+    .btn.danger:hover{
+      background:#b91c1c;
+    }
+
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .spacer{flex:1 1 auto}
+    .hint{font-size:.75rem;color:var(--muted);margin-top:8px;}
+    .pill{
+      display:inline-block;
+      padding:3px 10px;
+      border-radius:999px;
+      font-size:.78rem;
+      font-weight:600;
+      background:var(--soft);
+      color:var(--pink2);
+      border:1px solid var(--line);
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:.88rem;
+      background:var(--table-bg);
+      border-radius:var(--radius);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+    }
+    thead{
+      background:linear-gradient(180deg, var(--soft), var(--card));
+      border-bottom:2px solid var(--line);
+    }
+    thead th{
+      padding:10px 8px;
+      font-weight:600;
+      text-align:left;
+      color:var(--pink2);
+      white-space:nowrap;
+    }
+    tbody td{
+      padding:8px;
+      border-bottom:1px solid var(--line);
+    }
+    tbody tr:hover{
+      background:rgba(240,98,146,.04);
+    }
+
+    .sortable{cursor:pointer;user-select:none;}
+    .sortable:hover{color:var(--pink);}
+
+    /* Auth */
+    #authScreen{
+      position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;
+      background:linear-gradient(135deg, var(--bg), var(--soft));
+      display:flex;align-items:center;justify-content:center;
+      padding:20px;
+    }
+    .auth-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      width:100%;max-width:420px;
+      padding:30px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+    .auth-logo{
+      width:70px;height:70px;
+      margin:0 auto 10px;
+      border-radius:20px;
+      background:linear-gradient(135deg, var(--soft), var(--pink));
+      display:grid;place-items:center;
+      font-size:34px;
+      box-shadow:var(--shadow);
+    }
+    .auth-title{
+      text-align:center;
+      font-size:1.6rem;
+      margin:0 0 6px;
+      color:var(--pink2);
+    }
+    .auth-subtitle{
+      text-align:center;
+      font-size:.88rem;
+      color:var(--muted);
+      margin-bottom:12px;
+    }
+    #authMsg, #authMsg2{
+      font-size:.84rem;
+      text-align:center;
+      min-height:20px;
+    }
+    .auth-footer{
+      text-align:center;
+      font-size:.82rem;
+      color:var(--muted);
+      margin-top:8px;
+    }
+
+    #authScreen.is-enter .auth-card{
+      animation: slideInUp 0.4s ease-out;
+    }
+    #authScreen.is-exit .auth-card{
+      animation: slideOutDown 0.35s ease-in;
+    }
+    @keyframes slideInUp{
+      from{transform:translateY(30px);opacity:0}
+      to{transform:translateY(0);opacity:1}
+    }
+    @keyframes slideOutDown{
+      from{transform:translateY(0);opacity:1}
+      to{transform:translateY(30px);opacity:0}
+    }
+
+    body.not-authenticated header, body.not-authenticated main{
+      opacity:0; pointer-events:none;
+    }
+    body.app-enter header, body.app-enter main{
+      animation: fadeInContent 0.45s ease-out forwards;
+    }
+    @keyframes fadeInContent{
+      from{opacity:0}
+      to{opacity:1}
+    }
+
+    /* Dark theme adjustments */
+    body[data-theme="black"] {
+      background: linear-gradient(180deg, #111827, #1f2937);
+      color: #e5e7eb;
+    }
+    body[data-theme="black"] .panel,
+    body[data-theme="black"] table,
+    body[data-theme="black"] input,
+    body[data-theme="black"] select {
+      background: rgba(31, 41, 55, 0.8);
+      border-color: rgba(75, 85, 99, 0.3);
+      color: #e5e7eb;
+    }
+    body[data-theme="black"] thead {
+      background: linear-gradient(180deg, rgba(248,187,208,.08), rgba(31,41,55,.8));
+    }
+    body[data-theme="black"] th{ color: #f9a8d4; }
+    body[data-theme="black"] .h2,
+    body[data-theme="black"] .h3{ color: #f9a8d4; }
+    body[data-theme="black"] tbody tr:hover{
+      background: rgba(240,98,146,.06);
+    }
+    body[data-theme="black"] #authScreen{
+      background: linear-gradient(135deg, #111827, #1f2937);
+    }
+    body[data-theme="black"] .auth-card{
+      background: rgba(31, 41, 55, 0.95);
+      border-color: rgba(75, 85, 99, 0.3);
+    }
+    body[data-theme="black"] label{
+      color: #9ca3af;
+    }
+
+    .cardrow{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px;
+      background:var(--card);
+      box-shadow:0 4px 12px rgba(240,98,146,.06);
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .cardrow-left{flex:0 0 80px;}
+    .cardrow-main{flex:1 1 auto;}
+    .cardimg{
+      width:80px;height:112px;border-radius:8px;object-fit:cover;
+      background:linear-gradient(135deg, var(--soft), var(--pink));
+    }
+    .cardrow-name{font-weight:600;color:var(--pink2);margin-bottom:4px}
+    .cardrow-info{font-size:.78rem;color:var(--muted);line-height:1.4}
+
+    .deck-card{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      background:var(--card);
+      box-shadow:0 4px 12px rgba(240,98,146,.06);
+      cursor:pointer;
+      transition:.15s;
+    }
+    .deck-card:hover{
+      transform:translateY(-2px);
+      box-shadow:var(--shadow);
+    }
+    .deck-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .deck-icon{
+      width:34px;height:34px;border-radius:10px;
+      background:linear-gradient(135deg, var(--soft), var(--pink));
+      display:grid;place-items:center;
+      font-size:18px;
+    }
+    .deck-name{font-size:1rem;font-weight:600;color:var(--pink2)}
+    .deck-count{font-size:.78rem;color:var(--muted)}
+
+    .chart-panel{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
+    }
+    body[data-theme="black"] .chart-panel{
+      background: rgba(31,41,55,.8);
+    }
+  </style>
 </head>
-<body data-theme="default" data-density="normal" data-motion="normal">
-  <div id="authScreen" class="auth-screen">
-    <div class="auth-card">
-      <div class="auth-logo">💗</div>
-      <h1 class="auth-title">MTG Manager</h1>
-      <p class="auth-subtitle">Gestiona tu colección, wishlist y mazos</p>
 
-      <div class="grid auth-grid">
-        <div class="panel soft">
-          <h2 class="section-title">Iniciar sesión</h2>
-          <label>Email</label>
-          <input id="loginEmail" type="email" placeholder="tu@email.com" />
+<body>
 
-          <label>Contraseña</label>
-          <input id="loginPassword" type="password" placeholder="••••••••" />
+<!-- PANTALLA DE AUTENTICACIÓN -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">💗</div>
+    <h2 class="auth-title">MTG Manager</h2>
+    <p class="auth-subtitle">Accede a tu colección desde cualquier PC</p>
 
-          <div class="row mt10">
-            <input id="rememberSession" type="checkbox" />
-            <label for="rememberSession">Recordarme</label>
-          </div>
-
-          <button id="btnLogin" class="btn mt10">Entrar</button>
-          <p id="authMsg" class="hint mt10"></p>
-        </div>
-
-        <div class="panel soft">
-          <h2 class="section-title">Crear cuenta</h2>
-          <label>Email</label>
-          <input id="registerEmail" type="email" placeholder="tu@email.com" />
-
-          <label>Contraseña</label>
-          <input id="registerPassword" type="password" placeholder="Mínimo 6 caracteres" />
-
-          <button id="btnRegister" class="btn mt10">Crear cuenta</button>
-          <p id="authMsg2" class="hint mt10"></p>
-        </div>
+    <!-- VISTA DE LOGIN -->
+    <div id="authLoginView">
+      <div>
+        <label>Email</label>
+        <input id="authEmail" type="email" placeholder="tu@email.com"/>
       </div>
+      <div>
+        <label>Contraseña</label>
+        <input id="authPass" type="password" placeholder="••••••••"/>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.84rem">
+        <input id="authRemember" type="checkbox" style="width:auto" checked/>
+        <label for="authRemember" style="margin:0;color:var(--text)">Recordar sesión</label>
+      </div>
+      <button class="btn" id="btnSignIn">Iniciar sesión</button>
+      <button class="btn ghost" id="btnSignUp">Crear cuenta</button>
+      <div id="authMsg"></div>
+    </div>
+
+    <!-- VISTA DE REGISTRO -->
+    <div id="authSignupView" style="display:none">
+      <div>
+        <label>Nombre de usuario</label>
+        <input id="suUsername" type="text" placeholder="MrsRia"/>
+      </div>
+      <div>
+        <label>Email</label>
+        <input id="suEmail" type="email" placeholder="mariarapsan@gmail.com"/>
+      </div>
+      <div>
+        <label>Confirmar email</label>
+        <input id="suEmail2" type="email" placeholder="mariarapsan@gmail.com"/>
+      </div>
+      <div>
+        <label>Contraseña</label>
+        <input id="suPass" type="password" placeholder="••••••••"/>
+      </div>
+      <div>
+        <label>Confirmar contraseña</label>
+        <input id="suPass2" type="password" placeholder="••••••••"/>
+      </div>
+      <button class="btn" id="btnCreateAccount">Crear cuenta</button>
+      <button class="btn ghost" id="btnBackToLogin">← Volver</button>
+      <div id="authMsg2"></div>
+    </div>
+
+    <div class="auth-footer">
+      Todos tus datos se guardan de forma segura en la nube.
     </div>
   </div>
+</div>
 
-  <header class="topbar">
-    <div class="wrap topbar-inner">
+<!-- APLICACIÓN PRINCIPAL -->
+<header>
+  <div class="wrap">
+    <div class="topbar">
       <div class="brand">
-        <span class="brand-logo">💗</span>
-        <span class="brand-text">MTG Manager</span>
+        <div class="logo">💗</div>
+        <h1>MTG Manager</h1>
+        <span id="authStatus" style="font-size:.78rem;color:var(--muted)">No logueado</span>
       </div>
-
-      <nav class="tabs">
-        <button class="tabbtn active" data-tab="cards">Colección</button>
-        <button class="tabbtn" data-tab="search">Buscar</button>
-        <button class="tabbtn" data-tab="decks">Mazos</button>
-        <button class="tabbtn" data-tab="wishlist">Wishlist</button>
-        <button class="tabbtn" data-tab="stats">Stats</button>
-        <button class="tabbtn" data-tab="import">Importar</button>
-        <button class="tabbtn" data-tab="settings">Ajustes</button>
-      </nav>
-
       <div class="row">
-        <button id="btnLogout" class="btn ghost">Salir</button>
+        <button class="btn ghost tiny" id="btnSignOutTop" style="display:none">Cerrar sesión</button>
       </div>
     </div>
-  </header>
+    <div class="tabs">
+      <button class="tabbtn active" data-tab="cards">🗂️ Colección</button>
+      <button class="tabbtn" data-tab="search">🔍 Buscar carta</button>
+      <button class="tabbtn" data-tab="decks">🎴 Mazos</button>
+      <button class="tabbtn" data-tab="wishlist">⭐ Wishlist</button>
+      <button class="tabbtn" data-tab="stats">📊 Estadísticas</button>
+      <button class="tabbtn" data-tab="import">📥 Importar/Exportar</button>
+      <button class="tabbtn" data-tab="settings">⚙️ Configuración</button>
+    </div>
+  </div>
+</header>
 
-  <main class="wrap main-layout">
-    <section id="tab_cards">
-      <div class="grid grid-2">
-        <div class="panel">
-          <h2 class="section-title">Añadir carta</h2>
+<main>
+  <div class="wrap">
 
-          <label>Nombre</label>
-          <input id="newCardName" type="text" placeholder="Lightning Bolt" />
-
-          <label>Edición</label>
-          <input id="newCardSet" type="text" placeholder="M11" />
-
-          <label>Idioma</label>
-          <select id="newCardLang">
-            <option value="Español">Español</option>
-            <option value="Inglés">Inglés</option>
-            <option value="Japonés">Japonés</option>
-          </select>
-
-          <label>Estado</label>
-          <select id="newCardCondition">
-            <option value="NM">NM</option>
-            <option value="LP">LP</option>
-            <option value="MP">MP</option>
-            <option value="HP">HP</option>
-            <option value="DMG">DMG</option>
-          </select>
-
-          <label>Foil</label>
-          <select id="newCardFoil">
-            <option value="No">No</option>
-            <option value="Sí">Sí</option>
-          </select>
-
-          <label>Cantidad</label>
-          <input id="newCardQuantity" type="number" min="1" value="1" />
-
-          <label>Precio (€)</label>
-          <input id="newCardPrice" type="number" step="0.01" min="0" placeholder="0.00" />
-
-          <button id="btnAddCard" class="btn mt10">Añadir carta</button>
-        </div>
-
-        <div class="panel">
-          <div class="row row-between">
-            <h2 class="section-title">Colección</h2>
-            <button id="btnSortCards" class="btn ghost tiny">Ordenar A-Z</button>
+    <!-- TAB: Colección -->
+    <section id="tab_cards" style="display:none">
+      <div class="panel soft mb10">
+        <h2 class="h2">🗂️ Tu Colección</h2>
+        <div class="grid mb10">
+          <div>
+            <label>Carta</label>
+            <input id="newCardName" placeholder="Ej: Black Lotus"/>
           </div>
-          <div id="cardsDiv"></div>
+          <div>
+            <label>Edición</label>
+            <input id="newCardSet" placeholder="Ej: Alpha"/>
+          </div>
+          <div>
+            <label>Cantidad</label>
+            <input id="newCardQuantity" type="number" value="1" min="1"/>
+          </div>
+          <div>
+            <label>Precio unitario (€)</label>
+            <input id="newCardPrice" type="number" step="0.01" placeholder="0.00"/>
+          </div>
+        </div>
+        <div class="grid mb10">
+          <div>
+            <label>Idioma</label>
+            <select id="newCardLang">
+              <option value="Español">Español</option>
+              <option value="Inglés">Inglés</option>
+              <option value="Japonés">Japonés</option>
+              <option value="Alemán">Alemán</option>
+              <option value="Francés">Francés</option>
+              <option value="Italiano">Italiano</option>
+              <option value="Portugués">Portugués</option>
+              <option value="Chino">Chino</option>
+              <option value="Coreano">Coreano</option>
+              <option value="Ruso">Ruso</option>
+            </select>
+          </div>
+          <div>
+            <label>Estado</label>
+            <select id="newCardCondition">
+              <option value="Near Mint">Near Mint (NM)</option>
+              <option value="Slightly Played">Slightly Played (SP)</option>
+              <option value="Moderately Played">Moderately Played (MP)</option>
+              <option value="Heavily Played">Heavily Played (HP)</option>
+              <option value="Damaged">Damaged (D)</option>
+            </select>
+          </div>
+          <div>
+            <label>Foil</label>
+            <select id="newCardFoil">
+              <option value="No">No</option>
+              <option value="Sí">Sí</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <button class="btn" style="width:100%" onclick="addCard()">Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="row mb10">
+          <h2 class="h2">📋 Listado</h2>
+          <div class="spacer"></div>
+          <button class="btn ghost tiny" onclick="exportCardsCSV()">📥 Exportar CSV</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table id="cardsTable">
+            <thead>
+              <tr>
+                <th class="sortable" onclick="sortCards('name')">Nombre</th>
+                <th class="sortable" onclick="sortCards('set')">Edición</th>
+                <th class="sortable" onclick="sortCards('lang')">Idioma</th>
+                <th class="sortable" onclick="sortCards('condition')">Estado</th>
+                <th class="sortable" onclick="sortCards('foil')">Foil</th>
+                <th class="sortable" onclick="sortCards('quantity')">Cant.</th>
+                <th class="sortable" onclick="sortCards('price')">Precio u.</th>
+                <th>Total</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="cardsBody">
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
 
+    <!-- TAB: Buscar carta -->
     <section id="tab_search" style="display:none">
-      <div class="panel">
-        <h2 class="section-title">Buscar en Scryfall</h2>
-
-        <div class="grid grid-3">
+      <div class="panel soft mb10">
+        <h2 class="h2">🔍 Buscar carta en Scryfall</h2>
+        <div class="grid-search-top mb10">
           <div>
-            <label>Nombre</label>
-            <input id="searchCardName" type="text" placeholder="Black Lotus" />
+            <label>Nombre de la carta</label>
+            <input id="searchCardName" placeholder="Ej: Lightning Bolt"/>
           </div>
           <div>
             <label>Edición</label>
-            <input id="searchCardSet" type="text" placeholder="lea" />
+            <input id="searchCardSet" placeholder="(Opcional)"/>
           </div>
           <div>
             <label>Idioma</label>
@@ -149,212 +611,1239 @@
               <option value="es">Español</option>
               <option value="en">Inglés</option>
               <option value="ja">Japonés</option>
+              <option value="de">Alemán</option>
+              <option value="fr">Francés</option>
+              <option value="it">Italiano</option>
+              <option value="pt">Portugués</option>
+              <option value="zh">Chino</option>
+              <option value="ko">Coreano</option>
+              <option value="ru">Ruso</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <button class="btn" style="width:100%" onclick="searchCardScryfall()">Buscar</button>
+          </div>
+        </div>
+        <div id="searchResults"></div>
+      </div>
+    </section>
+
+    <!-- TAB: Mazos -->
+    <section id="tab_decks" style="display:none">
+      <div class="panel soft mb10">
+        <h2 class="h2">🎴 Mis Mazos</h2>
+        <div class="row mb10">
+          <input id="newDeckName" placeholder="Nombre del mazo"/>
+          <button class="btn" onclick="createDeck()">Crear mazo</button>
+        </div>
+      </div>
+      <div id="decksList" class="grid-4">
+      </div>
+      <div id="deckDetail" style="display:none">
+        <div class="panel soft mb10">
+          <div class="row">
+            <button class="btn ghost" onclick="closeDeck()">← Volver</button>
+            <div class="spacer"></div>
+            <button class="btn danger tiny" onclick="deleteDeck()">Eliminar mazo</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2 class="h2" id="deckDetailName"></h2>
+          <div class="grid mb10">
+            <div>
+              <label>Añadir carta del buscador</label>
+              <input id="deckAddCardName" placeholder="Nombre de la carta"/>
+            </div>
+            <div>
+              <label>Cantidad</label>
+              <input id="deckAddCardQty" type="number" value="1" min="1"/>
+            </div>
+            <div style="display:flex;align-items:flex-end">
+              <button class="btn" style="width:100%" onclick="addCardToDeck()">Añadir</button>
+            </div>
+          </div>
+          <div class="hr"></div>
+          <div id="deckCards"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: Wishlist -->
+    <section id="tab_wishlist" style="display:none">
+      <div class="panel soft mb10">
+        <h2 class="h2">⭐ Wishlist</h2>
+        <div class="grid mb10">
+          <div>
+            <label>Nombre de la carta</label>
+            <input id="wishCardName" placeholder="Ej: Mox Pearl"/>
+          </div>
+          <div>
+            <label>Edición</label>
+            <input id="wishCardSet" placeholder="(Opcional)"/>
+          </div>
+          <div>
+            <label>Prioridad</label>
+            <select id="wishPriority">
+              <option value="Alta">Alta</option>
+              <option value="Media">Media</option>
+              <option value="Baja">Baja</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <button class="btn" style="width:100%" onclick="addWish()">Añadir</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div id="wishlistDiv"></div>
+      </div>
+    </section>
+
+    <!-- TAB: Estadísticas -->
+    <section id="tab_stats" style="display:none">
+      <div class="panel soft mb10">
+        <h2 class="h2">📊 Estadísticas de tu colección</h2>
+        <div class="grid-4 mb10">
+          <div class="panel">
+            <div class="h3">Total de cartas</div>
+            <div style="font-size:2rem;font-weight:700;color:var(--pink2)" id="statTotal">0</div>
+          </div>
+          <div class="panel">
+            <div class="h3">Cartas únicas</div>
+            <div style="font-size:2rem;font-weight:700;color:var(--pink2)" id="statUnique">0</div>
+          </div>
+          <div class="panel">
+            <div class="h3">Valor total (€)</div>
+            <div style="font-size:2rem;font-weight:700;color:var(--pink2)" id="statValue">0</div>
+          </div>
+          <div class="panel">
+            <div class="h3">Foils</div>
+            <div style="font-size:2rem;font-weight:700;color:var(--pink2)" id="statFoils">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="grid mb10">
+        <div class="chart-panel">
+          <h3 class="h3">Distribución por idioma</h3>
+          <canvas id="chartLang"></canvas>
+        </div>
+        <div class="chart-panel">
+          <h3 class="h3">Distribución por estado</h3>
+          <canvas id="chartCondition"></canvas>
+        </div>
+      </div>
+      <div class="chart-panel">
+        <h3 class="h3">Top 10 ediciones</h3>
+        <canvas id="chartSets"></canvas>
+      </div>
+    </section>
+
+    <!-- TAB: Importar/Exportar -->
+    <section id="tab_import" style="display:none">
+      <div class="panel soft mb10">
+        <h2 class="h2">📥 Importar CSV</h2>
+        <p class="hint">Formato: Nombre,Edición,Idioma,Estado,Foil,Cantidad,Precio</p>
+        <textarea id="importArea" rows="8" style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);font-family:var(--mono);font-size:.82rem"></textarea>
+        <div class="mt10">
+          <button class="btn" onclick="importCardsCSV()">Importar</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2 class="h2">📤 Exportar/Backup</h2>
+        <div class="row">
+          <button class="btn ghost" onclick="exportCardsCSV()">Descargar colección (CSV)</button>
+          <button class="btn ghost" onclick="exportDecksJSON()">Descargar mazos (JSON)</button>
+          <button class="btn ghost" onclick="exportAllJSON()">Backup completo (JSON)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: Configuración -->
+    <section id="tab_settings" style="display:none">
+      <div class="panel soft mb10">
+        <h2 class="h2">⚙️ Configuración</h2>
+        <div class="grid mb10">
+          <div>
+            <label>Tamaño de fuente base</label>
+            <select id="settingFontSize" onchange="applySettings()">
+              <option value="14px">Pequeño</option>
+              <option value="16px">Normal</option>
+              <option value="18px">Grande</option>
+              <option value="20px">Extra grande</option>
+            </select>
+          </div>
+          <div>
+            <label>Densidad de la interfaz</label>
+            <select id="settingDensity" onchange="applySettings()">
+              <option value="normal">Normal</option>
+              <option value="compact">Compacto</option>
+            </select>
+          </div>
+          <div>
+            <label>Tema de color</label>
+            <select id="settingTheme" onchange="applySettings()">
+              <option value="default">Rosa (por defecto)</option>
+              <option value="black">Negro</option>
+            </select>
+          </div>
+          <div>
+            <label>Reducir movimiento</label>
+            <select id="settingMotion" onchange="applySettings()">
+              <option value="normal">Normal</option>
+              <option value="reduced">Reducido</option>
             </select>
           </div>
         </div>
-
-        <button id="btnSearchScryfall" class="btn mt10">Buscar carta</button>
-        <div id="searchResults" class="mt20"></div>
+      </div>
+      <div class="panel">
+        <h2 class="h2">☁️ Sincronización en la nube</h2>
+        <p class="hint mb10">Tus datos se guardan automáticamente en Firebase cuando estás logueado.</p>
+        <div class="row">
+          <button class="btn" onclick="manualCloudSave()">Guardar ahora</button>
+          <button class="btn ghost" onclick="manualCloudLoad()">Cargar desde la nube</button>
+        </div>
       </div>
     </section>
 
-    <section id="tab_decks" style="display:none">
-      <div class="grid grid-2">
-        <div class="panel">
-          <h2 class="section-title">Crear mazo</h2>
-          <label>Nombre del mazo</label>
-          <input id="newDeckName" type="text" placeholder="Mono Red Aggro" />
-          <button id="btnCreateDeck" class="btn mt10">Crear mazo</button>
-        </div>
+  </div>
+</main>
 
-        <div class="panel">
-          <h2 class="section-title">Tus mazos</h2>
-          <div id="decksDiv"></div>
-        </div>
-      </div>
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-      <div id="deckEditor" class="panel mt20" style="display:none">
-        <div class="row row-between">
-          <h2 id="deckEditorTitle" class="section-title">Editor de mazo</h2>
-          <button id="btnCloseDeck" class="btn ghost tiny">Cerrar</button>
-        </div>
+  const firebaseConfig = {
+    apiKey: "AIzaSyC2CyBcmqd4dhuNtIX2sjUk_dadwriF0x8",
+    authDomain: "mtg-manager-2005.firebaseapp.com",
+    projectId: "mtg-manager-2005",
+    storageBucket: "mtg-manager-2005.firebasestorage.app",
+    messagingSenderId: "310699881878",
+    appId: "1:310699881878:web:dcb0f21e31434393f719b7",
+    measurementId: "G-T3PQ24KKCF"
+  };
 
-        <div class="grid grid-2">
-          <div>
-            <label>Nombre de carta</label>
-            <input id="deckCardName" type="text" placeholder="Nombre de carta" />
+  const app   = initializeApp(firebaseConfig);
+  const auth  = getAuth(app);
+  const db    = getFirestore(app);
+
+  // Exponer globalmente para que el resto del código los use
+  window._fbAuth = auth;
+  window._fbDb   = db;
+  window._fbFns  = {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    doc,
+    setDoc,
+    getDoc
+  };
+
+  // Auto-login si hay sesión activa en Firebase
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      window._fbCurrentUser = user;
+      try {
+        if (typeof window.cloudLoadAll === "function") {
+          await window.cloudLoadAll();
+        }
+        if (typeof window.showApp === "function") window.showApp();
+      } catch (err) {
+        console.error("Error cargando datos tras login:", err);
+      }
+    } else {
+      window._fbCurrentUser = null;
+      if (typeof window.showLogin === "function") window.showLogin();
+      if (typeof window.setAuthTop === "function") window.setAuthTop(null);
+    }
+  });
+</script>
+
+<script>
+/************************************************************
+ * DATA MODELS
+ ************************************************************/
+let cards = [];
+let decks = [];
+let wishlist = [];
+let currentDeckId = null;
+let sortState = { col: "name", asc: true };
+
+const DEFAULT_SETTINGS = {
+  fontSize: "16px",
+  density: "normal",
+  theme: "default",
+  motion: "normal"
+};
+let settings = { ...DEFAULT_SETTINGS };
+
+/************************************************************
+ * PERSISTENCIA LOCAL (localStorage)
+ ************************************************************/
+function saveCards() {
+  try{ localStorage.setItem("mtg_cards", JSON.stringify(cards)); }catch{}
+}
+function loadCards() {
+  try{
+    const s = localStorage.getItem("mtg_cards");
+    if(s) cards = JSON.parse(s);
+  }catch{}
+}
+function saveDecks() {
+  try{ localStorage.setItem("mtg_decks", JSON.stringify(decks)); }catch{}
+}
+function loadDecks() {
+  try{
+    const s = localStorage.getItem("mtg_decks");
+    if(s) decks = JSON.parse(s);
+  }catch{}
+}
+function saveWishlist() {
+  try{ localStorage.setItem("mtg_wishlist", JSON.stringify(wishlist)); }catch{}
+}
+function loadWishlist() {
+  try{
+    const s = localStorage.getItem("mtg_wishlist");
+    if(s) wishlist = JSON.parse(s);
+  }catch{}
+}
+function saveSettings() {
+  try{ localStorage.setItem("mtg_settings", JSON.stringify(settings)); }catch{}
+}
+function loadSettings() {
+  try{
+    const s = localStorage.getItem("mtg_settings");
+    if(s) settings = { ...DEFAULT_SETTINGS, ...JSON.parse(s) };
+  }catch{}
+}
+function clearSession() {
+  cards = [];
+  decks = [];
+  wishlist = [];
+  settings = { ...DEFAULT_SETTINGS };
+  try{
+    localStorage.removeItem("mtg_cards");
+    localStorage.removeItem("mtg_decks");
+    localStorage.removeItem("mtg_wishlist");
+    localStorage.removeItem("mtg_settings");
+  }catch{}
+}
+
+/************************************************************
+ * COLECCIÓN: Añadir, eliminar, ordenar
+ ************************************************************/
+function addCard() {
+  const name   = document.getElementById("newCardName").value.trim();
+  const set    = document.getElementById("newCardSet").value.trim();
+  const lang   = document.getElementById("newCardLang").value;
+  const cond   = document.getElementById("newCardCondition").value;
+  const foil   = document.getElementById("newCardFoil").value;
+  const qty    = parseInt(document.getElementById("newCardQuantity").value) || 1;
+  const price  = parseFloat(document.getElementById("newCardPrice").value) || 0;
+
+  if(!name){
+    alert("Escribe el nombre de la carta");
+    return;
+  }
+
+  const id = Date.now() + "_" + Math.random().toString(36).slice(2);
+  cards.push({ id, name, set, lang, condition:cond, foil, quantity:qty, price });
+  saveCards();
+  cloudSaveAll();
+  renderCards();
+  document.getElementById("newCardName").value = "";
+  document.getElementById("newCardSet").value = "";
+  document.getElementById("newCardQuantity").value = "1";
+  document.getElementById("newCardPrice").value = "";
+}
+
+function deleteCard(id) {
+  if(!confirm("¿Eliminar esta carta?")) return;
+  cards = cards.filter(c => c.id !== id);
+  saveCards();
+  cloudSaveAll();
+  renderCards();
+}
+
+function editCard(id) {
+  const c = cards.find(x => x.id === id);
+  if(!c) return;
+  const newName = prompt("Nombre:", c.name);
+  if(newName === null) return;
+  c.name = newName.trim() || c.name;
+
+  const newSet = prompt("Edición:", c.set);
+  if(newSet !== null) c.set = newSet.trim();
+
+  const newLang = prompt("Idioma:", c.lang);
+  if(newLang !== null) c.lang = newLang.trim();
+
+  const newCond = prompt("Estado:", c.condition);
+  if(newCond !== null) c.condition = newCond.trim();
+
+  const newFoil = prompt("Foil (Sí/No):", c.foil);
+  if(newFoil !== null) c.foil = newFoil.trim();
+
+  const newQty = prompt("Cantidad:", c.quantity);
+  if(newQty !== null) c.quantity = parseInt(newQty) || c.quantity;
+
+  const newPrice = prompt("Precio unitario:", c.price);
+  if(newPrice !== null) c.price = parseFloat(newPrice) || c.price;
+
+  saveCards();
+  cloudSaveAll();
+  renderCards();
+}
+
+function sortCards(col) {
+  if(sortState.col === col) {
+    sortState.asc = !sortState.asc;
+  } else {
+    sortState.col = col;
+    sortState.asc = true;
+  }
+  const mult = sortState.asc ? 1 : -1;
+  cards.sort((a,b)=>{
+    let A = a[col], B = b[col];
+    if(typeof A === "string") A = A.toLowerCase();
+    if(typeof B === "string") B = B.toLowerCase();
+    if(A < B) return -1*mult;
+    if(A > B) return 1*mult;
+    return 0;
+  });
+  renderCards();
+}
+
+function renderCards() {
+  const tbody = document.getElementById("cardsBody");
+  if(!tbody) return;
+  tbody.innerHTML = "";
+  cards.forEach(c => {
+    const tr = document.createElement("tr");
+    const total = (c.quantity * c.price).toFixed(2);
+    tr.innerHTML = `
+      <td>${c.name}</td>
+      <td>${c.set || "—"}</td>
+      <td>${c.lang || "—"}</td>
+      <td>${c.condition || "—"}</td>
+      <td>${c.foil || "—"}</td>
+      <td>${c.quantity}</td>
+      <td>${c.price.toFixed(2)}€</td>
+      <td>${total}€</td>
+      <td>
+        <button class="btn ghost tiny" onclick="editCard('${c.id}')">✏️</button>
+        <button class="btn danger tiny" onclick="deleteCard('${c.id}')">🗑️</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/************************************************************
+ * BUSCAR CARTA EN SCRYFALL
+ ************************************************************/
+async function searchCardScryfall() {
+  const nameEl = document.getElementById("searchCardName");
+  const setEl  = document.getElementById("searchCardSet");
+  const langEl = document.getElementById("searchLang");
+  const resultsDiv = document.getElementById("searchResults");
+
+  if(!nameEl || !resultsDiv) return;
+  const cardName = nameEl.value.trim();
+  if(!cardName){
+    alert("Escribe el nombre de una carta");
+    return;
+  }
+
+  resultsDiv.innerHTML = "<p>Buscando...</p>";
+
+  try {
+    let query = `!"${cardName}"`;
+    const setV = (setEl?.value || "").trim();
+    if(setV) query += ` set:${setV}`;
+
+    const langV = (langEl?.value || "").trim();
+    if(langV) query += ` lang:${langV}`;
+
+    const url = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(query)}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+
+    if(!data.data || data.data.length === 0){
+      resultsDiv.innerHTML = "<p>No se encontraron resultados.</p>";
+      return;
+    }
+
+    let html = "";
+    data.data.slice(0,10).forEach(card => {
+      const imgUrl = card.image_uris ? card.image_uris.normal : (card.card_faces && card.card_faces[0].image_uris ? card.card_faces[0].image_uris.normal : "");
+      const setName = card.set_name || "";
+      const rarity = card.rarity || "";
+      const type = card.type_line || "";
+      const oracle = card.oracle_text || "";
+      const price = card.prices?.eur || "—";
+
+      html += `
+        <div class="cardrow mb10">
+          <div class="cardrow-left">
+            ${imgUrl ? `<img class="cardimg" src="${imgUrl}" alt="${card.name}"/>` : ""}
           </div>
-          <div>
-            <label>Cantidad</label>
-            <input id="deckCardQty" type="number" min="1" value="1" />
+          <div class="cardrow-main">
+            <div class="cardrow-name">${card.name}</div>
+            <div class="cardrow-info">
+              <strong>Edición:</strong> ${setName} (${card.set.toUpperCase()})<br>
+              <strong>Rareza:</strong> ${rarity}<br>
+              <strong>Tipo:</strong> ${type}<br>
+              <strong>Precio:</strong> ${price}€<br>
+              <strong>Texto:</strong> ${oracle.substring(0,120)}...
+            </div>
           </div>
         </div>
+      `;
+    });
 
-        <button id="btnAddCardToDeck" class="btn mt10">Añadir al mazo</button>
-        <div id="deckCardsDiv" class="mt20"></div>
+    resultsDiv.innerHTML = html;
+  } catch(e) {
+    resultsDiv.innerHTML = `<p style="color:#ef4444">Error: ${e.message}</p>`;
+  }
+}
+
+/************************************************************
+ * MAZOS
+ ************************************************************/
+function createDeck() {
+  const nameEl = document.getElementById("newDeckName");
+  if(!nameEl) return;
+  const name = nameEl.value.trim();
+  if(!name){
+    alert("Escribe un nombre para el mazo");
+    return;
+  }
+  const id = Date.now() + "_" + Math.random().toString(36).slice(2);
+  decks.push({ id, name, cards: [] });
+  saveDecks();
+  cloudSaveAll();
+  nameEl.value = "";
+  renderDecksList();
+}
+
+function renderDecksList() {
+  const div = document.getElementById("decksList");
+  if(!div) return;
+  div.innerHTML = "";
+  if(decks.length === 0){
+    div.innerHTML = "<p class='hint'>No tienes mazos. Crea uno arriba.</p>";
+    return;
+  }
+  decks.forEach(d => {
+    const count = d.cards.reduce((sum, c) => sum + c.quantity, 0);
+    const card = document.createElement("div");
+    card.className = "deck-card";
+    card.onclick = () => openDeck(d.id);
+    card.innerHTML = `
+      <div class="deck-header">
+        <div class="deck-icon">🎴</div>
+        <div class="deck-name">${d.name}</div>
       </div>
-    </section>
+      <div class="deck-count">${count} cartas</div>
+    `;
+    div.appendChild(card);
+  });
+}
 
-    <section id="tab_wishlist" style="display:none">
-      <div class="grid grid-2">
-        <div class="panel">
-          <h2 class="section-title">Añadir a wishlist</h2>
+function openDeck(id) {
+  currentDeckId = id;
+  const deck = decks.find(d => d.id === id);
+  if(!deck) return;
+  document.getElementById("decksList").style.display = "none";
+  document.getElementById("deckDetail").style.display = "block";
+  document.getElementById("deckDetailName").textContent = deck.name;
+  renderDeckCards();
+}
 
-          <label>Nombre</label>
-          <input id="wishName" type="text" placeholder="Smothering Tithe" />
+function closeDeck() {
+  currentDeckId = null;
+  document.getElementById("decksList").style.display = "";
+  document.getElementById("deckDetail").style.display = "none";
+}
 
-          <label>Edición</label>
-          <input id="wishSet" type="text" placeholder="RNA" />
+function deleteDeck() {
+  if(!currentDeckId) return;
+  if(!confirm("¿Eliminar este mazo?")) return;
+  decks = decks.filter(d => d.id !== currentDeckId);
+  saveDecks();
+  cloudSaveAll();
+  closeDeck();
+  renderDecksList();
+}
 
-          <label>Prioridad</label>
-          <select id="wishPriority">
-            <option value="Alta">Alta</option>
-            <option value="Media">Media</option>
-            <option value="Baja">Baja</option>
-          </select>
+function addCardToDeck() {
+  if(!currentDeckId) return;
+  const deck = decks.find(d => d.id === currentDeckId);
+  if(!deck) return;
 
-          <button id="btnAddWish" class="btn mt10">Añadir deseo</button>
-        </div>
+  const nameEl = document.getElementById("deckAddCardName");
+  const qtyEl  = document.getElementById("deckAddCardQty");
+  if(!nameEl || !qtyEl) return;
 
-        <div class="panel">
-          <h2 class="section-title">Wishlist</h2>
-          <div id="wishlistDiv"></div>
-        </div>
-      </div>
-    </section>
+  const name = nameEl.value.trim();
+  const qty  = parseInt(qtyEl.value) || 1;
+  if(!name){
+    alert("Escribe el nombre de la carta");
+    return;
+  }
 
-    <section id="tab_stats" style="display:none">
-      <div class="grid grid-4">
-        <div class="panel stat-card">
-          <div class="stat-label">Cartas totales</div>
-          <div id="statTotal" class="stat-value">0</div>
-        </div>
-        <div class="panel stat-card">
-          <div class="stat-label">Cartas únicas</div>
-          <div id="statUnique" class="stat-value">0</div>
-        </div>
-        <div class="panel stat-card">
-          <div class="stat-label">Valor total</div>
-          <div id="statValue" class="stat-value">0€</div>
-        </div>
-        <div class="panel stat-card">
-          <div class="stat-label">Foils</div>
-          <div id="statFoils" class="stat-value">0</div>
-        </div>
-      </div>
+  const existing = deck.cards.find(c => c.name.toLowerCase() === name.toLowerCase());
+  if(existing) {
+    existing.quantity += qty;
+  } else {
+    deck.cards.push({ name, quantity: qty });
+  }
 
-      <div class="grid grid-2 mt20">
-        <div class="panel">
-          <h2 class="section-title">Idiomas</h2>
-          <canvas id="chartLang"></canvas>
-        </div>
-        <div class="panel">
-          <h2 class="section-title">Estados</h2>
-          <canvas id="chartCond"></canvas>
-        </div>
-      </div>
-    </section>
+  saveDecks();
+  cloudSaveAll();
+  renderDeckCards();
+  nameEl.value = "";
+  qtyEl.value = "1";
+}
 
-    <section id="tab_import" style="display:none">
-      <div class="grid grid-2">
-        <div class="panel">
-          <h2 class="section-title">Exportar</h2>
-          <button id="btnExportCards" class="btn">Exportar colección JSON</button>
-          <button id="btnExportDecks" class="btn mt10">Exportar mazos JSON</button>
-          <button id="btnExportWishlist" class="btn mt10">Exportar wishlist JSON</button>
-        </div>
+function removeDeckCard(cardName) {
+  if(!currentDeckId) return;
+  const deck = decks.find(d => d.id === currentDeckId);
+  if(!deck) return;
+  deck.cards = deck.cards.filter(c => c.name !== cardName);
+  saveDecks();
+  cloudSaveAll();
+  renderDeckCards();
+}
 
-        <div class="panel">
-          <h2 class="section-title">Importar</h2>
-          <label>Importar colección</label>
-          <input id="importCardsFile" type="file" accept=".json" />
+function renderDeckCards() {
+  if(!currentDeckId) return;
+  const deck = decks.find(d => d.id === currentDeckId);
+  if(!deck) return;
 
-          <label class="mt10">Importar mazos</label>
-          <input id="importDecksFile" type="file" accept=".json" />
+  const div = document.getElementById("deckCards");
+  if(!div) return;
+  if(deck.cards.length === 0){
+    div.innerHTML = "<p class='hint'>No hay cartas en este mazo.</p>";
+    return;
+  }
 
-          <label class="mt10">Importar wishlist</label>
-          <input id="importWishlistFile" type="file" accept=".json" />
-        </div>
-      </div>
-    </section>
+  let html = "<table><thead><tr><th>Carta</th><th>Cantidad</th><th>Acción</th></tr></thead><tbody>";
+  deck.cards.forEach(c => {
+    html += `
+      <tr>
+        <td>${c.name}</td>
+        <td>${c.quantity}</td>
+        <td><button class="btn danger tiny" onclick="removeDeckCard('${c.name}')">🗑️</button></td>
+      </tr>
+    `;
+  });
+  html += "</tbody></table>";
+  div.innerHTML = html;
+}
 
-    <section id="tab_settings" style="display:none">
-      <div class="grid grid-2">
-        <div class="panel">
-          <h2 class="section-title">Ajustes visuales</h2>
+/************************************************************
+ * WISHLIST
+ ************************************************************/
+function addWish() {
+  const nameEl = document.getElementById("wishCardName");
+  const setEl  = document.getElementById("wishCardSet");
+  const prioEl = document.getElementById("wishPriority");
+  if(!nameEl || !prioEl) return;
 
-          <label>Tema</label>
-          <select id="themeSelect">
-            <option value="default">Default</option>
-            <option value="black">Black</option>
-          </select>
+  const name = nameEl.value.trim();
+  const set  = (setEl?.value || "").trim();
+  const prio = prioEl.value;
 
-          <label>Densidad</label>
-          <select id="densitySelect">
-            <option value="normal">Normal</option>
-            <option value="compact">Compacta</option>
-          </select>
+  if(!name){
+    alert("Escribe el nombre de la carta");
+    return;
+  }
 
-          <label>Movimiento</label>
-          <select id="motionSelect">
-            <option value="normal">Normal</option>
-            <option value="reduced">Reducido</option>
-          </select>
+  const id = Date.now() + "_" + Math.random().toString(36).slice(2);
+  wishlist.push({ id, name, set, priority: prio });
+  saveWishlist();
+  cloudSaveAll();
+  renderWishlist();
+  nameEl.value = "";
+  if(setEl) setEl.value = "";
+}
 
-          <label>Tamaño de fuente</label>
-          <select id="fontSizeSelect">
-            <option value="14px">14px</option>
-            <option value="16px">16px</option>
-            <option value="18px">18px</option>
-          </select>
-        </div>
+function deleteWish(id) {
+  if(!confirm("¿Eliminar de la wishlist?")) return;
+  wishlist = wishlist.filter(w => w.id !== id);
+  saveWishlist();
+  cloudSaveAll();
+  renderWishlist();
+}
 
-        <div class="panel">
-          <h2 class="section-title">Nube y sesión</h2>
-          <button id="btnCloudSave" class="btn">Guardar en la nube</button>
-          <button id="btnCloudLoad" class="btn mt10">Cargar desde la nube</button>
-          <button id="btnClearLocal" class="btn danger mt10">Borrar datos locales</button>
-        </div>
-      </div>
-    </section>
-    <!-- ========================= -->
-    <!-- AÑADIR CARTAS -->
-    <!-- ========================= -->
-    <section id="page-add-cards" class="page">
+function renderWishlist() {
+  const div = document.getElementById("wishlistDiv");
+  if(!div) return;
+  if(wishlist.length === 0){
+    div.innerHTML = "<p class='hint'>Tu wishlist está vacía.</p>";
+    return;
+  }
 
-      <h2>Buscar cartas</h2>
+  let html = "<table><thead><tr><th>Carta</th><th>Edición</th><th>Prioridad</th><th>Acción</th></tr></thead><tbody>";
+  wishlist.forEach(w => {
+    html += `
+      <tr>
+        <td>${w.name}</td>
+        <td>${w.set || "—"}</td>
+        <td><span class="pill">${w.priority}</span></td>
+        <td><button class="btn danger tiny" onclick="deleteWish('${w.id}')">🗑️</button></td>
+      </tr>
+    `;
+  });
+  html += "</tbody></table>";
+  div.innerHTML = html;
+}
 
-      <input
-        type="text"
-        id="card-search-input"
-        placeholder="Buscar carta..."
-      />
+/************************************************************
+ * ESTADÍSTICAS (Chart.js)
+ ************************************************************/
+function renderStats() {
+  const totalCards = cards.reduce((sum, c) => sum + c.quantity, 0);
+  const uniqueCards = cards.length;
+  const totalValue = cards.reduce((sum, c) => sum + (c.quantity * c.price), 0);
+  const foilsCount = cards.filter(c => c.foil === "Sí").reduce((sum, c) => sum + c.quantity, 0);
 
-      <button id="card-search-btn">Buscar</button>
+  document.getElementById("statTotal").textContent = totalCards;
+  document.getElementById("statUnique").textContent = uniqueCards;
+  document.getElementById("statValue").textContent = totalValue.toFixed(2) + "€";
+  document.getElementById("statFoils").textContent = foilsCount;
 
-      <div id="search-results" class="card-grid"></div>
+  // Idiomas
+  const langMap = {};
+  cards.forEach(c => {
+    const lang = c.lang || "Desconocido";
+    langMap[lang] = (langMap[lang] || 0) + c.quantity;
+  });
+  const langLabels = Object.keys(langMap);
+  const langData = langLabels.map(l => langMap[l]);
 
-    </section>
+  const ctxLang = document.getElementById("chartLang");
+  if(ctxLang){
+    if(window.chartLangInst) window.chartLangInst.destroy();
+    window.chartLangInst = new Chart(ctxLang, {
+      type: "pie",
+      data: {
+        labels: langLabels,
+        datasets: [{
+          data: langData,
+          backgroundColor: ["#f06292","#f8bbd0","#d81b60","#ec407a","#f48fb1","#fce4ec"]
+        }]
+      },
+      options: { responsive:true, plugins: { legend:{ position:"bottom" } } }
+    });
+  }
 
+  // Estados
+  const condMap = {};
+  cards.forEach(c => {
+    const cond = c.condition || "Desconocido";
+    condMap[cond] = (condMap[cond] || 0) + c.quantity;
+  });
+  const condLabels = Object.keys(condMap);
+  const condData = condLabels.map(l => condMap[l]);
 
-    <!-- ========================= -->
-    <!-- COLECCIÓN -->
-    <!-- ========================= -->
-    <section id="page-collection" class="page">
+  const ctxCond = document.getElementById("chartCondition");
+  if(ctxCond){
+    if(window.chartCondInst) window.chartCondInst.destroy();
+    window.chartCondInst = new Chart(ctxCond, {
+      type: "doughnut",
+      data: {
+        labels: condLabels,
+        datasets: [{
+          data: condData,
+          backgroundColor: ["#f06292","#f8bbd0","#d81b60","#ec407a","#f48fb1"]
+        }]
+      },
+      options: { responsive:true, plugins: { legend:{ position:"bottom" } } }
+    });
+  }
 
-      <h2>Mi colección</h2>
+  // Top 10 ediciones
+  const setMap = {};
+  cards.forEach(c => {
+    const set = c.set || "Desconocido";
+    setMap[set] = (setMap[set] || 0) + c.quantity;
+  });
+  const setEntries = Object.entries(setMap).sort((a,b) => b[1] - a[1]).slice(0,10);
+  const setLabels = setEntries.map(e => e[0]);
+  const setData = setEntries.map(e => e[1]);
 
-      <input
-        type="text"
-        id="collection-filter"
-        placeholder="Filtrar cartas..."
-      />
+  const ctxSets = document.getElementById("chartSets");
+  if(ctxSets){
+    if(window.chartSetsInst) window.chartSetsInst.destroy();
+    window.chartSetsInst = new Chart(ctxSets, {
+      type: "bar",
+      data: {
+        labels: setLabels,
+        datasets: [{
+          label: "Cantidad",
+          data: setData,
+          backgroundColor: "#f06292"
+        }]
+      },
+      options: {
+        responsive:true,
+        scales: {
+          y: { beginAtZero:true }
+        },
+        plugins: { legend: { display:false } }
+      }
+    });
+  }
+}
 
-      <div id="collection-grid" class="card-grid"></div>
+/************************************************************
+ * IMPORTAR/EXPORTAR
+ ************************************************************/
+function exportCardsCSV() {
+  let csv = "Nombre,Edición,Idioma,Estado,Foil,Cantidad,Precio\n";
+  cards.forEach(c => {
+    csv += `"${c.name}","${c.set || ""}","${c.lang}","${c.condition}","${c.foil}",${c.quantity},${c.price}\n`;
+  });
+  downloadFile("coleccion.csv", csv);
+}
 
-    </section>
-  </main>
+function importCardsCSV() {
+  const area = document.getElementById("importArea");
+  if(!area) return;
+  const text = area.value.trim();
+  if(!text){
+    alert("Pega el CSV en el área de texto");
+    return;
+  }
 
-  <script type="module" src="./js/main.js"></script>
+  const lines = text.split("\n");
+  let imported = 0;
+  for(let i=0; i<lines.length; i++){
+    const line = lines[i].trim();
+    if(!line || line.startsWith("Nombre")) continue;
+
+    const parts = line.split(",").map(p => p.replace(/^"|"$/g,"").trim());
+    if(parts.length < 7) continue;
+
+    const [name, set, lang, condition, foil, quantity, price] = parts;
+    const qty = parseInt(quantity) || 1;
+    const pr = parseFloat(price) || 0;
+
+    const id = Date.now() + "_" + Math.random().toString(36).slice(2);
+    cards.push({ id, name, set, lang, condition, foil, quantity:qty, price:pr });
+    imported++;
+  }
+
+  if(imported > 0){
+    saveCards();
+    cloudSaveAll();
+    renderCards();
+    alert(`Importadas ${imported} cartas.`);
+    area.value = "";
+  } else {
+    alert("No se pudo importar ninguna carta.");
+  }
+}
+
+function exportDecksJSON() {
+  const json = JSON.stringify(decks, null, 2);
+  downloadFile("mazos.json", json);
+}
+
+function exportAllJSON() {
+  const all = { cards, decks, wishlist, settings };
+  const json = JSON.stringify(all, null, 2);
+  downloadFile("backup_completo.json", json);
+}
+
+function downloadFile(filename, text) {
+  const blob = new Blob([text], { type:"text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+/************************************************************
+ * CONFIGURACIÓN
+ ************************************************************/
+function applySettings() {
+  const fsEl   = document.getElementById("settingFontSize");
+  const densEl = document.getElementById("settingDensity");
+  const themeEl= document.getElementById("settingTheme");
+  const motEl  = document.getElementById("settingMotion");
+
+  if(fsEl) settings.fontSize = fsEl.value;
+  if(densEl) settings.density = densEl.value;
+  if(themeEl) settings.theme = themeEl.value;
+  if(motEl) settings.motion = motEl.value;
+
+  saveSettings();
+  cloudSaveAll();
+  loadSettingsIntoUI();
+}
+
+function loadSettingsIntoUI() {
+  document.documentElement.style.setProperty("--base-font", settings.fontSize);
+  document.body.dataset.density = settings.density;
+  document.body.dataset.theme = settings.theme;
+  document.documentElement.dataset.motion = settings.motion;
+
+  const fsEl = document.getElementById("settingFontSize");
+  const densEl = document.getElementById("settingDensity");
+  const themeEl = document.getElementById("settingTheme");
+  const motEl = document.getElementById("settingMotion");
+  if(fsEl) fsEl.value = settings.fontSize;
+  if(densEl) densEl.value = settings.density;
+  if(themeEl) themeEl.value = settings.theme;
+  if(motEl) motEl.value = settings.motion;
+}
+
+async function manualCloudSave() {
+  await cloudSaveAll();
+  alert("Datos guardados en la nube ✅");
+}
+
+async function manualCloudLoad() {
+  const ok = await cloudLoadAll();
+  if(ok){
+    renderCards();
+    renderDecksList();
+    renderWishlist();
+    renderStats();
+    alert("Datos cargados desde la nube ✅");
+  } else {
+    alert("No hay datos en la nube o error al cargar.");
+  }
+}
+
+/************************************************************
+ * TABS
+ ************************************************************/
+function switchTab(tabName) {
+  const allSections = ["cards","search","decks","wishlist","stats","import","settings"];
+  allSections.forEach(t => {
+    const sec = document.getElementById("tab_" + t);
+    if(sec) sec.style.display = (t === tabName) ? "block" : "none";
+  });
+
+  document.querySelectorAll(".tabbtn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.tab === tabName);
+  });
+
+  if(tabName === "stats") renderStats();
+  if(tabName === "cards") renderCards();
+  if(tabName === "decks") {
+    renderDecksList();
+    closeDeck();
+  }
+  if(tabName === "wishlist") renderWishlist();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".tabbtn").forEach(btn => {
+    btn.onclick = () => switchTab(btn.dataset.tab);
+  });
+  loadCards();
+  loadDecks();
+  loadWishlist();
+  loadSettings();
+  loadSettingsIntoUI();
+  switchTab("cards");
+});
+
+// ====================================================
+// FIREBASE: Guardar y cargar datos en la nube
+// ====================================================
+
+async function cloudSaveAll() {
+  const user = window._fbCurrentUser;
+  if (!user) return;
+  const { doc, setDoc } = window._fbFns;
+  const db = window._fbDb;
+  try {
+    const payload = {
+      cards,
+      decks,
+      wishlist,
+      settings,
+      sortState,
+      updatedAt: Date.now()
+    };
+    await setDoc(doc(db, "users", user.uid, "data", "main"), payload);
+  } catch(e) {
+    console.error("Error al guardar en nube:", e);
+  }
+}
+
+async function cloudLoadAll() {
+  const user = window._fbCurrentUser;
+  if (!user) return false;
+  const { doc, getDoc } = window._fbFns;
+  const db = window._fbDb;
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid, "data", "main"));
+    if (!snap.exists()) return false;
+    const data = snap.data();
+    if (Array.isArray(data.cards))    cards    = data.cards;
+    if (Array.isArray(data.decks))    decks    = data.decks;
+    if (Array.isArray(data.wishlist)) wishlist = data.wishlist;
+    if (data.settings)  settings  = { ...DEFAULT_SETTINGS, ...data.settings };
+    if (data.sortState) sortState = data.sortState;
+    // Persistir localmente también
+    saveCards(); saveDecks(); saveWishlist(); saveSettings();
+    return true;
+  } catch(e) {
+    console.error("Error al cargar de nube:", e);
+    return false;
+  }
+}
+
+// Exponer funciones necesarias globalmente
+window.cloudLoadAll = cloudLoadAll;
+window.showApp = showApp;
+
+/************************************************************
+ * Auth local: login/registro + recordar
+ ************************************************************/
+const REMEMBER_KEY = "mtg_rosita_remember_v1";
+let authHideTimer = null;
+
+function showLogin(){
+  if (authHideTimer) {
+    clearTimeout(authHideTimer);
+    authHideTimer = null;
+  }
+
+  document.body.classList.add("not-authenticated");
+  document.body.classList.remove("app-enter");
+
+  const scr = document.getElementById("authScreen");
+  if(scr){
+    scr.style.display = "flex";
+    scr.classList.remove("is-exit");
+    scr.classList.remove("is-enter");
+    void scr.offsetWidth;
+    scr.classList.add("is-enter");
+  }
+}
+
+function showApp(){
+  const scr = document.getElementById("authScreen");
+  if(scr){
+    if (authHideTimer) {
+      clearTimeout(authHideTimer);
+      authHideTimer = null;
+    }
+
+    scr.classList.remove("is-enter");
+    scr.classList.add("is-exit");
+
+    authHideTimer = setTimeout(() => {
+      scr.style.display = "none";
+      authHideTimer = null;
+    }, 380);
+  }
+  document.body.classList.remove("not-authenticated");
+  document.body.classList.add("app-enter");
+  setTimeout(()=> document.body.classList.remove("app-enter"), 450);
+}
+
+function setAuthTop(user){
+  const status = document.getElementById("authStatus");
+  const btnOut = document.getElementById("btnSignOutTop");
+  if(status){
+    status.textContent = user ? `👤 ${user.username || ""} ${user.email ? "("+user.email+")" : ""}`.trim() : "No logueado";
+  }
+  if(btnOut) btnOut.style.display = user ? "" : "none";
+}
+
+function setMsg(text, ok=false){
+  const msg = document.getElementById("authMsg");
+  if(!msg) return;
+  msg.style.color = ok ? "#16a34a" : "#ef4444";
+  msg.textContent = text || "";
+}
+
+function setMsg2(text, ok=false){
+  const msg = document.getElementById("authMsg2");
+  if(!msg) return;
+  msg.style.color = ok ? "#16a34a" : "#ef4444";
+  msg.textContent = text || "";
+}
+
+function showAuthView(which){
+  const login = document.getElementById("authLoginView");
+  const signup = document.getElementById("authSignupView");
+  if(!login || !signup) return;
+  if(which === "signup"){
+    login.style.display = "none";
+    signup.style.display = "grid";
+  }else{
+    signup.style.display = "none";
+    login.style.display = "grid";
+  }
+  try{ setMsg(""); }catch{}
+  try{ setMsg2(""); }catch{}
+}
+
+function isValidEmail(email){
+  const e = String(email||"").trim();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
+}
+
+function isStrongPassword(pw){
+  const p = String(pw||"");
+  if(p.length < 8) return false;
+  if(!/[A-Za-z]/.test(p)) return false;
+  if(!/\d/.test(p)) return false;
+  return true;
+}
+
+function getRememberPref(){
+  try{
+    const v = localStorage.getItem(REMEMBER_KEY);
+    return v !== "0";
+  }catch{ return true; }
+}
+function setRememberPref(v){
+  try{ localStorage.setItem(REMEMBER_KEY, v ? "1" : "0"); }catch{}
+}
+
+function signOutAndReturnToLogin(){
+  clearSession();
+  setAuthTop(null);
+  showLogin();
+}
+
+async function initAuth() {
+  const emailEl   = document.getElementById("authEmail");
+  const passEl    = document.getElementById("authPass");
+  const chkRem    = document.getElementById("authRemember");
+  const btnIn     = document.getElementById("btnSignIn");
+  const btnUp     = document.getElementById("btnSignUp");
+  const btnOutTop = document.getElementById("btnSignOutTop");
+
+  const suUserEl  = document.getElementById("suUsername");
+  const suEmailEl = document.getElementById("suEmail");
+  const suEmail2El= document.getElementById("suEmail2");
+  const suPassEl  = document.getElementById("suPass");
+  const suPass2El = document.getElementById("suPass2");
+  const btnCreate = document.getElementById("btnCreateAccount");
+  const btnBack   = document.getElementById("btnBackToLogin");
+
+  showLogin();
+  showAuthView("login");
+
+  // Volver al login
+  if (btnBack) btnBack.onclick = () => showAuthView("login");
+
+  // Mostrar registro
+  if (btnUp) btnUp.onclick = () => {
+    setMsg("");
+    showAuthView("signup");
+    if (emailEl?.value && suEmailEl) suEmailEl.value = emailEl.value;
+  };
+
+  // Cerrar sesión
+  if (btnOutTop) btnOutTop.onclick = async () => {
+    await window._fbFns.signOut(window._fbAuth);
+    clearSession();
+    setAuthTop(null);
+    showLogin();
+  };
+
+  // ── CREAR CUENTA ──
+  if (btnCreate) btnCreate.onclick = async () => {
+    setMsg2("");
+    const username = (suUserEl?.value || "").trim();
+    const email1   = (suEmailEl?.value || "").trim();
+    const email2   = (suEmail2El?.value || "").trim();
+    const pass1    = suPassEl?.value || "";
+    const pass2    = suPass2El?.value || "";
+
+    if (!username) return setMsg2("Escribe un nombre de usuario.");
+    if (!email1 || !email2) return setMsg2("Completa y confirma el email.");
+    if (email1.toLowerCase() !== email2.toLowerCase()) return setMsg2("Los emails no coinciden.");
+    if (!isValidEmail(email1)) return setMsg2("El email no es válido.");
+    if (!pass1 || !pass2) return setMsg2("Completa y repite la contraseña.");
+    if (pass1 !== pass2) return setMsg2("Las contraseñas no coinciden.");
+    if (!isStrongPassword(pass1)) return setMsg2("Mínimo 8 caracteres, letras y números.");
+
+    try {
+      const { createUserWithEmailAndPassword, signOut, doc, setDoc } = window._fbFns;
+      const cred = await createUserWithEmailAndPassword(window._fbAuth, email1, pass1);
+
+      await setDoc(doc(window._fbDb, "users", cred.user.uid, "profile", "main"), {
+        username,
+        email: email1,
+        createdAt: Date.now()
+      });
+
+      await signOut(window._fbAuth);
+      window._fbCurrentUser = null;
+
+      showLogin();
+      showAuthView("login");
+
+      if (emailEl) emailEl.value = email1;
+      if (passEl) passEl.value = "";
+      if (suUserEl) suUserEl.value = "";
+      if (suEmailEl) suEmailEl.value = "";
+      if (suEmail2El) suEmail2El.value = "";
+      if (suPassEl) suPassEl.value = "";
+      if (suPass2El) suPass2El.value = "";
+
+      setMsg2("");
+      setMsg("Cuenta creada ✅ Ya puedes iniciar sesión.", true);
+    } catch(e) {
+      const msgs = {
+        "auth/email-already-in-use": "Ya existe una cuenta con ese email.",
+        "auth/weak-password": "Contraseña demasiado débil.",
+        "auth/invalid-email": "Email no válido."
+      };
+      setMsg2(msgs[e.code] || ("Error al crear cuenta: " + (e.message || "desconocido")));
+    }
+  };
+
+  // ── INICIAR SESIÓN ──
+  if (btnIn) btnIn.onclick = async () => {
+    setMsg("");
+    const email    = (emailEl?.value || "").trim();
+    const password = passEl?.value || "";
+    if (!email || !password) return setMsg("Completa email y contraseña.");
+
+    try {
+      const { signInWithEmailAndPassword } = window._fbFns;
+      await signInWithEmailAndPassword(window._fbAuth, email, password);
+      setMsg("Entrando...", true);
+      // onAuthStateChanged se encarga de cargar los datos y mostrar la app
+    } catch(e) {
+      const msgs = {
+        "auth/invalid-credential": "Email o contraseña incorrectos.",
+        "auth/user-not-found": "No existe esa cuenta.",
+        "auth/wrong-password": "Contraseña incorrecta.",
+        "auth/too-many-requests": "Demasiados intentos. Espera un momento."
+      };
+      setMsg(msgs[e.code] || ("Error: " + (e.message || "desconocido")));
+    }
+  };
+
+  // El onAuthStateChanged del módulo de Firebase maneja el auto-login
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  initAuth();
+});
+
+</script>
+
 </body>
 </html>
