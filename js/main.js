@@ -1,5 +1,6 @@
-import { initAppEvents } from './core/events.js';
+document.addEventListener("DOMContentLoaded", () => {
 
-document.addEventListener('DOMContentLoaded', () => {
-  initAppEvents();
-});
+  initAddCardsPage()
+  initCollectionPage()
+
+})
