@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>✦ MTG Manager — Luna Cosmic</title>
+  <title>✦ MTG Manager ✦</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Firebase SDK (compat, CDN — sin npm ni build) -->
@@ -17,10 +17,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 
   <style>
-    /* ═══════════════════════════════════════════════
-       LUNA COSMIC — TAROT DARK THEME
-       Colors: Deep Plum / Mystic Purple / Gold
-    ════════════════════════════════════════════════ */
     :root{
       --bg: #1a0f2e;
       --card: #21143d;
@@ -401,10 +397,9 @@
       letter-spacing:.04em;
     }
     .tag.r-common   { background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.15); color:#ccc; }
-    .tag.r-uncommon { background:rgba(140,200,140,.08); border-color:rgba(140,200,140,.3); color:#86d888; }
-    .tag.r-rare     { background:rgba(80,120,220,.1); border-color:rgba(100,140,255,.35); color:#93c5fd; }
-    .tag.r-mythic   { background:rgba(220,100,30,.1); border-color:rgba(240,140,60,.35); color:#fdba74; }
-    .tag.r-special  { background:rgba(180,80,220,.1); border-color:rgba(200,120,255,.35); color:#d8b4fe; }
+    .tag.r-uncommon { background:rgba(140,200,140,.08); border-color:#6d6d6d4d; color:#666666; }
+    .tag.r-rare     { background:rgba(80,120,220,.1); border-color:rgba(240,140,60,.35); color:#fdba74; }
+    .tag.r-mythic   { background:rgba(220,100,30,.1); border-color:rgba(241, 119, 19, 0.35); color:#ff8d13; }
 
     td.rarity-cell{ background: transparent !important; background-image: none !important; }
     td.rarity-cell .tag{ box-shadow: none; }
@@ -805,11 +800,15 @@
       border-radius:8px;background:rgba(45,24,84,.3);
     }
     .profileAboutItem .label{color:var(--muted);font-weight:600;font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;}
-    .profileBadgeBox{
-      min-height:200px;display:grid;place-items:center;text-align:center;
-      padding:18px;border:1px dashed rgba(201,150,58,.2);
-      border-radius:14px;color:var(--muted);background:rgba(45,24,84,.2);
+    .profileCollDetails{display:grid;gap:8px;}
+    .profileCollDetailItem{
+      display:grid;grid-template-columns:1fr auto;gap:10px;
+      align-items:center;padding:9px 12px;
+      border-radius:8px;background:rgba(45,24,84,.3);
+      border:1px solid rgba(201,150,58,.12);
     }
+    .profileCollDetailItem .label{color:var(--muted);font-weight:600;font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;}
+    .profileCollDetailItem .val{font-weight:700;color:var(--gold2);font-family:'Cinzel',serif;font-size:.85rem;text-align:right;}
     .profileRanking{margin-top:14px;}
     .profileRankingTop{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
     .rankCard{
@@ -819,16 +818,11 @@
       text-align:center;box-shadow:var(--shadow);
     }
     .rankCard.big{ transform:translateY(-8px); border-color:rgba(201,150,58,.4); }
-    .rankIcon{
-      width:68px;height:68px;margin:0 auto 10px;border-radius:999px;
-      display:grid;place-items:center;font-size:28px;
-      background:radial-gradient(circle at 35% 35%, rgba(232,184,75,.3), rgba(45,24,84,.5));
-      border:1px solid rgba(201,150,58,.25);
-    }
+    .rankIcon{ display:none; }
     .rankPts{font-size:1.5rem;font-weight:700;color:var(--gold2);font-family:'Cinzel',serif;}
     .rankList{margin-top:12px;display:grid;gap:8px;}
     .rankListItem{
-      display:grid;grid-template-columns:60px 1fr auto;gap:10px;
+      display:grid;grid-template-columns:1fr auto;gap:10px;
       align-items:center;padding:10px 12px;
       border-radius:8px;background:rgba(45,24,84,.3);
       border:1px solid rgba(201,150,58,.12);font-weight:600;
@@ -1672,48 +1666,45 @@
               <div class="profileAboutItem"><span class="label">Cartas distintas</span><span id="profileStatCards">0</span></div>
               <div class="profileAboutItem"><span class="label">Mazos</span><span id="profileStatDecks">0</span></div>
               <div class="profileAboutItem"><span class="label">Deseos</span><span id="profileStatWishes">0</span></div>
-              <div class="profileAboutItem"><span class="label">Valor estimado</span><span id="profileStatValue">0.00€</span></div>
             </div>
           </div>
           <div class="panel soft" style="box-shadow:none;">
-            <h3 class="h3">Insignias</h3>
-            <div class="profileBadgeBox">
-              <div>
-                <div style="font-size:42px;line-height:1;">🏵️</div>
-                <div style="font-weight:800;margin-top:10px;">Sin insignias desbloqueadas</div>
-                <div class="hint" style="margin-top:6px;">Las insignias se añadirán próximamente.</div>
-              </div>
-            </div>
+            <h3 class="h3">Detalles de colección</h3>
+            <div id="profileCollectionDetails" class="profileCollDetails"></div>
           </div>
         </div>
 
         <div class="panel soft profileRanking" style="box-shadow:none;">
-          <h3 class="h3">Estadísticas</h3>
-          <div class="profileRankingTop">
+          <h3 class="h3">Estadísticas de colección</h3>
+          <div class="profileRankingTop" id="profileStatCards3">
             <div class="rankCard">
-              <div class="rankIcon">🥉</div>
-              <div style="font-weight:800;">Deseos</div>
-              <div class="rankPts" id="rankWishValue">0</div>
-              <div class="hint">En seguimiento</div>
+              <div class="rankIcon"></div>
+              <div style="font-weight:800;">Cartas</div>
+              <div class="rankPts" id="rankCollectionValue">0</div>
+              <div class="hint">distintas</div>
             </div>
             <div class="rankCard big">
-              <div class="rankIcon">🥇</div>
-              <div style="font-weight:800;">Colección</div>
-              <div class="rankPts" id="rankCollectionValue">0</div>
-              <div class="hint">Cartas distintas</div>
+              <div class="rankIcon"></div>
+              <div style="font-weight:800;">Copias</div>
+              <div class="rankPts" id="rankTotalCopies">0</div>
+              <div class="hint">en colección</div>
             </div>
             <div class="rankCard">
-              <div class="rankIcon">🥈</div>
+              <div class="rankIcon"></div>
               <div style="font-weight:800;">Mazos</div>
               <div class="rankPts" id="rankDeckValue">0</div>
-              <div class="hint">Mazos activos</div>
+              <div class="hint">guardados</div>
             </div>
           </div>
-          <div class="rankList">
-            <div class="rankListItem"><span>#1</span><span>Cartas (total)</span><span id="rankTotalCards">0</span></div>
-            <div class="rankListItem"><span>#2</span><span>Copias guardadas</span><span id="rankTotalCopies">0</span></div>
-            <div class="rankListItem"><span>#3</span><span>Items en deseos</span><span id="rankWishlistTotal">0</span></div>
-            <div class="rankListItem"><span>#4</span><span>En venta</span><span id="rankSalesTotal">0</span></div>
+          <div class="rankList" id="profileCollStats">
+            <div class="rankListItem"><span>Color</span><span id="rankDominantColor">—</span></div>
+            <div class="rankListItem"><span>Tipo</span><span id="rankDominantType">—</span></div>
+            <div class="rankListItem"><span>Rareza</span><span id="rankDominantRarity">—</span></div>
+            <div class="rankListItem"><span>Carta más copiada</span><span id="rankMostCopied">—</span></div>
+            <div class="rankListItem"><span>Mazo más grande</span><span id="rankBiggestDeck">—</span></div>
+            <div class="rankListItem"><span>Foils</span><span id="rankFoilCount">0</span></div>
+            <div class="rankListItem"><span>Favoritos</span><span id="rankFavCount">0</span></div>
+            <div class="rankListItem"><span>Deseos</span><span id="rankWishValue">0</span></div>
           </div>
         </div>
       </div>
@@ -5171,10 +5162,70 @@ function renderUserProfilePage(){
   const cardsCount = cards.length;
   const decksCount = decks.length;
   const wishCount = wishlist.length;
-  const inv = computeInvestmentTotals();
 
   const totalCopies = cards.reduce((n, c)=> n + (Number(c.count || c.qty || 1) || 1), 0);
-  const mySales = loadMySales();
+
+  // ── Estadísticas de colección ──
+  // Color dominante
+  const colorCounts = {};
+  for(const c of cards){
+    const qty = Number(c.count || c.qty || 1) || 1;
+    const b = colorBucketFromColorId(c.colorId);
+    colorCounts[b] = (colorCounts[b] || 0) + qty;
+  }
+  const dominantColor = Object.keys(colorCounts).sort((a,b)=>colorCounts[b]-colorCounts[a])[0] || "—";
+  const dominantColorLabel = dominantColor;
+
+  // Tipo dominante
+  const typeCounts = {};
+  for(const c of cards){
+    const qty = Number(c.count || c.qty || 1) || 1;
+    const t = mainTypeBucket(c.type);
+    typeCounts[t] = (typeCounts[t] || 0) + qty;
+  }
+  const dominantType = Object.keys(typeCounts).sort((a,b)=>typeCounts[b]-typeCounts[a])[0] || "—";
+
+  // Rareza dominante
+  const rarCounts = {};
+  for(const c of cards){
+    const qty = Number(c.count || c.qty || 1) || 1;
+    const r = c.rarity || "—";
+    rarCounts[r] = (rarCounts[r] || 0) + qty;
+  }
+  const dominantRarity = Object.keys(rarCounts).sort((a,b)=>rarCounts[b]-rarCounts[a])[0] || "—";
+
+  // Carta más copiada
+  let mostCopied = null, mostCopiedQty = 0;
+  for(const c of cards){
+    const qty = Number(c.count || c.qty || 1) || 1;
+    if(qty > mostCopiedQty){ mostCopiedQty = qty; mostCopied = c; }
+  }
+  const mostCopiedLabel = mostCopied ? `${mostCopied.name || "?"} (×${mostCopiedQty})` : "—";
+
+  // Mazo más grande
+  let biggestDeck = null, biggestDeckCount = 0;
+  for(const d of decks){
+    const cnt = Array.isArray(d.cards) ? d.cards.reduce((n,e)=> n + (Number(e.qty||e.count||1)||1), 0) : 0;
+    if(cnt > biggestDeckCount){ biggestDeckCount = cnt; biggestDeck = d; }
+  }
+  const biggestDeckLabel = biggestDeck ? `${biggestDeck.name || "?"} (${biggestDeckCount})` : "—";
+
+  // Foils y favoritos
+  const foilCount = cards.filter(c=> c.foil === true || c.foil === 1 || c.foil === "true" || c.foil === "1").length;
+  const favCount  = cards.filter(c=> isFav(c)).length;
+
+  // Detalles panel "Sobre" – distribución de rarezas
+  const detailsEl = document.getElementById("profileCollectionDetails");
+  if(detailsEl){
+    const rarOrder = ["Mítica","Rara","Poco común","Común"];
+    const rarRows = rarOrder.map(r=>{
+      const count = cards.filter(c=> (c.rarity||"").toLowerCase().includes(r.toLowerCase().split(" ")[0])).length;
+      if(!count) return "";
+      return `<div class="profileCollDetailItem"><span class="label">${r}</span><span class="val">${count} carta${count!==1?"s":""}</span></div>`;
+    }).filter(Boolean).join("");
+    detailsEl.innerHTML = rarRows || `<div class="hint" style="padding:10px;">Sin cartas aún.</div>`;
+  }
+
   const ids = {
     profileCardsCount: cardsCount,
     profileDecksCount: decksCount,
@@ -5182,16 +5233,19 @@ function renderUserProfilePage(){
     profileStatCards: cardsCount,
     profileStatDecks: decksCount,
     profileStatWishes: wishCount,
-    profileStatValue: `${inv.invAll.toFixed(2)}€`,
     profileAboutName: displayName,
     profileAboutEmail: getProfileEmail(),
     rankCollectionValue: cardsCount,
     rankDeckValue: decksCount,
-    rankWishValue: wishCount,
-    rankTotalCards: cardsCount,
     rankTotalCopies: totalCopies,
-    rankWishlistTotal: wishlist.length,
-    rankSalesTotal: mySales.length
+    rankWishValue: wishCount,
+    rankDominantColor: dominantColorLabel,
+    rankDominantType: dominantType,
+    rankDominantRarity: dominantRarity,
+    rankMostCopied: mostCopiedLabel,
+    rankBiggestDeck: biggestDeckLabel,
+    rankFoilCount: foilCount,
+    rankFavCount: favCount
   };
 
   Object.entries(ids).forEach(([id, value])=>{
