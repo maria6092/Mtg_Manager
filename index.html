@@ -2151,7 +2151,7 @@
 
 <script>
 
-// ===== Firebase Auth =====
+// — Firebase Auth
 const firebaseConfig = {
   apiKey: "AIzaSyC2CyBcmqd4dhuNtIX2sjUk_dadwriF0x8",
   authDomain: "mtg-manager-2005.firebaseapp.com",
@@ -2169,11 +2169,13 @@ const fbStorage = firebase.storage();
 // Usuario activo en memoria (se actualiza por onAuthStateChanged)
 let _fbUser = null;
 
+// Devuelve el UID del usuario autenticado actualmente
 function currentUserId(){ return _fbUser?.uid || ""; }
 
-/************************************************************
- * Firestore — helpers de lectura/escritura
- ************************************************************/
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  FIREBASE — Helpers de Firestore (Storage, Auth, Social, Mercado)  ║
+// ╚══════════════════════════════════════════════════════════════╝
 
 // Guarda el perfil público del usuario en Firestore (users/{uid})
 // Sube una imagen a Firebase Storage y devuelve la URL pública
@@ -2306,7 +2308,7 @@ async function fsDeclineFriendRequest(reqId){
 }
 
 
-// ── Wishlist sync con Firestore ──
+// — Wishlist sync con Firestore
 async function fsSaveWishlist(){
   const uid = currentUserId();
   if(!uid) return;
@@ -2469,25 +2471,31 @@ async function fsLoadMarket(){
   saveMarketOffers(offers);
   return offers;
 }
+// Devuelve la sesión activa del usuario (uid, email, username)
 function getSession(){
   if(!_fbUser) return null;
   return { id: _fbUser.uid, email: _fbUser.email, username: _fbUser.displayName || _fbUser.email?.split("@")[0] || "Usuario" };
 }
 function clearSession(){ /* Firebase gestiona la sesión — se cierra con fbAuth.signOut() */ }
 
+// Genera una clave de localStorage con prefijo de usuario (evita colisiones entre cuentas)
 function scopedKey(base, userId = currentUserId()){ return userId ? `${base}__${userId}` : base; }
 function loadJson(key, fallback){ try{ const raw = localStorage.getItem(key); if(raw) return JSON.parse(raw); }catch{} return fallback; }
+// Carga un valor de localStorage con fallback a clave global y claves antiguas
 function userLoad(baseKey, fallback, oldKeys=[]){ const uid = currentUserId(); if(uid){ const scoped = loadJson(scopedKey(baseKey, uid), undefined); if(typeof scoped !== "undefined") return scoped; } try{ const raw = localStorage.getItem(baseKey); if(raw) return JSON.parse(raw); }catch{} for(const k of oldKeys){ try{ const raw = localStorage.getItem(k); if(raw) return JSON.parse(raw); }catch{} } return fallback; }
+// Guarda un valor en localStorage con la clave del usuario actual
 function userSave(baseKey, value){ localStorage.setItem(scopedKey(baseKey), JSON.stringify(value)); }
 function loadMarketOffers(){ return loadJson(LS_MARKET, []); }
 function saveMarketOffers(list){ localStorage.setItem(LS_MARKET, JSON.stringify(Array.isArray(list) ? list : [])); }
 function getPublicSellerName(user){ if(!user) return "Usuario"; return user.username || user.email || "Usuario"; }
 function syncCurrentUserSalesToMarket(){ const sess = getSession(); if(!sess) return; const market = loadMarketOffers().filter(x => x.sellerId !== sess.id); const offers = cards.filter(c=>!!c.sale).map(c=>({ marketId:`${sess.id}__${c.id}`, sellerId:sess.id, sellerName: typeof getProfileName === "function" ? getProfileName() : getPublicSellerName(sess), sellerAvatar: typeof getProfileAvatar === "function" ? getProfileAvatar() : "assets/User.jpg", cardId:c.id, name:c.name||"", inputName:c.inputName||"", setCode:c.setCode||"", collectorNumber:c.collectorNumber||"", qty:c.qty||1, priceText:c.priceText||"", bestSell:c.bestSell||"", fav:!!c.fav, updatedAt:Date.now() })); saveMarketOffers(market.concat(offers)); }
+// Recarga todo el estado de la app desde localStorage para el usuario actual
 function reloadScopedAppState(){ cards = userLoad(LS_KEY, [], OLD_CARD_KEYS); decks = userLoad(LS_DECKS, [], OLD_DECK_KEYS); wishlist = userLoad(LS_WISHLIST, [], []); settings = (()=>{ const raw = userLoad(LS_SETTINGS, null, []); return raw ? {...DEFAULT_SETTINGS, ...(raw||{})} : {...DEFAULT_SETTINGS}; })(); sortState = (()=>{ const raw = userLoad(LS_SORT, null, []); const base = { key:"added", dir:"desc" }; return raw ? {...base, ...(raw||{})} : base; })(); profile = (()=>{ const raw = userLoad(LS_PROFILE, null, []); return raw ? {...DEFAULT_PROFILE, ...(raw||{})} : {...DEFAULT_PROFILE}; })(); normalizeCards(); normalizeDecks(); applySettings(); }
 
-/************************************************************
- * Storage keys + migración
- ************************************************************/
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  ALMACENAMIENTO — Claves localStorage y migración de versiones  ║
+// ╚══════════════════════════════════════════════════════════════╝
 const LS_KEY        = "mtg_rosita_cards_v9";
 const LS_DECKS      = "mtg_rosita_decks_v9";
 const LAST_TAB_KEY  = "mtg_rosita_last_tab_v9";
@@ -2523,9 +2531,10 @@ function loadWithMigration(primaryKey, oldKeys, fallback){
   return fallback;
 }
 
-/************************************************************
- * Ajustes (Tema + letra + extras)
- ************************************************************/
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  AJUSTES — Temas, fuente, accesibilidad y preferencias         ║
+// ╚══════════════════════════════════════════════════════════════╝
 const THEME_PRESETS = {
   pink:  { bg:"#1a0f2e", card:"#21143d", pink:"#c9963a", pink2:"#e8b84b", soft:"#3d2060", line:"#4a2d6f", text:"#e8d5b0", muted:"#9e86c2", inputBg:"#180e2a", inputText:"#e8d5b0", tableBg:"#1e1236", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(201,150,58,.08)", accentRgb:"201,150,58", accent2Rgb:"232,184,75", softRgb:"61,32,96",  cardRgb:"33,20,61",  bgRgb:"26,15,46",  bg2Rgb:"18,10,34" },
   red:   { bg:"#200a0a", card:"#2d1010", pink:"#e05555", pink2:"#f87171", soft:"#4a1515", line:"#6b2222", text:"#f0d0d0", muted:"#c28080", inputBg:"#180808", inputText:"#f0d0d0", tableBg:"#1a0808", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(224,85,85,.08)", accentRgb:"224,85,85",  accent2Rgb:"248,113,113", softRgb:"74,21,21",  cardRgb:"45,16,16",  bgRgb:"32,10,10",  bg2Rgb:"16,5,5" },
@@ -2607,12 +2616,14 @@ function hexToRgba(hex, a){
   return `rgba(${r},${g},${b},${a})`;
 }
 
-/************************************************************
- * Estado principal
- ************************************************************/
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  ESTADO — Variables principales (cartas, mazos, deseos, perfil)  ║
+// ╚══════════════════════════════════════════════════════════════╝
 let cards = userLoad(LS_KEY, [], OLD_CARD_KEYS);
 
 /* Normaliza cartas antiguas (por ejemplo fav como string) */
+// Normaliza cartas antiguas: convierte fav a booleano y rellena campos faltantes
 function normalizeCards(){
   let changed = false;
   for(const c of cards){
@@ -2628,6 +2639,7 @@ let decks = userLoad(LS_DECKS, [], OLD_DECK_KEYS);
 
 let wishlist = userLoad(LS_WISHLIST, [], []);
 /* Normaliza decks antiguos */
+// Normaliza mazos: genera IDs, rellena campos vacíos y normaliza el comandante
 function normalizeDecks(){
   let changed = false;
   for(const d of decks){
@@ -2651,9 +2663,11 @@ function normalizeDecks(){
 }
 normalizeDecks();
 
-/************************************************************
- * Persist
- ************************************************************/
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  PERSISTENCIA — Guardar y cargar datos del usuario             ║
+// ╚══════════════════════════════════════════════════════════════╝
+// Guarda las cartas en localStorage y sincroniza con Firestore y el mercado
 function saveCards(){
   userSave(LS_KEY, cards);
   syncCurrentUserSalesToMarket();
@@ -2662,15 +2676,18 @@ function saveCards(){
   try{ renderWishlist(); }catch{}
 }
 function saveDecks(){ userSave(LS_DECKS, decks); }
+// Guarda la wishlist en localStorage y sincroniza con Firestore
 function saveWishlist(){
   userSave(LS_WISHLIST, wishlist);
   if(currentUserId()) fsSaveWishlist().catch(()=>{});
 }
 
+// Actualiza el timestamp de modificación de un mazo
 function touchDeck(d){
   d._updatedAt = Date.now();
 }
 
+// Convierte un string a Title Case (primera letra de cada palabra en mayúscula)
 function toTitleCase(str){
   return String(str||"").trim().replace(/\s+/g," ").split(" ").map(w=>{
     if(!w) return w;
@@ -2678,6 +2695,7 @@ function toTitleCase(str){
   }).join(" ");
 }
 
+// Escapa caracteres HTML para evitar XSS al insertar texto en el DOM
 function escapeHtml(s){
   return String(s ?? "")
     .replace(/&/g,"&amp;")
@@ -2687,9 +2705,10 @@ function escapeHtml(s){
     .replace(/'/g,"&#039;");
 }
 
-/************************************************************
- * Backups
- ************************************************************/
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  BACKUPS — Copia de seguridad local y descarga                 ║
+// ╚══════════════════════════════════════════════════════════════╝
 function buildBackupPayload(){
   return {
     ts: Date.now(),
@@ -2808,9 +2827,317 @@ function initBackupUI(){
   startAutoBackupTimer();
 }
 
-/************************************************************
- * Tabs / Router
- ************************************************************/
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  HELPERS MTG — Funciones de utilidad (colores, maná, tipos, Scryfall)  ║
+// ╚══════════════════════════════════════════════════════════════╝
+const rarityMap = { common:"Común", uncommon:"Poco común", rare:"Rara", mythic:"Mítica", special:"Especial" };
+
+// Devuelve la clase CSS para el badge de rareza (r-common, r-rare...)
+function rarityClass(r){
+  const s = (r || "").toLowerCase();
+  if (s.includes("mítica")) return "r-mythic";
+  if (s.includes("rara")) return "r-rare";
+  if (s.includes("poco")) return "r-uncommon";
+  if (s.includes("especial")) return "r-special";
+  return "r-common";
+}
+
+// Extrae el valor numérico de un string de precio (ej: "2.50€" → 2.50)
+function parseEuro(priceText){
+  const m = String(priceText||"").match(/(\d+(\.\d+)?)/);
+  if(!m) return NaN;
+  const val = parseFloat(m[1]);
+  return Number.isFinite(val) ? val : NaN;
+}
+
+// Comprueba si una carta está marcada como favorita (tolera distintos tipos de valor)
+function isFav(card){
+  const v = card ? card.fav : false;
+  return v === true || v === 1 || v === "1" || String(v).toLowerCase() === "true";
+}
+
+// Calcula el precio de mejor venta (ligeramente por debajo del precio de mercado)
+function bestSellPriceText(priceText){
+  const eur = parseEuro(priceText);
+  if(!Number.isFinite(eur)) return "";
+  const dec = (eur > 1) ? 0.05 : 0.01;
+  const out = Math.max(0, eur - dec);
+  return out.toFixed(2);
+}
+
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  PRECIOS — Historial de precios y formateo                     ║
+// ╚══════════════════════════════════════════════════════════════╝
+function parseMoneyText(txt){
+  const s = String(txt||"").trim();
+  if(!s) return { v: null, cur: null };
+  const m = s.match(/([0-9]+(?:[.,][0-9]+)?)\s*([€$])/);
+  if(!m) return { v: null, cur: null };
+  const v = parseFloat(m[1].replace(",",".")); 
+  const cur = m[2] === "$" ? "USD" : "EUR";
+  return { v: Number.isFinite(v) ? v : null, cur };
+}
+
+function updatePriceHistory(obj, priceText){
+  if(!obj) return;
+  const {v, cur} = parseMoneyText(priceText);
+  if(!Number.isFinite(v) || !cur) return;
+
+  if(!Array.isArray(obj.priceHist)) obj.priceHist = [];
+  const hist = obj.priceHist;
+
+  const last = hist[hist.length-1];
+  if(last && last.cur === cur && Number.isFinite(last.v) && Math.abs(last.v - v) < 1e-9){
+    return; // mismo valor
+  }
+
+  hist.push({ t: Date.now(), v, cur });
+  if(hist.length > 80) hist.splice(0, hist.length-80);
+}
+
+function fmtHistLine(h){
+  try{
+    const d = new Date(h.t);
+    const ds = d.toLocaleDateString("es-ES", {year:"2-digit", month:"2-digit", day:"2-digit"});
+    const ts = d.toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"});
+    const sym = (h.cur==="USD") ? "$" : "€";
+    return `${ds} ${ts} · ${Number(h.v).toFixed(2)}${sym}`;
+  }catch{
+    return "";
+  }
+}
+
+// Formatea el precio de Scryfall al texto preferido por el usuario (EUR o USD)
+function priceTextFromPrices(prices){
+  const num = (v)=> (v==null || v==="") ? null : parseFloat(String(v).replace(",",".")); 
+  const eur = num(prices?.eur) ?? num(prices?.eur_foil) ?? num(prices?.eur_etched);
+  const usd = num(prices?.usd) ?? num(prices?.usd_foil) ?? num(prices?.usd_etched);
+  const pref = (settings.currency === "USD") ? "USD" : "EUR";
+
+  if(pref === "USD"){
+    if(Number.isFinite(usd)) return usd.toFixed(2) + "$";
+    if(Number.isFinite(eur)) return eur.toFixed(2) + "€";
+  }else{
+    if(Number.isFinite(eur)) return eur.toFixed(2) + "€";
+    if(Number.isFinite(usd)) return usd.toFixed(2) + "$";
+  }
+  return "No disponible";
+}
+
+// Convierte un coste de maná de Scryfall ("{2}{W}{U}") a emojis legibles
+function manaToEmojis(manaCost){
+  if(!manaCost) return "";
+  const tokens = manaCost.match(/\{[^}]+\}/g) || [];
+  return tokens.map(t=>{
+    const c = t.replace(/[{}]/g,"").toUpperCase();
+    if(/^\d+$/.test(c)) return c;
+    if(c==="X"||c==="Y"||c==="Z") return c;
+    const base = {W:"⚪",U:"🔵",B:"⚫",R:"🔴",G:"🟢",C:"🔘"};
+    if(base[c]) return base[c];
+    if(c.endsWith("/P")){
+      const col = c.split("/")[0];
+      return (base[col]||col)+"/☠️";
+    }
+    if(c.includes("/")){
+      const [a,b]=c.split("/");
+      return (base[a]||a)+"/"+(base[b]||b);
+    }
+    const special={S:"❄️",T:"↩️",Q:"↪️",E:"⚡"};
+    if(special[c]) return special[c];
+    return c;
+  }).join("");
+}
+
+// Convierte una identidad de color ([W,U,B]) a emojis de colores MTG
+function colorToEmojisFromCI(ci){
+  const emojis = { W:"⚪", U:"🔵", B:"⚫", R:"🔴", G:"🟢", C:"🔘" };
+  const order = ["W","U","B","R","G"];
+  const arr = Array.isArray(ci) ? ci.map(x=>String(x).toUpperCase()) : [];
+  if(!arr.length) return "🔘";
+  const set = new Set(arr);
+  return order.filter(c=>set.has(c)).map(c=>emojis[c]).join("") || "🔘";
+}
+
+// Tintes de color muy tenues para usar sobre fondos oscuros
+const PASTEL = { W:"rgba(220,195,50,.20)", U:"rgba(60,130,230,.18)", B:"rgba(10,5,20,.38)", R:"rgba(210,65,55,.18)", G:"rgba(60,175,90,.17)", C:"rgba(180,180,180,.07)" };
+
+function normalizeColorId(colorId){
+  const order = ["W","U","B","R","G"];
+  const set = new Set((colorId||[]).map(x=>String(x).toUpperCase()).filter(x=>order.includes(x)));
+  return order.filter(x=>set.has(x));
+}
+
+// Genera un gradiente CSS suave basado en la identidad de color de una carta
+function gradientFromColorIds(colorIds){
+  const ids = normalizeColorId(colorIds);
+  if(!ids.length) return "";
+  const cols = ids.map(id=>PASTEL[id] || PASTEL.C);
+  if(cols.length === 1){
+    return `linear-gradient(135deg, ${cols[0]} 0%, transparent 100%)`;
+  }
+  // Gradiente suave: cada color ocupa su zona pero con solapamiento amplio
+  const n = cols.length;
+  const stops = [];
+  for(let i=0;i<n;i++){
+    const center = Math.round((i / (n - 1)) * 100);
+    const half   = Math.round(60 / (n - 1));          // zona de mezcla
+    const from   = Math.max(0,   center - half);
+    const to     = Math.min(100, center + half);
+    if(i === 0)   stops.push(`${cols[i]} 0%`);
+    stops.push(`${cols[i]} ${center}%`);
+    if(i === n-1) stops.push(`${cols[i]} 100%`);
+  }
+  return `linear-gradient(135deg, ${stops.join(", ")})`;
+}
+
+// Traduce el type_line de Scryfall al español (tipo principal y subtipo)
+function typesEs(typeLine){
+  const superMap = { Legendary:"legendaria", Basic:"básica", Snow:"nevada", World:"mundial", Token:"ficha", Host:"anfitrión" };
+  const typeMap = { Creature:"Criatura", Instant:"Instantáneo", Sorcery:"Conjuro", Artifact:"Artefacto", Enchantment:"Encantamiento", Land:"Tierra", Planeswalker:"Planeswalker", Battle:"Batalla" };
+  const subMap = { Aura:"Aura", Equipment:"Equipo", Vehicle:"Vehículo", Elf:"Elfo", Human:"Humano", Wizard:"Hechicero", Dragon:"Dragón", Angel:"Ángel", Goblin:"Trasgo", Zombie:"Zombi", Vampire:"Vampiro", Spirit:"Espíritu", Knight:"Caballero", Cleric:"Clérigo", Beast:"Bestia", Elemental:"Elemental", Warrior:"Guerrero", Soldier:"Soldado", Ally:"Aliado", Scout:"Explorador", Cat:"Gato", Dog:"Perro", Island:"Isla", Mountain:"Montaña", Swamp:"Pantano", Forest:"Bosque", Plains:"Llanura" };
+
+  const parts = String(typeLine||"").split(" — ");
+  const left = (parts[0]||"").trim().split(/\s+/).filter(Boolean);
+  const right = parts[1] ? parts[1].trim().split(/\s+/).filter(Boolean) : [];
+
+  const supers=[], mains=[];
+  left.forEach(w=>{
+    if(superMap[w]) supers.push(superMap[w]);
+    else if(typeMap[w]) mains.push(typeMap[w]);
+  });
+
+  let main = mains.join(" ");
+  if(main && supers.length) main += " " + supers.join(" ");
+  const sub = right.map(w=>subMap[w]||w).join(" ");
+  return { main: main || "Tipo no disponible", sub: sub || "Sin subtipo" };
+}
+
+// Clasifica un tipo de carta en un bucket principal (Criatura, Tierra, etc.)
+function mainTypeBucket(typeEs){
+  const t = String(typeEs||"").toLowerCase();
+  if(t.includes("criatura")) return "Criatura";
+  if(t.includes("planeswalker")) return "Planeswalker";
+  if(t.includes("instant")) return "Instantáneo";
+  if(t.includes("conjuro")) return "Conjuro";
+  if(t.includes("artefact")) return "Artefacto";
+  if(t.includes("encant")) return "Encantamiento";
+  if(t.includes("tierra")) return "Tierra";
+  if(t.includes("batalla")) return "Batalla";
+  return "Otro";
+}
+
+async function fetchCardExact(setCode, collectorNumber){
+  const url = `https://api.scryfall.com/cards/${encodeURIComponent(String(setCode).toLowerCase())}/${encodeURIComponent(String(collectorNumber))}`;
+  const r = await fetch(url);
+  const j = await r.json();
+  if(j.object==="error") throw new Error(j.details || "No se encontró esa impresión.");
+  return j;
+}
+
+async function fetchCardByName(name){
+  const url = `https://api.scryfall.com/cards/named?game=paper&fuzzy=${encodeURIComponent(name)}`;
+  const r = await fetch(url);
+  const j = await r.json();
+  if(j.object==="error") throw new Error(j.details || "No se encontró la carta por nombre.");
+  return j;
+}
+
+async function fetchOldestPrintingByName(name){
+  const base = await fetchCardByName(name);
+  let url = base.prints_search_uri;
+  if(!url) return base;
+
+  const all = [];
+  let guard = 0;
+  while(url && guard < 30){
+    guard++;
+    const r = await fetch(url);
+    const j = await r.json();
+    if(j.object === "error") throw new Error(j.details || "Error consultando impresiones.");
+    if(Array.isArray(j.data)) all.push(...j.data);
+    url = j.has_more ? j.next_page : null;
+  }
+
+  let oldest = null;
+  for(const c of all){
+    const d = c?.released_at;
+    if(!d) continue;
+    if(!oldest || d < oldest.released_at) oldest = c;
+  }
+  return oldest || all[0] || base;
+}
+
+async function fetchSetIconUrl(setCode){
+  const r = await fetch(`https://api.scryfall.com/sets/${encodeURIComponent(String(setCode).toLowerCase())}`);
+  const j = await r.json();
+  if(j.object==="error") return "";
+  return j.icon_svg_uri || "";
+}
+
+// Calcula la identidad de color de una carta (considera tierras de producción)
+function computeColorId(card){
+  const colorId = (
+    (card.type_line?.includes("Land") && Array.isArray(card.produced_mana) && card.produced_mana.length)
+      ? card.produced_mana
+      : (card.color_identity || [])
+  ).map(x=>String(x).toUpperCase());
+  return colorId.filter(x=>["W","U","B","R","G"].includes(x));
+}
+
+// Calcula el valor de maná (CMC) de una carta desde datos de Scryfall
+function manaValueFromCard(card){
+  const mv = card?.mana_value;
+  if(typeof mv === "number" && Number.isFinite(mv)) return mv;
+  const cost = card?.mana_cost || card?.card_faces?.[0]?.mana_cost || "";
+  const tokens = String(cost).match(/\{[^}]+\}/g) || [];
+  let sum = 0;
+  for(const t of tokens){
+    const c = t.replace(/[{}]/g,"").toUpperCase();
+    if(/^\d+$/.test(c)) sum += parseInt(c,10);
+    else if(c==="X"||c==="Y"||c==="Z") sum += 0;
+    else sum += 1;
+  }
+  return sum;
+}
+
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  CSV — Parser genérico para importar ManaBox y otros           ║
+// ╚══════════════════════════════════════════════════════════════╝
+function parseCsv(text){
+  const out = [];
+  let row = [];
+  let cur = "";
+  let inQ = false;
+
+  const s = String(text||"").replace(/\r/g,"");
+  for(let i=0;i<s.length;i++){
+    const ch = s[i];
+    const nx = s[i+1];
+
+    if(inQ){
+      if(ch === '"' && nx === '"'){ cur += '"'; i++; continue; }
+      if(ch === '"'){ inQ = false; continue; }
+      cur += ch;
+      continue;
+    }
+
+    if(ch === '"'){ inQ = true; continue; }
+    if(ch === ","){ row.push(cur); cur=""; continue; }
+    if(ch === "\n"){ row.push(cur); out.push(row); row=[]; cur=""; continue; }
+    cur += ch;
+  }
+  row.push(cur);
+  out.push(row);
+  return out.filter(r=>r.some(x=>String(x||"").trim()!==""));
+}
+
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  NAVEGACIÓN — Tabs, router y cambio de página                  ║
+// ╚══════════════════════════════════════════════════════════════╝
 const UI_TABS = {
   intro: "Introducción",
   cartas: "Cartas",
@@ -2891,271 +3218,53 @@ function showPage(id){
   }
 }
 
-/************************************************************
- * Helpers MTG
- ************************************************************/
-const rarityMap = { common:"Común", uncommon:"Poco común", rare:"Rara", mythic:"Mítica", special:"Especial" };
 
-function rarityClass(r){
-  const s = (r || "").toLowerCase();
-  if (s.includes("mítica")) return "r-mythic";
-  if (s.includes("rara")) return "r-rare";
-  if (s.includes("poco")) return "r-uncommon";
-  if (s.includes("especial")) return "r-special";
-  return "r-common";
-}
-
-function parseEuro(priceText){
-  const m = String(priceText||"").match(/(\d+(\.\d+)?)/);
-  if(!m) return NaN;
-  const val = parseFloat(m[1]);
-  return Number.isFinite(val) ? val : NaN;
-}
-
-function isFav(card){
-  const v = card ? card.fav : false;
-  return v === true || v === 1 || v === "1" || String(v).toLowerCase() === "true";
-}
-
-function bestSellPriceText(priceText){
-  const eur = parseEuro(priceText);
-  if(!Number.isFinite(eur)) return "";
-  const dec = (eur > 1) ? 0.05 : 0.01;
-  const out = Math.max(0, eur - dec);
-  return out.toFixed(2);
-}
-
-
-/************************************************************
- * Precio: historial (colección + deseos)
- ************************************************************/
-function parseMoneyText(txt){
-  const s = String(txt||"").trim();
-  if(!s) return { v: null, cur: null };
-  const m = s.match(/([0-9]+(?:[.,][0-9]+)?)\s*([€$])/);
-  if(!m) return { v: null, cur: null };
-  const v = parseFloat(m[1].replace(",",".")); 
-  const cur = m[2] === "$" ? "USD" : "EUR";
-  return { v: Number.isFinite(v) ? v : null, cur };
-}
-
-function updatePriceHistory(obj, priceText){
-  if(!obj) return;
-  const {v, cur} = parseMoneyText(priceText);
-  if(!Number.isFinite(v) || !cur) return;
-
-  if(!Array.isArray(obj.priceHist)) obj.priceHist = [];
-  const hist = obj.priceHist;
-
-  const last = hist[hist.length-1];
-  if(last && last.cur === cur && Number.isFinite(last.v) && Math.abs(last.v - v) < 1e-9){
-    return; // mismo valor
-  }
-
-  hist.push({ t: Date.now(), v, cur });
-  if(hist.length > 80) hist.splice(0, hist.length-80);
-}
-
-function fmtHistLine(h){
-  try{
-    const d = new Date(h.t);
-    const ds = d.toLocaleDateString("es-ES", {year:"2-digit", month:"2-digit", day:"2-digit"});
-    const ts = d.toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"});
-    const sym = (h.cur==="USD") ? "$" : "€";
-    return `${ds} ${ts} · ${Number(h.v).toFixed(2)}${sym}`;
-  }catch{
-    return "";
-  }
-}
-
-function priceTextFromPrices(prices){
-  const num = (v)=> (v==null || v==="") ? null : parseFloat(String(v).replace(",",".")); 
-  const eur = num(prices?.eur) ?? num(prices?.eur_foil) ?? num(prices?.eur_etched);
-  const usd = num(prices?.usd) ?? num(prices?.usd_foil) ?? num(prices?.usd_etched);
-  const pref = (settings.currency === "USD") ? "USD" : "EUR";
-
-  if(pref === "USD"){
-    if(Number.isFinite(usd)) return usd.toFixed(2) + "$";
-    if(Number.isFinite(eur)) return eur.toFixed(2) + "€";
-  }else{
-    if(Number.isFinite(eur)) return eur.toFixed(2) + "€";
-    if(Number.isFinite(usd)) return usd.toFixed(2) + "$";
-  }
-  return "No disponible";
-}
-
-function manaToEmojis(manaCost){
-  if(!manaCost) return "";
-  const tokens = manaCost.match(/\{[^}]+\}/g) || [];
-  return tokens.map(t=>{
-    const c = t.replace(/[{}]/g,"").toUpperCase();
-    if(/^\d+$/.test(c)) return c;
-    if(c==="X"||c==="Y"||c==="Z") return c;
-    const base = {W:"⚪",U:"🔵",B:"⚫",R:"🔴",G:"🟢",C:"🔘"};
-    if(base[c]) return base[c];
-    if(c.endsWith("/P")){
-      const col = c.split("/")[0];
-      return (base[col]||col)+"/☠️";
-    }
-    if(c.includes("/")){
-      const [a,b]=c.split("/");
-      return (base[a]||a)+"/"+(base[b]||b);
-    }
-    const special={S:"❄️",T:"↩️",Q:"↪️",E:"⚡"};
-    if(special[c]) return special[c];
-    return c;
-  }).join("");
-}
-
-function colorToEmojisFromCI(ci){
-  const emojis = { W:"⚪", U:"🔵", B:"⚫", R:"🔴", G:"🟢", C:"🔘" };
-  const order = ["W","U","B","R","G"];
-  const arr = Array.isArray(ci) ? ci.map(x=>String(x).toUpperCase()) : [];
-  if(!arr.length) return "🔘";
-  const set = new Set(arr);
-  return order.filter(c=>set.has(c)).map(c=>emojis[c]).join("") || "🔘";
-}
-
-// Tintes de color muy tenues para usar sobre fondos oscuros
-const PASTEL = { W:"rgba(220,195,50,.20)", U:"rgba(60,130,230,.18)", B:"rgba(10,5,20,.38)", R:"rgba(210,65,55,.18)", G:"rgba(60,175,90,.17)", C:"rgba(180,180,180,.07)" };
-
-function normalizeColorId(colorId){
-  const order = ["W","U","B","R","G"];
-  const set = new Set((colorId||[]).map(x=>String(x).toUpperCase()).filter(x=>order.includes(x)));
-  return order.filter(x=>set.has(x));
-}
-
-function gradientFromColorIds(colorIds){
-  const ids = normalizeColorId(colorIds);
-  if(!ids.length) return "";
-  const cols = ids.map(id=>PASTEL[id] || PASTEL.C);
-  if(cols.length === 1){
-    return `linear-gradient(135deg, ${cols[0]} 0%, transparent 100%)`;
-  }
-  // Gradiente suave: cada color ocupa su zona pero con solapamiento amplio
-  const n = cols.length;
-  const stops = [];
-  for(let i=0;i<n;i++){
-    const center = Math.round((i / (n - 1)) * 100);
-    const half   = Math.round(60 / (n - 1));          // zona de mezcla
-    const from   = Math.max(0,   center - half);
-    const to     = Math.min(100, center + half);
-    if(i === 0)   stops.push(`${cols[i]} 0%`);
-    stops.push(`${cols[i]} ${center}%`);
-    if(i === n-1) stops.push(`${cols[i]} 100%`);
-  }
-  return `linear-gradient(135deg, ${stops.join(", ")})`;
-}
-
-function typesEs(typeLine){
-  const superMap = { Legendary:"legendaria", Basic:"básica", Snow:"nevada", World:"mundial", Token:"ficha", Host:"anfitrión" };
-  const typeMap = { Creature:"Criatura", Instant:"Instantáneo", Sorcery:"Conjuro", Artifact:"Artefacto", Enchantment:"Encantamiento", Land:"Tierra", Planeswalker:"Planeswalker", Battle:"Batalla" };
-  const subMap = { Aura:"Aura", Equipment:"Equipo", Vehicle:"Vehículo", Elf:"Elfo", Human:"Humano", Wizard:"Hechicero", Dragon:"Dragón", Angel:"Ángel", Goblin:"Trasgo", Zombie:"Zombi", Vampire:"Vampiro", Spirit:"Espíritu", Knight:"Caballero", Cleric:"Clérigo", Beast:"Bestia", Elemental:"Elemental", Warrior:"Guerrero", Soldier:"Soldado", Ally:"Aliado", Scout:"Explorador", Cat:"Gato", Dog:"Perro", Island:"Isla", Mountain:"Montaña", Swamp:"Pantano", Forest:"Bosque", Plains:"Llanura" };
-
-  const parts = String(typeLine||"").split(" — ");
-  const left = (parts[0]||"").trim().split(/\s+/).filter(Boolean);
-  const right = parts[1] ? parts[1].trim().split(/\s+/).filter(Boolean) : [];
-
-  const supers=[], mains=[];
-  left.forEach(w=>{
-    if(superMap[w]) supers.push(superMap[w]);
-    else if(typeMap[w]) mains.push(typeMap[w]);
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  TABS — Render del menú de navegación                          ║
+// ╚══════════════════════════════════════════════════════════════╝
+function initTabs(){
+  const tabsEl = document.getElementById("tabs");
+  tabsEl.innerHTML = "";
+  pages.forEach(p=>{
+    const b = document.createElement("button");
+    b.className = "tabbtn";
+    b.dataset.page = p.id;
+    b.textContent = p.label;
+    tabsEl.appendChild(b);
   });
 
-  let main = mains.join(" ");
-  if(main && supers.length) main += " " + supers.join(" ");
-  const sub = right.map(w=>subMap[w]||w).join(" ");
-  return { main: main || "Tipo no disponible", sub: sub || "Sin subtipo" };
+  tabsEl.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".tabbtn");
+    if(!btn) return;
+    showPage(btn.dataset.page);
+  });
 }
 
-function mainTypeBucket(typeEs){
-  const t = String(typeEs||"").toLowerCase();
-  if(t.includes("criatura")) return "Criatura";
-  if(t.includes("planeswalker")) return "Planeswalker";
-  if(t.includes("instant")) return "Instantáneo";
-  if(t.includes("conjuro")) return "Conjuro";
-  if(t.includes("artefact")) return "Artefacto";
-  if(t.includes("encant")) return "Encantamiento";
-  if(t.includes("tierra")) return "Tierra";
-  if(t.includes("batalla")) return "Batalla";
-  return "Otro";
-}
 
-async function fetchCardExact(setCode, collectorNumber){
-  const url = `https://api.scryfall.com/cards/${encodeURIComponent(String(setCode).toLowerCase())}/${encodeURIComponent(String(collectorNumber))}`;
-  const r = await fetch(url);
-  const j = await r.json();
-  if(j.object==="error") throw new Error(j.details || "No se encontró esa impresión.");
-  return j;
-}
-
-async function fetchCardByName(name){
-  const url = `https://api.scryfall.com/cards/named?game=paper&fuzzy=${encodeURIComponent(name)}`;
-  const r = await fetch(url);
-  const j = await r.json();
-  if(j.object==="error") throw new Error(j.details || "No se encontró la carta por nombre.");
-  return j;
-}
-
-async function fetchOldestPrintingByName(name){
-  const base = await fetchCardByName(name);
-  let url = base.prints_search_uri;
-  if(!url) return base;
-
-  const all = [];
-  let guard = 0;
-  while(url && guard < 30){
-    guard++;
-    const r = await fetch(url);
-    const j = await r.json();
-    if(j.object === "error") throw new Error(j.details || "Error consultando impresiones.");
-    if(Array.isArray(j.data)) all.push(...j.data);
-    url = j.has_more ? j.next_page : null;
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  ARRANQUE — initAppUI y sidebar                                ║
+// ╚══════════════════════════════════════════════════════════════╝
+function closeSidebar(){ const appShell=document.getElementById("appShell"), backdrop=document.getElementById("sidebarBackdrop"); if(!appShell) return; backdrop?.classList.remove("is-open"); appShell.classList.remove("sidebar-open"); appShell.classList.add("sidebar-collapsed"); }
+function syncSidebarMode(){
+  const appShell=document.getElementById("appShell"), backdrop=document.getElementById("sidebarBackdrop");
+  if(!appShell) return;
+  if(window.innerWidth <= 820){
+    appShell.classList.remove("sidebar-collapsed");
+    appShell.classList.remove("sidebar-open");
+    backdrop?.classList.remove("is-open");
+  }else{
+    appShell.classList.add("sidebar-collapsed");
+    appShell.classList.remove("sidebar-open");
+    backdrop?.classList.remove("is-open");
   }
-
-  let oldest = null;
-  for(const c of all){
-    const d = c?.released_at;
-    if(!d) continue;
-    if(!oldest || d < oldest.released_at) oldest = c;
-  }
-  return oldest || all[0] || base;
 }
+function toggleSidebar(){ const appShell=document.getElementById("appShell"), backdrop=document.getElementById("sidebarBackdrop"); if(!appShell) return; if(window.innerWidth <= 820){ const willOpen = !appShell.classList.contains("sidebar-open"); appShell.classList.toggle("sidebar-open", willOpen); backdrop?.classList.toggle("is-open", willOpen); }else{ appShell.classList.toggle("sidebar-collapsed"); } }
+function initSidebarUI(){ const toggle=document.getElementById("menuToggle"), backdrop=document.getElementById("sidebarBackdrop"); syncSidebarMode(); if(toggle) toggle.addEventListener("click", toggleSidebar); if(backdrop) backdrop.addEventListener("click", closeSidebar); window.addEventListener("resize", syncSidebarMode); document.querySelectorAll(".sidebar .tabbtn").forEach(btn=> btn.addEventListener("click", closeSidebar)); }
 
-async function fetchSetIconUrl(setCode){
-  const r = await fetch(`https://api.scryfall.com/sets/${encodeURIComponent(String(setCode).toLowerCase())}`);
-  const j = await r.json();
-  if(j.object==="error") return "";
-  return j.icon_svg_uri || "";
-}
 
-function computeColorId(card){
-  const colorId = (
-    (card.type_line?.includes("Land") && Array.isArray(card.produced_mana) && card.produced_mana.length)
-      ? card.produced_mana
-      : (card.color_identity || [])
-  ).map(x=>String(x).toUpperCase());
-  return colorId.filter(x=>["W","U","B","R","G"].includes(x));
-}
-
-function manaValueFromCard(card){
-  const mv = card?.mana_value;
-  if(typeof mv === "number" && Number.isFinite(mv)) return mv;
-  const cost = card?.mana_cost || card?.card_faces?.[0]?.mana_cost || "";
-  const tokens = String(cost).match(/\{[^}]+\}/g) || [];
-  let sum = 0;
-  for(const t of tokens){
-    const c = t.replace(/[{}]/g,"").toUpperCase();
-    if(/^\d+$/.test(c)) sum += parseInt(c,10);
-    else if(c==="X"||c==="Y"||c==="Z") sum += 0;
-    else sum += 1;
-  }
-  return sum;
-}
-
-/************************************************************
- * Cartas - Ordenación
- ************************************************************/
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  CARTAS — Ordenación y filtrado de la tabla                    ║
+// ╚══════════════════════════════════════════════════════════════╝
 let sortState = { key:"added", dir:"desc" };
 try{
   const raw = localStorage.getItem(scopedKey(LS_SORT));
@@ -3175,6 +3284,7 @@ function ensureAddedAt(){
 }
 ensureAddedAt();
 
+// Devuelve las cartas ordenadas según sortState (clave y dirección)
 function sortedCardsView(){
   const dir = (sortState.dir === "asc") ? 1 : -1;
   const key = sortState.key;
@@ -3209,9 +3319,10 @@ function sortedCardsView(){
   return arr;
 }
 
-/************************************************************
- * Cartas - UI
- ************************************************************/
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  CARTAS — Renderizado de tabla y colección                     ║
+// ╚══════════════════════════════════════════════════════════════╝
 const errBox = document.getElementById("errBox");
 function showErr(msg){
   if(!errBox) return;
@@ -3231,6 +3342,7 @@ function clearAddForm(){
   const s=document.getElementById("inSale"); if(s) s.checked=false;
 }
 
+// Actualiza los contadores de cartas, unidades y valor en la UI
 function updateCardsMetrics(){
   let totalUnits=0;
   let sumEur=0;
@@ -3244,6 +3356,7 @@ function updateCardsMetrics(){
   document.getElementById("sumEur").textContent = sumEur.toFixed(2);
 }
 
+// Calcula el valor total de la colección (con y sin proxies)
 function computeInvestmentTotals(){
   let invReal = 0, invAll = 0;
   for(const c of cards){
@@ -3257,6 +3370,7 @@ function computeInvestmentTotals(){
   return { invReal, invAll };
 }
 
+// Actualiza todos los campos de dinero en la pestaña de estadísticas
 function updateInvestmentUI(){
   const t = computeInvestmentTotals();
 
@@ -3461,7 +3575,7 @@ let _colFavBound = false;
 })();
 
 
-// ── Hover preview y modal de detalle en Colección ──
+// — Hover preview y modal de detalle en Colección
 let _cardDetailBound = false;
 function initCardDetailUI(){
   if(_cardDetailBound) return;
@@ -3490,7 +3604,7 @@ function initCardDetailUI(){
     }catch{ _sfCache.set(card.id, null); return null; }
   }
 
-  // ── Hover ──
+  // — Hover
   let hoverTimer = null, activeHover = null;
   grid.addEventListener("mouseover", (e)=>{
     const el = e.target.closest(".cCard");
@@ -3527,7 +3641,7 @@ function initCardDetailUI(){
     preview.classList.remove("visible");
   });
 
-  // ── Click: modal ──
+  // — Click: modal
   grid.addEventListener("click", async (e)=>{
     if(e.target.closest("button[data-colstar]")) return;
     const el = e.target.closest(".cCard");
@@ -3689,9 +3803,420 @@ if(salesTbody){
 }
 
 
-/************************************************************
- * Buscador
- ************************************************************/
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  MODAL IMPRESIONES — Selector visual de versiones de carta     ║
+// ╚══════════════════════════════════════════════════════════════╝
+let _printingAllCards = [];
+let _printingSelected = null;
+let _printingLang = "es";
+
+async function fetchAllPrintings(cardName){
+  const base = await fetchCardByName(cardName);
+  let url = base.prints_search_uri;
+  if(!url) return [base];
+  const all = [];
+  let guard = 0;
+  while(url && guard < 30){
+    guard++;
+    const r = await fetch(url);
+    const j = await r.json();
+    if(j.object === "error") break;
+    if(Array.isArray(j.data)) all.push(...j.data);
+    url = j.has_more ? j.next_page : null;
+  }
+  return all.length ? all : [base];
+}
+
+// Renderiza la cuadrícula de impresiones en el modal con filtros aplicados
+function renderPrintingGrid(cards, lang, filterQ, filterRarity){
+  const body = document.getElementById("printingModalBody");
+  const countPill = document.getElementById("printingCount");
+  if(!body) return;
+
+  const q = (filterQ || "").trim().toLowerCase();
+  const rar = filterRarity || "";
+
+  let view = cards.slice();
+  if(q){
+    view = view.filter(c=>{
+      const setName = (c.set_name || "").toLowerCase();
+      const setCode = (c.set || "").toLowerCase();
+      const year = (c.released_at || "").slice(0,4);
+      return setName.includes(q) || setCode.includes(q) || year.includes(q);
+    });
+  }
+  if(rar) view = view.filter(c=> (c.rarity || "") === rar);
+
+  // más reciente primero
+  view.sort((a,b)=> (b.released_at || "").localeCompare(a.released_at || ""));
+
+  if(countPill) countPill.textContent = `${view.length} versión${view.length !== 1 ? "es" : ""}`;
+
+  if(!view.length){
+    body.innerHTML = `<div class="printingEmpty">No se encontraron impresiones con ese filtro.</div>`;
+    return;
+  }
+
+  const grid = document.createElement("div");
+  grid.className = "printingGrid";
+
+  for(const c of view){
+    const imgUrl = c.image_uris?.normal
+      || c.image_uris?.small
+      || c.card_faces?.[0]?.image_uris?.normal
+      || "";
+
+    const priceEur = c.prices?.eur || c.prices?.eur_foil || "";
+    const priceUsd = c.prices?.usd || c.prices?.usd_foil || "";
+    const priceLabel = priceEur ? `${parseFloat(priceEur).toFixed(2)} €`
+                     : priceUsd ? `${parseFloat(priceUsd).toFixed(2)} $`
+                     : "Sin precio";
+
+    const year = (c.released_at || "").slice(0,4);
+    const isSelected = _printingSelected && _printingSelected.id === c.id;
+    const rarityLabels = { common:"Común", uncommon:"Poco común", rare:"Rara", mythic:"Mítica", special:"Especial" };
+    const rarLabel = rarityLabels[c.rarity] || c.rarity || "";
+    const rarTag = rarLabel
+      ? `<div class="printingCardRarity"><span class="tag ${rarityClass(rarLabel)}" style="font-size:.62rem;padding:2px 6px;">${escapeHtml(rarLabel)}</span></div>`
+      : "";
+
+    const card = document.createElement("div");
+    card.className = "printingCard" + (isSelected ? " selected" : "");
+    card.dataset.scryfallId = c.id;
+
+    const imgHtml = imgUrl
+      ? `<img class="printingCardImg" src="${escapeHtml(imgUrl)}" alt="${escapeHtml(c.name || "")}" loading="lazy">`
+      : `<div class="printingCardImg placeholder">${escapeHtml(c.set_name || c.name || "")}</div>`;
+
+    card.innerHTML = `
+      ${imgHtml}
+      <div class="printingCardInfo">
+        <div class="printingCardSet">${escapeHtml((c.set || "").toUpperCase())} · ${escapeHtml(c.set_name || "")}</div>
+        <div class="printingCardNum">#${escapeHtml(c.collector_number || "")}</div>
+        <div class="printingCardYear">${escapeHtml(year)}</div>
+        ${rarTag}
+        <div class="printingCardPrice">${escapeHtml(priceLabel)}</div>
+      </div>`;
+
+    card.addEventListener("click", ()=>{
+      _printingSelected = c;
+      grid.querySelectorAll(".printingCard").forEach(el=> el.classList.remove("selected"));
+      card.classList.add("selected");
+      const info = document.getElementById("printingSelectedInfo");
+      const btn = document.getElementById("printingModalConfirm");
+      if(info) info.textContent = `Seleccionada: ${c.name} · ${(c.set||"").toUpperCase()} #${c.collector_number}`;
+      if(btn) btn.disabled = false;
+    });
+
+    card.addEventListener("dblclick", ()=>{
+      _printingSelected = c;
+      confirmPrintingSelection();
+    });
+
+    grid.appendChild(card);
+  }
+
+  body.innerHTML = "";
+  body.appendChild(grid);
+}
+
+function applyPrintingFilters(){
+  const q = document.getElementById("printingFilterQ")?.value || "";
+  const rar = document.getElementById("printingFilterRarity")?.value || "";
+  renderPrintingGrid(_printingAllCards, _printingLang, q, rar);
+}
+
+async function openPrintingModal(cardName, lang){
+  const modal = document.getElementById("printingModal");
+  const body = document.getElementById("printingModalBody");
+  const nameEl = document.getElementById("printingModalCardName");
+  const subEl = document.getElementById("printingModalCardSubtitle");
+  const confirmBtn = document.getElementById("printingModalConfirm");
+  const infoEl = document.getElementById("printingSelectedInfo");
+  if(!modal || !body) return;
+
+  _printingSelected = null;
+  _printingLang = lang || "es";
+  _printingAllCards = [];
+
+  if(nameEl) nameEl.textContent = cardName || "Impresiones disponibles";
+  if(subEl) subEl.textContent = "Cargando todas las impresiones…";
+  if(confirmBtn) confirmBtn.disabled = true;
+  if(infoEl) infoEl.textContent = "Haz clic para seleccionar · Doble clic para añadir directamente";
+  document.getElementById("printingFilterQ").value = "";
+  document.getElementById("printingFilterRarity").value = "";
+  document.getElementById("printingCount").textContent = "…";
+
+  body.innerHTML = `<div class="printingLoader"><div class="printingLoaderSpinner"></div>Buscando impresiones…</div>`;
+  modal.classList.add("open");
+  document.body.style.overflow = "hidden";
+
+  try{
+    _printingAllCards = await fetchAllPrintings(cardName);
+    if(subEl) subEl.textContent = "Selecciona la versión exacta de tu carta";
+    renderPrintingGrid(_printingAllCards, _printingLang, "", "");
+  }catch(e){
+    body.innerHTML = `<div class="printingEmpty">Error al cargar impresiones: ${escapeHtml(e?.message || String(e))}</div>`;
+  }
+}
+
+// Cierra el modal de selección de impresión y restaura el scroll
+function closePrintingModal(){
+  const modal = document.getElementById("printingModal");
+  if(modal) modal.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+async function confirmPrintingSelection(){
+  if(!_printingSelected) return;
+  const c = _printingSelected;
+  closePrintingModal();
+
+  const inputName = document.getElementById("inName")?.value?.trim() || c.name;
+  const lang = document.getElementById("inLang")?.value || _printingLang;
+  const qty = Math.max(1, parseInt(document.getElementById("inQty")?.value || "1", 10));
+  const proxy = !!document.getElementById("inProxy")?.checked;
+  const foil = !!document.getElementById("inFoil")?.checked;
+  const promo = !!document.getElementById("inPromo")?.checked;
+  const promoPre = !!document.getElementById("inPromoPre")?.checked;
+  const sale = !!document.getElementById("inSale")?.checked;
+
+  showErr("Añadiendo carta…");
+
+  try{
+    const t = typesEs(c.type_line || "");
+    const price = priceTextFromPrices(c.prices);
+    const bestSell = bestSellPriceText(price);
+    const logoUrl = await fetchSetIconUrl(c.set);
+    const colorId = computeColorId(c);
+    const mv = manaValueFromCard(c);
+
+    const newItem = {
+      id: crypto.randomUUID(),
+      _addedAt: Date.now(),
+      inputName: inputName || c.name,
+      name: c.name || inputName,
+      nameEn: c.name || "",
+      setCode: String(c.set || "").toUpperCase(),
+      setName: c.set_name || "",
+      collectorNumber: String(c.collector_number || ""),
+      type: t.main,
+      subtype: t.sub,
+      colorId,
+      color: colorToEmojisFromCI(colorId),
+      mana: manaToEmojis(c.mana_cost || c.card_faces?.[0]?.mana_cost || ""),
+      manaValue: mv,
+      rarity: rarityMap[c.rarity] || c.rarity || "",
+      logoUrl,
+      imgUrl: c.image_uris?.normal || c.image_uris?.large || c.card_faces?.[0]?.image_uris?.normal || "",
+      oracleText: c.oracle_text || c.card_faces?.[0]?.oracle_text || "",
+      priceText: price,
+      proxy, foil, promo, promoPre,
+      lang,
+      qty,
+      bestSell,
+      fav: false,
+      sale,
+      priceHist: []
+    };
+
+    updatePriceHistory(newItem, newItem.priceText);
+    cards.unshift(newItem);
+    saveCards();
+    clearAddForm();
+    showErr("");
+    renderCardsTableFull();
+    showPage("cartas");
+  }catch(e){
+    showErr("Error al añadir: " + (e?.message || e));
+  }
+}
+
+// Registra todos los listeners del modal de impresiones
+function initPrintingModal(){
+  const modal = document.getElementById("printingModal");
+  const closeBtn = document.getElementById("printingModalClose");
+  const cancelBtn = document.getElementById("printingModalCancel");
+  const confirmBtn = document.getElementById("printingModalConfirm");
+  const filterQ = document.getElementById("printingFilterQ");
+  const filterRarity = document.getElementById("printingFilterRarity");
+
+  if(closeBtn) closeBtn.addEventListener("click", closePrintingModal);
+  if(cancelBtn) cancelBtn.addEventListener("click", closePrintingModal);
+  if(modal) modal.addEventListener("click", e=>{ if(e.target === modal) closePrintingModal(); });
+  if(confirmBtn) confirmBtn.addEventListener("click", confirmPrintingSelection);
+  if(filterQ) filterQ.addEventListener("input", applyPrintingFilters);
+  if(filterRarity) filterRarity.addEventListener("change", applyPrintingFilters);
+  document.addEventListener("keydown", e=>{
+    if(e.key === "Escape" && modal?.classList.contains("open")) closePrintingModal();
+  });
+}
+
+// — initAppUI: registra listeners de UI que no dependen del usuario
+// Se llama UNA vez al cargar el DOM, antes de que Firebase resuelva la sesión.
+let _appUIInited = false;
+function initAppUI(){
+  if(_appUIInited) return;
+  _appUIInited = true;
+
+  applySettings();
+  initSidebarUI();
+
+  // Colección: filtro favoritos
+  const colFavSel = document.getElementById("colFavFilter");
+  if(colFavSel){
+    colFavSel.value = settings.colFavFilter || "all";
+    colFavSel.addEventListener("change", ()=>{
+      settings.colFavFilter = colFavSel.value;
+      saveSettings();
+      renderColeccion();
+    });
+  }
+
+  // Colección: búsqueda en tiempo real
+  const colSearchInput = document.getElementById("colSearchInput");
+  if(colSearchInput) colSearchInput.addEventListener("input", ()=> renderColeccion());
+
+  // Deseos
+  const bWishAdd = document.getElementById("btnWishAdd");
+  if(bWishAdd) bWishAdd.onclick = ()=> addWishFromInputs();
+  const bWishRef = document.getElementById("btnWishRefresh");
+  if(bWishRef) bWishRef.onclick = ()=> refreshWishlistPrices();
+  const wq = document.getElementById("wishQ");
+  if(wq) wq.oninput = ()=> renderWishlist();
+
+  const bDeckToWish = document.getElementById("btnDeckToWish");
+  if(bDeckToWish) bDeckToWish.onclick = ()=> addMissingDeckToWishlist(selectedDeck());
+
+  const marketSearch = document.getElementById("marketSearch");
+  if(marketSearch) marketSearch.addEventListener("input", ()=> renderSalesTable());
+
+  // Botón "Ver impresiones"
+  const btnOpenPrintings = document.getElementById("btnOpenPrintings");
+  if(btnOpenPrintings){
+    btnOpenPrintings.addEventListener("click", ()=>{
+      const name = document.getElementById("inName")?.value?.trim();
+      if(!name){
+        showErr("Escribe el nombre de la carta antes de buscar impresiones.");
+        return;
+      }
+      showErr("");
+      const lang = document.getElementById("inLang")?.value || "es";
+      openPrintingModal(name, lang);
+    });
+  }
+
+  // Enter en nombre abre el modal de impresiones
+  document.getElementById("inName")?.addEventListener("keydown", e=>{
+    if(e.key === "Enter"){
+      e.preventDefault();
+      document.getElementById("btnOpenPrintings")?.click();
+    }
+  });
+
+  // Inicializar modal de impresiones
+  initPrintingModal();
+
+  loadIntroSets();
+  setTimeout(initCardDetailUI, 0);
+}
+function renderSalesTable(){
+  const tbody = document.querySelector("#tblSales tbody");
+  const pill = document.getElementById("salesCountPill");
+  const otherPill = document.getElementById("otherSalesCountPill");
+  const otherTbody = document.querySelector("#tblOtherSales tbody");
+  const marketSearch = document.getElementById("marketSearch");
+  const mine = cards.filter(c=>!!c.sale);
+  if(pill) pill.textContent = "En venta: " + mine.reduce((a,c)=>a+(c.qty||1),0);
+  if(tbody){
+    tbody.innerHTML = "";
+    for(const c of mine){
+      const tr = document.createElement("tr");
+      tr.dataset.id = c.id;
+      const bg = gradientFromColorIds(c.colorId);
+      if (bg) { tr.style.background = bg; }
+
+      tr.innerHTML = `
+        <td class="center"><button class="starBtn" data-star="1" title="Favorito">${c.fav ? "★" : "☆"}</button></td>
+        <td><b>${escapeHtml(c.name)}</b><div class="small">${escapeHtml(c.inputName||"")}</div></td>
+        <td class="mono">${escapeHtml(c.setCode||"")}</td>
+        <td class="mono">${escapeHtml(c.collectorNumber||"")}</td>
+        <td class="right"><span class="mono">${escapeHtml(c.qty||1)}</span></td>
+        <td class="right mono">${escapeHtml(c.priceText||"")}</td>
+        <td class="right mono">${escapeHtml(c.bestSell||"")}</td>
+        <td class="right"><button class="btn ghost" data-sold="1">Vendida</button></td>`;
+      tbody.appendChild(tr);
+    }
+  }
+  if(otherTbody){
+    // Mostrar caché local mientras carga Firestore
+    _renderOtherSales(otherTbody, otherPill, marketSearch);
+    // Actualizar desde Firestore en segundo plano
+    if(currentUserId()){
+      fsLoadMarket().then(()=>{
+        _renderOtherSales(otherTbody, otherPill, marketSearch);
+      }).catch(()=>{});
+    }
+  }
+}
+
+function _renderOtherSales(otherTbody, otherPill, marketSearch){
+  const sess = getSession();
+  const q = (marketSearch?.value || "").trim().toLowerCase();
+  let market = loadMarketOffers().filter(x => x.sellerId && x.qty > 0);
+  if(sess?.id) market = market.filter(x => x.sellerId !== sess.id);
+  if(q){
+    market = market.filter(x =>
+      String(x.name||"").toLowerCase().includes(q) ||
+      String(x.sellerName||"").toLowerCase().includes(q) ||
+      String(x.setCode||"").toLowerCase().includes(q)
+    );
+  }
+  if(otherPill) otherPill.textContent = "Otros usuarios: " + market.reduce((a,c)=>a+(c.qty||1),0);
+  otherTbody.innerHTML = "";
+  for(const item of market){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><div class="row" style="gap:8px;flex-wrap:nowrap;"><img src="${escapeHtml(item.sellerAvatar || 'assets/User.jpg')}" alt="avatar" class="sidebarAvatar" style="width:34px;height:34px;"><div><b>${escapeHtml(item.sellerName || "Usuario")}</b><div class="small">Vendedor</div></div></div></td>
+      <td><b>${escapeHtml(item.name)}</b></td>
+      <td class="mono">${escapeHtml(item.setCode||"")}</td>
+      <td class="mono">${escapeHtml(item.collectorNumber||"")}</td>
+      <td class="right mono">${escapeHtml(item.qty||1)}</td>
+      <td class="right mono">${escapeHtml(item.priceText||"")}</td>
+      <td class="right mono">${escapeHtml(item.bestSell||"")}</td>
+      <td><span class="pill">Disponible</span></td>`;
+    otherTbody.appendChild(tr);
+  }
+  if(!market.length){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td colspan="8"><div class="marketEmpty">Sin anuncios activos de otros usuarios.</div></td>`;
+    otherTbody.appendChild(tr);
+  }
+}
+
+/* === FIX: ventas "Vendida" (handler directo) === */
+function markSoldById(id){
+  const item = cards.find(x=>x.id===id);
+  if(!item) return;
+
+  // Descontar 1 unidad; si era la última, eliminar la carta
+  item.qty = Math.max(0, (item.qty||1) - 1);
+  if(item.qty<=0){
+    cards = cards.filter(x=>x.id!==item.id);
+  }
+
+  // Guardar y re-renderizar lo que ya existe en la app
+  saveCards();
+  renderCardsTableFull();
+  renderSalesTable();
+  updateCardsMetrics();
+  updateInvestmentUI();
+}
+
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  BUSCADOR — Filtros y renderizado de resultados                ║
+// ╚══════════════════════════════════════════════════════════════╝
 function buildColorComboOptions(){
   const colors = ["W","U","B","R","G"];
   const out = [];
@@ -3837,9 +4362,10 @@ function renderSearchResults(){
   });
 }
 
-/************************************************************
- * Stats
- ************************************************************/
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  ESTADÍSTICAS — Gráficos de colores, tipos y dinero            ║
+// ╚══════════════════════════════════════════════════════════════╝
 let chartColors = null;
 let chartTypes = null;
 let chartRarity = null;
@@ -4021,9 +4547,11 @@ function renderTypeStats(){
   renderSalesTable();
 }
 
-/************************************************************
- * Mazos + Commander + Mejoras 1-5 y 8
- ************************************************************/
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  MAZOS — CRUD, vista de mazo, parsers y exportación            ║
+// ╚══════════════════════════════════════════════════════════════╝
+// Genera un nombre único para un mazo añadiendo sufijo numérico si ya existe
 function uniqueDeckName(name){
   const base = String(name||"Mazo").trim() || "Mazo";
   if(!decks.some(d=>d.name.toLowerCase()===base.toLowerCase())) return base;
@@ -4035,6 +4563,7 @@ function uniqueDeckName(name){
   }
 }
 
+// Devuelve el mazo actualmente seleccionado en el <select> de mazos
 function selectedDeck(){
   const deckId = document.getElementById("deckSelect")?.value;
   return decks.find(x=>x.id===deckId) || null;
@@ -4211,11 +4740,11 @@ function parseDecksJson(text){
   return data;
 }
 
-// ── Parser universal: soporta Archideck, MTG Arena, MTGO, estándar TXT, ManaBox TXT ──
+// — Parser universal: soporta Archideck, MTG Arena, MTGO, estándar TXT, ManaBox TXT
 function parseDecksTxt(text){
   const raw = String(text||"").replace(/\r\n|\r/g,"");
 
-  // ── Detectar formato Archideck JSON dentro de TXT ──────────────────────
+  // — Detectar formato Archideck JSON dentro de TXT
   if(raw.trimStart().startsWith("{") || raw.trimStart().startsWith("[")) {
     try{ return parseDecksJson(raw); }catch{}
   }
@@ -4296,7 +4825,7 @@ function parseDecksTxt(text){
     if(line.startsWith("//") && !line.match(/^\/\/\s*Commander/i)) continue;
     if(/^[-=]{3,}$/.test(line)) continue;
 
-    // ── Secciones de Arena / MTGO ──────────────────────────────────────
+    // — Secciones de Arena / MTGO
     // Arena: "Deck", "Sideboard", "Commander", "Companion"
     const sectionMatch = line.match(/^(Deck|Sideboard|Commander|Companion|Comandante|Mazo|Side|Sidedeck)\s*:?\s*$/i);
     if(sectionMatch){
@@ -4313,7 +4842,7 @@ function parseDecksTxt(text){
       continue;
     }
 
-    // ── Nombre del mazo ──────────────────────────────────────────────────
+    // — Nombre del mazo
     const mDeck = line.match(/^(mazo|deck|name):\s*(.+)$/i);
     if(mDeck){
       flush();
@@ -4321,7 +4850,7 @@ function parseDecksTxt(text){
       continue;
     }
 
-    // ── Línea de comandante explícita ────────────────────────────────────
+    // — Línea de comandante explícita
     // Formatos: "Commander: Atraxa (CMM #384)", "Comandante: Atraxa CMM 384"
     // También: "// Commander: Atraxa"  (algunos exportadores de Arena)
     const rawCmdLine = line.replace(/^\/\/\s*/, "");
@@ -4341,7 +4870,7 @@ function parseDecksTxt(text){
 
     ensureDeck();
 
-    // ── Parsear línea de carta ────────────────────────────────────────────
+    // — Parsear línea de carta
     // Archideck: "1 Atraxa, Praetors' Voice (CMM) 384" (sin x, sin #)
     // Arena:     "1 Atraxa, Praetors' Voice (CMM) 384"
     // MTGO:      "1 Atraxa, Praetors' Voice"
@@ -4378,7 +4907,7 @@ function parseDecksTxt(text){
   return out;
 }
 
-// ── Parser CSV para mazos (Archideck, ManaBox deck export) ──────────────
+// — Parser CSV para mazos (Archideck, ManaBox deck export)
 function parseDecksCsv(text){
   const rows = parseCsv(text);  // reutiliza el CSV parser existente
   if(rows.length < 2) return [];
@@ -4482,9 +5011,9 @@ async function copyDeckTxt(deckId){
   }
 }
 
-// =========================
+//
 // Deck View (tipo Archidekt) + Mejor orden de tipos (8)
-// =========================
+//
 let deckViewState = {
   deckId: null,
   q: "",
@@ -4759,9 +5288,108 @@ async function renderDeckView(doPrefetch=false){
 }
 
 
-/************************************************************
- * Deseos (wishlist)
- ************************************************************/
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  COMMANDER — Validación de mazo (EDH: tipo, tamaño, identidad)  ║
+// ╚══════════════════════════════════════════════════════════════╝
+async function validateCommanderForDeck(d){
+  const out = [];
+  if(!d) return out;
+
+  if(!d.commander){
+    out.push({ level:"warn", msg:"No has configurado comandante." });
+    return out;
+  }
+
+  let cmdCard = null;
+  try{
+    if(d.commander.set && d.commander.cn) cmdCard = await fetchCardExact(d.commander.set, d.commander.cn);
+    else cmdCard = await fetchCardByName(d.commander.name);
+  }catch{
+    cmdCard = null;
+  }
+
+  if(!cmdCard){
+    out.push({ level:"bad", msg:`No pude validar el comandante: "${d.commander.name}".` });
+    return out;
+  }
+
+  const typeLine = String(cmdCard.type_line||"");
+  const oracle = String(cmdCard.oracle_text||"");
+  const isLegendary = typeLine.includes("Legendary");
+  const isCreature = typeLine.includes("Creature");
+  const isPlaneswalker = typeLine.includes("Planeswalker");
+  const saysCan = /can be your commander/i.test(oracle);
+
+  const legal = (isLegendary && isCreature) || (isPlaneswalker && saysCan) || saysCan;
+  if(!legal){
+    out.push({ level:"bad", msg:`El comandante no parece legal (según Scryfall): ${cmdCard.name} · ${typeLine}` });
+  }else{
+    out.push({ level:"ok", msg:`Comandante detectado: ${cmdCard.name} · ${typeLine}` });
+  }
+
+  const cmdCI = Array.isArray(cmdCard.color_identity) ? cmdCard.color_identity : [];
+  const cmdSet = new Set(cmdCI);
+
+  // tamaño mazo (100 incluyendo comandante)
+  const totalCards = (d.items||[]).reduce((a,it)=>a+(it.qty||1),0) + 1;
+  if(totalCards !== 100){
+    out.push({ level:"warn", msg:`Tamaño: ${totalCards}/100 cartas (incluyendo comandante).` });
+  }
+
+  // identidad de color (muestreo: revisa todas, usando cache y scryfall si hace falta)
+  const offenders = [];
+  for(const it of (d.items||[])){
+    try{
+      const card = await fetchDeckCardDetails(it);
+      const ci = Array.isArray(card?.color_identity) ? card.color_identity : [];
+      for(const c of ci){
+        if(!cmdSet.has(c)){
+          offenders.push(it);
+          break;
+        }
+      }
+    }catch{}
+    if(offenders.length >= 12) break; // no saturar
+  }
+  if(offenders.length){
+    out.push({ level:"bad", msg:`Hay cartas fuera de la identidad de color del comandante (ejemplos): ${offenders.slice(0,6).map(x=>x.name).join(", ")}${offenders.length>6?"…":""}` });
+  }
+
+  return out;
+}
+
+function renderCommanderWarnings(messages){
+  const box = document.getElementById("deckCmdWarnings");
+  if(!box) return;
+
+  if(!messages || !messages.length){
+    box.style.display = "none";
+    box.innerHTML = "";
+    return;
+  }
+
+  const icon = (lvl)=> lvl==="ok" ? "✅" : (lvl==="bad" ? "⛔" : "⚠️");
+  const cls = (lvl)=> lvl==="ok" ? "ownBadge ok" : (lvl==="bad" ? "ownBadge bad" : "ownBadge warn");
+
+  box.style.display = "";
+  box.innerHTML = `
+    <div class="row" style="gap:10px; align-items:flex-start; flex-wrap:wrap;">
+      <div style="min-width:220px;">
+        <b>Validación de comandante</b>
+        <div class="small muted">Comprobación rápida (tipo, 100 cartas, identidad de color).</div>
+      </div>
+      <div style="flex:1; min-width:260px;">
+        ${messages.map(m=>`<div class="mini" style="margin:4px 0;"><span class="${cls(m.level)}" style="margin-right:8px;">${icon(m.level)}</span>${escapeHtml(m.msg)}</div>`).join("")}
+      </div>
+    </div>
+  `;
+}
+
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  DESEOS — Wishlist: añadir, comparar y sincronizar             ║
+// ╚══════════════════════════════════════════════════════════════╝
+// Normaliza la wishlist: genera IDs, rellena qty y priceHist
 function normalizeWishlist(){
   let changed = false;
   if(!Array.isArray(wishlist)) { wishlist = []; changed = true; }
@@ -4775,6 +5403,7 @@ function normalizeWishlist(){
 }
 normalizeWishlist();
 
+// Devuelve cuántas copias tiene el usuario de una carta de la wishlist
 function haveQtyForWish(w){
   if(!w) return 0;
   const nameKey = String(w.name||"").trim().toLowerCase();
@@ -4983,107 +5612,10 @@ function addMissingDeckToWishlist(d){
   }
 }
 
-/************************************************************
- * Commander: validación básica (EDH)
- ************************************************************/
-async function validateCommanderForDeck(d){
-  const out = [];
-  if(!d) return out;
 
-  if(!d.commander){
-    out.push({ level:"warn", msg:"No has configurado comandante." });
-    return out;
-  }
-
-  let cmdCard = null;
-  try{
-    if(d.commander.set && d.commander.cn) cmdCard = await fetchCardExact(d.commander.set, d.commander.cn);
-    else cmdCard = await fetchCardByName(d.commander.name);
-  }catch{
-    cmdCard = null;
-  }
-
-  if(!cmdCard){
-    out.push({ level:"bad", msg:`No pude validar el comandante: "${d.commander.name}".` });
-    return out;
-  }
-
-  const typeLine = String(cmdCard.type_line||"");
-  const oracle = String(cmdCard.oracle_text||"");
-  const isLegendary = typeLine.includes("Legendary");
-  const isCreature = typeLine.includes("Creature");
-  const isPlaneswalker = typeLine.includes("Planeswalker");
-  const saysCan = /can be your commander/i.test(oracle);
-
-  const legal = (isLegendary && isCreature) || (isPlaneswalker && saysCan) || saysCan;
-  if(!legal){
-    out.push({ level:"bad", msg:`El comandante no parece legal (según Scryfall): ${cmdCard.name} · ${typeLine}` });
-  }else{
-    out.push({ level:"ok", msg:`Comandante detectado: ${cmdCard.name} · ${typeLine}` });
-  }
-
-  const cmdCI = Array.isArray(cmdCard.color_identity) ? cmdCard.color_identity : [];
-  const cmdSet = new Set(cmdCI);
-
-  // tamaño mazo (100 incluyendo comandante)
-  const totalCards = (d.items||[]).reduce((a,it)=>a+(it.qty||1),0) + 1;
-  if(totalCards !== 100){
-    out.push({ level:"warn", msg:`Tamaño: ${totalCards}/100 cartas (incluyendo comandante).` });
-  }
-
-  // identidad de color (muestreo: revisa todas, usando cache y scryfall si hace falta)
-  const offenders = [];
-  for(const it of (d.items||[])){
-    try{
-      const card = await fetchDeckCardDetails(it);
-      const ci = Array.isArray(card?.color_identity) ? card.color_identity : [];
-      for(const c of ci){
-        if(!cmdSet.has(c)){
-          offenders.push(it);
-          break;
-        }
-      }
-    }catch{}
-    if(offenders.length >= 12) break; // no saturar
-  }
-  if(offenders.length){
-    out.push({ level:"bad", msg:`Hay cartas fuera de la identidad de color del comandante (ejemplos): ${offenders.slice(0,6).map(x=>x.name).join(", ")}${offenders.length>6?"…":""}` });
-  }
-
-  return out;
-}
-
-function renderCommanderWarnings(messages){
-  const box = document.getElementById("deckCmdWarnings");
-  if(!box) return;
-
-  if(!messages || !messages.length){
-    box.style.display = "none";
-    box.innerHTML = "";
-    return;
-  }
-
-  const icon = (lvl)=> lvl==="ok" ? "✅" : (lvl==="bad" ? "⛔" : "⚠️");
-  const cls = (lvl)=> lvl==="ok" ? "ownBadge ok" : (lvl==="bad" ? "ownBadge bad" : "ownBadge warn");
-
-  box.style.display = "";
-  box.innerHTML = `
-    <div class="row" style="gap:10px; align-items:flex-start; flex-wrap:wrap;">
-      <div style="min-width:220px;">
-        <b>Validación de comandante</b>
-        <div class="small muted">Comprobación rápida (tipo, 100 cartas, identidad de color).</div>
-      </div>
-      <div style="flex:1; min-width:260px;">
-        ${messages.map(m=>`<div class="mini" style="margin:4px 0;"><span class="${cls(m.level)}" style="margin-right:8px;">${icon(m.level)}</span>${escapeHtml(m.msg)}</div>`).join("")}
-      </div>
-    </div>
-  `;
-}
-
-
-/************************************************************
- * Intro Sets
- ************************************************************/
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  SETS — Tabla de colecciones de la intro                       ║
+// ╚══════════════════════════════════════════════════════════════╝
 const LS_INTRO_SETS = "mtg_rosita_intro_sets_v1";
 
 async function loadIntroSets(){
@@ -5141,40 +5673,10 @@ function renderIntroSets(sets){
     });
 }
 
-/************************************************************
- * Import CSV (ManaBox) - parser
- ************************************************************/
-function parseCsv(text){
-  const out = [];
-  let row = [];
-  let cur = "";
-  let inQ = false;
 
-  const s = String(text||"").replace(/\r/g,"");
-  for(let i=0;i<s.length;i++){
-    const ch = s[i];
-    const nx = s[i+1];
-
-    if(inQ){
-      if(ch === '"' && nx === '"'){ cur += '"'; i++; continue; }
-      if(ch === '"'){ inQ = false; continue; }
-      cur += ch;
-      continue;
-    }
-
-    if(ch === '"'){ inQ = true; continue; }
-    if(ch === ","){ row.push(cur); cur=""; continue; }
-    if(ch === "\n"){ row.push(cur); out.push(row); row=[]; cur=""; continue; }
-    cur += ch;
-  }
-  row.push(cur);
-  out.push(row);
-  return out.filter(r=>r.some(x=>String(x||"").trim()!==""));
-}
-
-/************************************************************
- * UI wiring - Ajustes
- ************************************************************/
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  AJUSTES UI — Inicialización del panel de configuración        ║
+// ╚══════════════════════════════════════════════════════════════╝
 function initSettingsUI(){
   const themeSel = document.getElementById("setTheme");
   const fontRange = document.getElementById("setFontSize");
@@ -5259,9 +5761,583 @@ function initSettingsUI(){
   initBackupUI();
 }
 
-/************************************************************
- * Eventos principales (botones)
- ************************************************************/
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  PERFIL — Avatar, banner, amigos, solicitudes y estadísticas   ║
+// ╚══════════════════════════════════════════════════════════════╝
+const DEFAULT_PROFILE = { displayName:"", bio:"", avatar:"", banner:"" };
+let profile = (() => { try{ const raw = userLoad(LS_PROFILE, null, []); if(!raw) return {...DEFAULT_PROFILE}; return {...DEFAULT_PROFILE, ...raw}; }catch{ return {...DEFAULT_PROFILE}; } })();
+function saveProfile(){
+  userSave(LS_PROFILE, profile);
+  syncCurrentUserSalesToMarket();
+  // Actualizar perfil público en Firestore
+  if(currentUserId()) fsSaveProfile().catch(()=>{});
+}
+function fileToDataUrl(file){ return new Promise((resolve, reject)=>{ const reader = new FileReader(); reader.onload = ()=> resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }); }
+function getCurrentSessionUser(){ return getSession(); }
+// Devuelve el nombre visible del usuario (perfil > displayName de Firebase)
+function getProfileName(){ const sess = getCurrentSessionUser(); return profile.displayName?.trim() || sess?.username || "Usuario"; }
+// Devuelve el email del usuario autenticado
+function getProfileEmail(){ const sess = getCurrentSessionUser(); return sess?.email || "Sin email"; }
+// Devuelve la URL del avatar del usuario (o la imagen por defecto)
+function getProfileAvatar(){ return profile.avatar || "assets/User.jpg"; }
+function getProfileBannerCss(){ return profile.banner ? `url("${profile.banner}")` : "linear-gradient(135deg, #c084fc, #7c3aed, #312e81)"; }
+function openProfileTab(tab){
+  const wanted = tab || 'resumen';
+  document.querySelectorAll('[data-profile-tab]').forEach(btn=> btn.classList.toggle('active', btn.dataset.profileTab === wanted));
+  document.querySelectorAll('[data-profile-pane]').forEach(pane=> pane.classList.toggle('is-active', pane.dataset.profilePane === wanted));
+  try{ localStorage.setItem('mtg_profile_tab', wanted); }catch{}
+}
+function getSavedProfileTab(){
+  try{ return localStorage.getItem('mtg_profile_tab') || 'resumen'; }catch{ return 'resumen'; }
+}
+function renderSidebarProfile(){
+  const avatar = document.getElementById("sidebarAvatar");
+  const mini = document.getElementById("sidebarUserMini");
+  const userName = document.getElementById("sidebarUserName");
+  const topAvatar = document.getElementById('topbarAvatar');
+  const avatarSrc = getProfileAvatar();
+  if(avatar) avatar.src = avatarSrc;
+  if(topAvatar) topAvatar.src = avatarSrc;
+  if(userName) userName.textContent = getProfileName();
+  if(mini) mini.textContent = profile.bio?.trim() || "Perfil local";
+}
+
+function loadSocial(){
+  const raw = loadJson(LS_SOCIAL, null);
+  return {
+    requests: Array.isArray(raw?.requests) ? raw.requests : [],
+    friendships: Array.isArray(raw?.friendships) ? raw.friendships : []
+  };
+}
+function saveSocial(data){
+  localStorage.setItem(LS_SOCIAL, JSON.stringify({
+    requests: Array.isArray(data?.requests) ? data.requests : [],
+    friendships: Array.isArray(data?.friendships) ? data.friendships : []
+  }));
+}
+function socialPairKey(a,b){ return [String(a||""), String(b||"")].sort().join("__"); }
+function getPublicProfileByUserId(userId){
+  const p = loadJson(scopedKey(LS_PROFILE, userId), {});
+  return {
+    id: userId,
+    uid: userId,
+    username: p?.username?.trim() || p?.displayName?.trim() || "Usuario",
+    email: "",
+    displayName: p?.displayName?.trim() || p?.username?.trim() || "Usuario",
+    bio: p?.bio?.trim() || "",
+    avatar: p?.avatar || "assets/User.jpg"
+  };
+}
+async function fetchAndCachePublicProfile(userId){
+  try{
+    const snap = await fbDb.collection("users").doc(userId).get();
+    if(snap.exists){
+      const p = snap.data();
+      localStorage.setItem(scopedKey(LS_PROFILE, userId), JSON.stringify({
+        displayName: p.displayName || p.username || "",
+        username: p.username || "",
+        bio: p.bio || "",
+        avatar: p.avatar || ""
+      }));
+      return p;
+    }
+  }catch(e){ console.warn("fetchProfile:", e); }
+  return null;
+}
+function getFriendsData(){
+  const uid = currentUserId();
+  const social = loadSocial();
+  const friends = social.friendships
+    .filter(f => f.a === uid || f.b === uid)
+    .map(f => {
+      const otherId = f.a === uid ? f.b : f.a;
+      return { ...getPublicProfileByUserId(otherId), createdAt: f.createdAt || 0, friendshipId: f.id || socialPairKey(uid, otherId) };
+    })
+    .sort((a,b) => a.displayName.localeCompare(b.displayName, 'es', {sensitivity:'base'}));
+
+  const received = social.requests
+    .filter(r => r.to === uid)
+    .map(r => ({ ...r, user: getPublicProfileByUserId(r.from) }))
+    .sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
+
+  const sent = social.requests
+    .filter(r => r.from === uid)
+    .map(r => ({ ...r, user: getPublicProfileByUserId(r.to) }))
+    .sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
+
+  return { social, friends, received, sent };
+}
+async function sendFriendRequest(query){
+  const uid = currentUserId();
+  if(!uid) throw new Error("Debes iniciar sesión.");
+  const q = String(query || "").trim().toLowerCase();
+  if(!q) throw new Error("Escribe un nombre de usuario o email.");
+
+  // Buscar el usuario en Firestore
+  const target = await fsSearchUser(q);
+  if(!target) throw new Error("No se encontró ningún usuario con ese nombre o email.");
+  if(target.uid === uid) throw new Error("No puedes enviarte una solicitud a ti mismo.");
+
+  // Verificar si ya son amigos (caché local)
+  const social = loadSocial();
+  const alreadyFriends = social.friendships.some(f => socialPairKey(f.a,f.b) === socialPairKey(uid, target.uid));
+  if(alreadyFriends) throw new Error("Ya sois amigos.");
+
+  const existing = social.requests.find(r =>
+    (r.from === uid && r.to === target.uid) ||
+    (r.from === target.uid && r.to === uid)
+  );
+  if(existing){
+    if(existing.from === target.uid && existing.to === uid){
+      await fsAcceptFriendRequest(existing.id);
+      await fsLoadSocialData();
+      return { autoAccepted: true, target };
+    }
+    throw new Error("Ya hay una solicitud pendiente.");
+  }
+
+  await fsSendFriendRequest(target.uid);
+  await fsLoadSocialData();
+  return { autoAccepted: false, target };
+}
+async function acceptFriendRequest(requestId){
+  await fsAcceptFriendRequest(requestId);
+  await fsLoadSocialData();
+}
+async function declineFriendRequest(requestId){
+  await fsDeclineFriendRequest(requestId);
+  await fsLoadSocialData();
+}
+async function cancelFriendRequest(requestId){
+  await fsDeclineFriendRequest(requestId);
+  await fsLoadSocialData();
+}
+async function removeFriend(friendId){
+  await fsRemoveFriend(friendId);
+  await fsLoadSocialData();
+}
+function friendRowHtml(user, actions){
+  return `<div class="saleItem" style="align-items:center;">
+    <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+      <img src="${escapeHtml(user.avatar || 'assets/User.jpg')}" alt="avatar" class="sidebarAvatar">
+      <div style="min-width:0;">
+        <div style="font-weight:700;">${escapeHtml(user.displayName || 'Usuario')}</div>
+        <div class="small mono" style="overflow:hidden;text-overflow:ellipsis;">@${escapeHtml(user.username || 'user')}</div>
+        <div class="small">${escapeHtml(user.bio || user.email || 'Sin bio')}</div>
+      </div>
+    </div>
+    <div class="row" style="gap:8px;flex-wrap:wrap;">${actions}</div>
+  </div>`;
+}
+function renderFriendsUI(){
+  const friendsList = document.getElementById('friendsList');
+  const receivedList = document.getElementById('friendRequestsReceived');
+  const sentList = document.getElementById('friendRequestsSent');
+  const friendCount = document.getElementById('friendCount');
+  const friendReceivedCount = document.getElementById('friendReceivedCount');
+  const friendSentCount = document.getElementById('friendSentCount');
+  if(!friendsList || !receivedList || !sentList) return;
+
+  const { friends, received, sent } = getFriendsData();
+  if(friendCount) friendCount.textContent = String(friends.length);
+  if(friendReceivedCount) friendReceivedCount.textContent = String(received.length);
+  if(friendSentCount) friendSentCount.textContent = String(sent.length);
+
+  friendsList.innerHTML = friends.length
+    ? friends.map(f => friendRowHtml(f, `<button class="btn ghost tiny" data-remove-friend="${escapeHtml(f.id)}">Quitar</button>`)).join('')
+    : '<div class="hint">Todavía no tienes amigos añadidos.</div>';
+
+  receivedList.innerHTML = received.length
+    ? received.map(r => friendRowHtml(r.user, `<button class="btn tiny" data-accept-friend="${escapeHtml(r.id)}">Aceptar</button><button class="btn ghost tiny" data-decline-friend="${escapeHtml(r.id)}">Rechazar</button>`)).join('')
+    : '<div class="hint">No tienes solicitudes recibidas.</div>';
+
+  sentList.innerHTML = sent.length
+    ? sent.map(r => friendRowHtml(r.user, `<button class="btn ghost tiny" data-cancel-friend="${escapeHtml(r.id)}">Cancelar</button>`)).join('')
+    : '<div class="hint">No has enviado solicitudes.</div>';
+}
+
+function loadMySales(){
+  const sess = getSession();
+  if(!sess) return [];
+  return cards.filter(c=>!!c.sale);
+}
+
+function renderUserProfilePage(){
+  const hero = document.getElementById("profileHero");
+  const heroEdit = document.getElementById("profileHeroEditPreview");
+  const avatarLarge = document.getElementById("profileAvatarLarge");
+  const avatarPreview = document.getElementById("profileAvatarPreview");
+  const editAvatarPreview = document.getElementById("profileEditAvatarPreview");
+  const editAvatarLarge = document.getElementById("profileEditAvatarLarge");
+  const name = document.getElementById("profileDisplayName");
+  const publicName = document.getElementById("profilePublicName");
+  const editDisplayName = document.getElementById("profileEditDisplayName");
+  const email = document.getElementById("profileDisplayEmail");
+  const editEmail = document.getElementById("profileEditDisplayEmail");
+  const bio = document.getElementById("profilePublicBio");
+  const nameInput = document.getElementById("profileNameInput");
+  const bioInput = document.getElementById("profileBioInput");
+  const bannerCss = getProfileBannerCss();
+
+  if(hero) hero.style.setProperty("--profile-banner", bannerCss);
+  if(heroEdit) heroEdit.style.setProperty("--profile-banner", bannerCss);
+
+  const avatarSrc = getProfileAvatar();
+  if(avatarLarge) avatarLarge.src = avatarSrc;
+  if(avatarPreview) avatarPreview.src = avatarSrc;
+  if(editAvatarPreview) editAvatarPreview.src = avatarSrc;
+  if(editAvatarLarge) editAvatarLarge.src = avatarSrc;
+
+  const displayName = getProfileName();
+  if(name) name.textContent = displayName;
+  if(publicName) publicName.textContent = displayName;
+  if(editDisplayName) editDisplayName.textContent = displayName;
+  if(email) email.textContent = getProfileEmail();
+  if(editEmail) editEmail.textContent = getProfileEmail();
+  if(bio) bio.textContent = profile.bio?.trim() || "Sin bio.";
+  if(nameInput) nameInput.value = profile.displayName || "";
+  if(bioInput) bioInput.value = profile.bio || "";
+
+  const cardsCount = cards.length;
+  const decksCount = decks.length;
+  const wishCount = wishlist.length;
+
+  const totalCopies = cards.reduce((n, c)=> n + (Number(c.count || c.qty || 1) || 1), 0);
+
+  // — Estadísticas de colección
+  // Color dominante
+  const colorCounts = {};
+  for(const c of cards){
+    const qty = Number(c.count || c.qty || 1) || 1;
+    const b = colorBucketFromColorId(c.colorId);
+    colorCounts[b] = (colorCounts[b] || 0) + qty;
+  }
+  const dominantColor = Object.keys(colorCounts).sort((a,b)=>colorCounts[b]-colorCounts[a])[0] || "—";
+  const dominantColorLabel = dominantColor;
+
+  // Tipo dominante
+  const typeCounts = {};
+  for(const c of cards){
+    const qty = Number(c.count || c.qty || 1) || 1;
+    const t = mainTypeBucket(c.type);
+    typeCounts[t] = (typeCounts[t] || 0) + qty;
+  }
+  const dominantType = Object.keys(typeCounts).sort((a,b)=>typeCounts[b]-typeCounts[a])[0] || "—";
+
+  // Rareza dominante
+  const rarCounts = {};
+  for(const c of cards){
+    const qty = Number(c.count || c.qty || 1) || 1;
+    const r = c.rarity || "—";
+    rarCounts[r] = (rarCounts[r] || 0) + qty;
+  }
+  const dominantRarity = Object.keys(rarCounts).sort((a,b)=>rarCounts[b]-rarCounts[a])[0] || "—";
+
+  // Carta más copiada
+  let mostCopied = null, mostCopiedQty = 0;
+  for(const c of cards){
+    const qty = Number(c.count || c.qty || 1) || 1;
+    if(qty > mostCopiedQty){ mostCopiedQty = qty; mostCopied = c; }
+  }
+  const mostCopiedLabel = mostCopied ? `${mostCopied.name || "?"} (×${mostCopiedQty})` : "—";
+
+  // Mazo más grande
+  let biggestDeck = null, biggestDeckCount = 0;
+  for(const d of decks){
+    const cnt = Array.isArray(d.cards) ? d.cards.reduce((n,e)=> n + (Number(e.qty||e.count||1)||1), 0) : 0;
+    if(cnt > biggestDeckCount){ biggestDeckCount = cnt; biggestDeck = d; }
+  }
+  const biggestDeckLabel = biggestDeck ? `${biggestDeck.name || "?"} (${biggestDeckCount})` : "—";
+
+  // Foils y favoritos
+  const foilCount = cards.filter(c=> c.foil === true || c.foil === 1 || c.foil === "true" || c.foil === "1").length;
+  const favCount  = cards.filter(c=> isFav(c)).length;
+
+  // Detalles panel "Sobre" – distribución de rarezas
+  const detailsEl = document.getElementById("profileCollectionDetails");
+  if(detailsEl){
+    const rarOrder = ["Mítica","Rara","Poco común","Común"];
+    const rarRows = rarOrder.map(r=>{
+      const count = cards.filter(c=> (c.rarity||"").toLowerCase().includes(r.toLowerCase().split(" ")[0])).length;
+      if(!count) return "";
+      return `<div class="profileCollDetailItem"><span class="label">${r}</span><span class="val">${count} carta${count!==1?"s":""}</span></div>`;
+    }).filter(Boolean).join("");
+    detailsEl.innerHTML = rarRows || `<div class="hint" style="padding:10px;">Sin cartas aún.</div>`;
+  }
+
+  const ids = {
+    profileCardsCount: cardsCount,
+    profileDecksCount: decksCount,
+    profileWishCount: wishCount,
+    profileStatCards: cardsCount,
+    profileStatDecks: decksCount,
+    profileStatWishes: wishCount,
+    profileAboutName: displayName,
+    profileAboutEmail: getProfileEmail(),
+    rankCollectionValue: cardsCount,
+    rankDeckValue: decksCount,
+    rankWishValue: wishCount,
+    rankDominantColor: dominantColorLabel,
+    rankDominantType: dominantType,
+    rankDominantRarity: dominantRarity,
+    rankMostCopied: mostCopiedLabel,
+    rankBiggestDeck: biggestDeckLabel,
+    rankFoilCount: foilCount,
+    rankFavCount: favCount
+  };
+
+  Object.entries(ids).forEach(([id, value])=>{
+    const el = document.getElementById(id);
+    if(el) el.textContent = String(value);
+  });
+
+  renderFriendsUI();
+  renderSidebarProfile();
+  openProfileTab(getSavedProfileTab());
+}
+function initUserProfilePage(){
+  const avatarInput = document.getElementById("profileAvatarInput");
+  const bannerInput = document.getElementById("profileBannerInput");
+  const btnResetAvatar = document.getElementById("btnResetAvatar");
+  const btnResetBanner = document.getElementById("btnResetBanner");
+  const btnSaveText = document.getElementById("btnSaveProfileText");
+  const btnTopProfile = document.getElementById("btnTopProfile");
+  const btnProfileGoCollection = document.getElementById('btnProfileGoCollection');
+  const btnProfileGoStore = document.getElementById('btnProfileGoStore');
+  const btnBackFromProfileSettings = document.getElementById('btnBackFromProfileSettings');
+
+  if(btnTopProfile) btnTopProfile.onclick = ()=> { showPage("usuario"); openProfileTab('resumen'); };
+  if(btnProfileGoCollection) btnProfileGoCollection.onclick = ()=> showPage('coleccion');
+  if(btnProfileGoStore) btnProfileGoStore.onclick = ()=> showPage('tienda');
+  if(btnBackFromProfileSettings) btnBackFromProfileSettings.onclick = ()=> openProfileTab('resumen');
+
+  document.querySelectorAll('[data-profile-tab]').forEach(btn=>{
+    btn.addEventListener('click', ()=> openProfileTab(btn.dataset.profileTab));
+  });
+
+  // — Avatar
+  // Usamos delegación en document para evitar problemas si el input no está visible aún
+  document.addEventListener("change", async (e)=>{
+    if(e.target.id !== "profileAvatarInput") return;
+    const file = e.target.files?.[0];
+    if(!file) return;
+    const label = document.querySelector('label[for="profileAvatarInput"]');
+    if(label){ label.textContent = "Guardando…"; label.style.opacity = ".6"; }
+    try{
+      // 1) Guardar base64 local inmediatamente — visible al instante
+      const dataUrl = await fileToDataUrl(file);
+      profile.avatar = dataUrl;
+      saveProfile();
+      renderUserProfilePage();
+      renderSalesTable();
+      // Mostrar botón quitar
+      const resetBtn = document.getElementById("btnResetAvatar");
+      if(resetBtn) resetBtn.style.display = "";
+      // 2) Intentar subir a Storage en segundo plano (no bloquea UI)
+      if(currentUserId()){
+        fsUploadAvatar(file).then(url=>{
+          if(url){ profile.avatar = url; saveProfile(); renderUserProfilePage(); renderSalesTable(); }
+        }).catch(()=>{}); // fallo silencioso — ya se guardó base64
+      }
+    }catch(err){
+      console.warn("Avatar error:", err);
+    }finally{
+      if(label){ label.textContent = "Subir foto"; label.style.opacity = ""; }
+      e.target.value = "";
+    }
+  }, { capture: false });
+
+  // — Banner
+  document.addEventListener("change", async (e)=>{
+    if(e.target.id !== "profileBannerInput") return;
+    const file = e.target.files?.[0];
+    if(!file) return;
+    const label = document.querySelector('label[for="profileBannerInput"]');
+    if(label){ label.textContent = "Guardando…"; label.style.opacity = ".6"; }
+    try{
+      const dataUrl = await fileToDataUrl(file);
+      profile.banner = dataUrl;
+      saveProfile();
+      renderUserProfilePage();
+      // Mostrar botón quitar
+      const resetBannerBtn = document.getElementById("btnResetBanner");
+      if(resetBannerBtn) resetBannerBtn.style.display = "";
+      if(currentUserId()){
+        fsUploadBanner(file).then(url=>{
+          if(url){ profile.banner = url; saveProfile(); renderUserProfilePage(); }
+        }).catch(()=>{});
+      }
+    }catch(err){
+      console.warn("Banner error:", err);
+    }finally{
+      if(label){ label.textContent = "Subir banner"; label.style.opacity = ""; }
+      e.target.value = "";
+    }
+  }, { capture: false });
+
+  if(btnResetAvatar){
+    // Mostrar u ocultar según si hay avatar
+    btnResetAvatar.textContent = "Quitar foto";
+    btnResetAvatar.style.display = profile.avatar ? "" : "none";
+    btnResetAvatar.onclick = async ()=>{
+      profile.avatar = "";
+      saveProfile();
+      btnResetAvatar.style.display = "none";
+      renderUserProfilePage();
+      renderSalesTable();
+      // Limpiar en Firestore también
+      if(currentUserId()){
+        try{
+          await _fbUser.updateProfile({ photoURL: "" });
+          await fbDb.collection("users").doc(currentUserId()).update({ avatar: "" });
+        }catch(e){ console.warn("reset avatar Firestore:", e); }
+      }
+    };
+  }
+
+  if(btnResetBanner){
+    // Mostrar u ocultar según si hay banner
+    btnResetBanner.textContent = "Quitar banner";
+    btnResetBanner.style.display = profile.banner ? "" : "none";
+    btnResetBanner.onclick = async ()=>{
+      profile.banner = "";
+      saveProfile();
+      btnResetBanner.style.display = "none";
+      renderUserProfilePage();
+      if(currentUserId()){
+        try{
+          await fbDb.collection("users").doc(currentUserId()).update({ banner: "" });
+        }catch(e){ console.warn("reset banner Firestore:", e); }
+      }
+    };
+  }
+
+  if(btnSaveText){
+    btnSaveText.onclick = ()=>{
+      const nameInput = document.getElementById("profileNameInput");
+      const bioInput = document.getElementById("profileBioInput");
+      profile.displayName = nameInput?.value?.trim() || "";
+      profile.bio = bioInput?.value?.trim() || "";
+      saveProfile();
+      renderUserProfilePage();
+      setAuthTop(getCurrentSessionUser());
+      renderSalesTable();
+      openProfileTab('resumen');
+      // feedback sin alert
+      const btn = document.getElementById("btnSaveProfileText");
+      if(btn){ const t = btn.textContent; btn.textContent = "Guardado"; setTimeout(()=>{ btn.textContent = t; }, 1800); }
+    };
+  }
+
+  // — Búsqueda de usuarios con preview
+  const btnSearchUser    = document.getElementById("btnSearchUser");
+  const friendSearchInput2 = document.getElementById("friendSearchInput");
+  const friendSearchResult = document.getElementById("friendSearchResult");
+
+  function setFriendSearchMsg(text, isError){
+    if(!friendSearchResult) return;
+    friendSearchResult.innerHTML = `<div class="friendSearchMsg" style="color:${isError ? 'var(--danger, #f87171)' : 'var(--muted)'};">${escapeHtml(text)}</div>`;
+  }
+
+  function renderUserPreview(userData){
+    if(!friendSearchResult) return;
+    const uid = currentUserId();
+    const social = loadSocial();
+    const alreadyFriend = social.friendships.some(f => socialPairKey(f.a,f.b) === socialPairKey(uid, userData.uid));
+    const pendingOut    = social.requests.some(r => r.from === uid && r.to === userData.uid);
+    const pendingIn     = social.requests.some(r => r.from === userData.uid && r.to === uid);
+    const isSelf        = userData.uid === uid;
+
+    let actions = "";
+    if(isSelf)           actions = `<span class="hint" style="font-size:.78rem;">Eres tú</span>`;
+    else if(alreadyFriend) actions = `<span class="hint" style="font-size:.78rem;">Ya sois amigos</span>`;
+    else if(pendingIn)   actions = `<button class="btn tiny" id="btnConfirmAccept" data-uid="${escapeHtml(userData.uid)}">Aceptar solicitud</button>`;
+    else if(pendingOut)  actions = `<span class="hint" style="font-size:.78rem;">Solicitud enviada</span>`;
+    else                 actions = `<button class="btn tiny" id="btnConfirmAdd" data-uid="${escapeHtml(userData.uid)}">Añadir</button>`;
+
+    friendSearchResult.innerHTML = `
+      <div class="friendPreviewCard">
+        <img src="${escapeHtml(userData.avatar || 'assets/User.jpg')}" alt="avatar">
+        <div>
+          <div class="fpName">${escapeHtml(userData.displayName || userData.username || 'Usuario')}</div>
+          <div class="fpSub">@${escapeHtml(userData.username || '')}${userData.bio ? ' · ' + escapeHtml(userData.bio) : ''}</div>
+        </div>
+        <div class="fpActions">${actions}</div>
+      </div>`;
+
+    document.getElementById("btnConfirmAdd")?.addEventListener("click", async (e)=>{
+      const btn = e.currentTarget;
+      btn.disabled = true; btn.textContent = "Enviando…";
+      try{
+        await fsSendFriendRequest(btn.dataset.uid);
+        await fsLoadSocialData();
+        renderUserProfilePage();
+        setFriendSearchMsg("Solicitud enviada.", false);
+      }catch(err){ setFriendSearchMsg(err?.message || "Error al enviar solicitud.", true); }
+    });
+
+    document.getElementById("btnConfirmAccept")?.addEventListener("click", async (e)=>{
+      const btn = e.currentTarget;
+      btn.disabled = true; btn.textContent = "Aceptando…";
+      try{
+        const social2 = loadSocial();
+        const req = social2.requests.find(r => r.from === btn.dataset.uid && r.to === uid);
+        if(!req) throw new Error("Solicitud no encontrada.");
+        await fsAcceptFriendRequest(req.id);
+        await fsLoadSocialData();
+        renderUserProfilePage();
+        setFriendSearchMsg("¡Ya sois amigos!", false);
+      }catch(err){ setFriendSearchMsg(err?.message || "Error al aceptar solicitud.", true); }
+    });
+  }
+
+  async function doUserSearch(){
+    const query = friendSearchInput2?.value?.trim() || "";
+    if(!query){ setFriendSearchMsg("Escribe un nombre o email.", true); return; }
+    if(friendSearchResult) friendSearchResult.innerHTML = `<div class="friendSearchMsg">Buscando…</div>`;
+    try{
+      const found = await fsSearchUser(query);
+      if(!found){ setFriendSearchMsg("No se encontró ningún usuario con ese nombre o email.", true); return; }
+      // Cachear perfil
+      localStorage.setItem(scopedKey(LS_PROFILE, found.uid), JSON.stringify({
+        displayName: found.displayName || found.username || "",
+        username: found.username || "",
+        bio: found.bio || "",
+        avatar: found.avatar || ""
+      }));
+      renderUserPreview(found);
+    }catch(err){ setFriendSearchMsg(err?.message || "Error al buscar.", true); }
+  }
+
+  if(btnSearchUser) btnSearchUser.onclick = doUserSearch;
+  if(friendSearchInput2){
+    friendSearchInput2.addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); doUserSearch(); } });
+  }
+
+  if(!window.__friendsDelegated){ window.__friendsDelegated = true; document.addEventListener('click', async (e)=>{
+    const acceptBtn = e.target.closest('[data-accept-friend]');
+    const declineBtn = e.target.closest('[data-decline-friend]');
+    const cancelBtn = e.target.closest('[data-cancel-friend]');
+    const removeBtn = e.target.closest('[data-remove-friend]');
+    try{
+      if(acceptBtn){ await acceptFriendRequest(acceptBtn.dataset.acceptFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
+      if(declineBtn){ await declineFriendRequest(declineBtn.dataset.declineFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
+      if(cancelBtn){ await cancelFriendRequest(cancelBtn.dataset.cancelFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
+      if(removeBtn){ await removeFriend(removeBtn.dataset.removeFriend); renderUserProfilePage(); openProfileTab('amigos'); }
+    }catch(err){
+      alert(err?.message || err);
+    }
+  }); }
+
+  initSettingsUI();
+  renderUserProfilePage();
+}
+
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  EVENTOS — Listeners de botones principales                    ║
+// ╚══════════════════════════════════════════════════════════════╝
 document.getElementById("btnAdd").onclick = async ()=>{
   showErr("");
 
@@ -5710,1036 +6786,18 @@ document.getElementById("btnDeckViewDelete").onclick = ()=>{
   deleteDeck(deckViewState.deckId);
 };
 
-/************************************************************
- * Tabs render
- ************************************************************/
-function initTabs(){
-  const tabsEl = document.getElementById("tabs");
-  tabsEl.innerHTML = "";
-  pages.forEach(p=>{
-    const b = document.createElement("button");
-    b.className = "tabbtn";
-    b.dataset.page = p.id;
-    b.textContent = p.label;
-    tabsEl.appendChild(b);
-  });
 
-  tabsEl.addEventListener("click", (e)=>{
-    const btn = e.target.closest(".tabbtn");
-    if(!btn) return;
-    showPage(btn.dataset.page);
-  });
-}
-
-/************************************************************
- * Perfil de usuario
- ************************************************************/
-const DEFAULT_PROFILE = { displayName:"", bio:"", avatar:"", banner:"" };
-let profile = (() => { try{ const raw = userLoad(LS_PROFILE, null, []); if(!raw) return {...DEFAULT_PROFILE}; return {...DEFAULT_PROFILE, ...raw}; }catch{ return {...DEFAULT_PROFILE}; } })();
-function saveProfile(){
-  userSave(LS_PROFILE, profile);
-  syncCurrentUserSalesToMarket();
-  // Actualizar perfil público en Firestore
-  if(currentUserId()) fsSaveProfile().catch(()=>{});
-}
-function fileToDataUrl(file){ return new Promise((resolve, reject)=>{ const reader = new FileReader(); reader.onload = ()=> resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }); }
-function getCurrentSessionUser(){ return getSession(); }
-function getProfileName(){ const sess = getCurrentSessionUser(); return profile.displayName?.trim() || sess?.username || "Usuario"; }
-function getProfileEmail(){ const sess = getCurrentSessionUser(); return sess?.email || "Sin email"; }
-function getProfileAvatar(){ return profile.avatar || "assets/User.jpg"; }
-function getProfileBannerCss(){ return profile.banner ? `url("${profile.banner}")` : "linear-gradient(135deg, #c084fc, #7c3aed, #312e81)"; }
-function openProfileTab(tab){
-  const wanted = tab || 'resumen';
-  document.querySelectorAll('[data-profile-tab]').forEach(btn=> btn.classList.toggle('active', btn.dataset.profileTab === wanted));
-  document.querySelectorAll('[data-profile-pane]').forEach(pane=> pane.classList.toggle('is-active', pane.dataset.profilePane === wanted));
-  try{ localStorage.setItem('mtg_profile_tab', wanted); }catch{}
-}
-function getSavedProfileTab(){
-  try{ return localStorage.getItem('mtg_profile_tab') || 'resumen'; }catch{ return 'resumen'; }
-}
-function renderSidebarProfile(){
-  const avatar = document.getElementById("sidebarAvatar");
-  const mini = document.getElementById("sidebarUserMini");
-  const userName = document.getElementById("sidebarUserName");
-  const topAvatar = document.getElementById('topbarAvatar');
-  const avatarSrc = getProfileAvatar();
-  if(avatar) avatar.src = avatarSrc;
-  if(topAvatar) topAvatar.src = avatarSrc;
-  if(userName) userName.textContent = getProfileName();
-  if(mini) mini.textContent = profile.bio?.trim() || "Perfil local";
-}
-
-function loadSocial(){
-  const raw = loadJson(LS_SOCIAL, null);
-  return {
-    requests: Array.isArray(raw?.requests) ? raw.requests : [],
-    friendships: Array.isArray(raw?.friendships) ? raw.friendships : []
-  };
-}
-function saveSocial(data){
-  localStorage.setItem(LS_SOCIAL, JSON.stringify({
-    requests: Array.isArray(data?.requests) ? data.requests : [],
-    friendships: Array.isArray(data?.friendships) ? data.friendships : []
-  }));
-}
-function socialPairKey(a,b){ return [String(a||""), String(b||"")].sort().join("__"); }
-function getPublicProfileByUserId(userId){
-  const p = loadJson(scopedKey(LS_PROFILE, userId), {});
-  return {
-    id: userId,
-    uid: userId,
-    username: p?.username?.trim() || p?.displayName?.trim() || "Usuario",
-    email: "",
-    displayName: p?.displayName?.trim() || p?.username?.trim() || "Usuario",
-    bio: p?.bio?.trim() || "",
-    avatar: p?.avatar || "assets/User.jpg"
-  };
-}
-async function fetchAndCachePublicProfile(userId){
-  try{
-    const snap = await fbDb.collection("users").doc(userId).get();
-    if(snap.exists){
-      const p = snap.data();
-      localStorage.setItem(scopedKey(LS_PROFILE, userId), JSON.stringify({
-        displayName: p.displayName || p.username || "",
-        username: p.username || "",
-        bio: p.bio || "",
-        avatar: p.avatar || ""
-      }));
-      return p;
-    }
-  }catch(e){ console.warn("fetchProfile:", e); }
-  return null;
-}
-function getFriendsData(){
-  const uid = currentUserId();
-  const social = loadSocial();
-  const friends = social.friendships
-    .filter(f => f.a === uid || f.b === uid)
-    .map(f => {
-      const otherId = f.a === uid ? f.b : f.a;
-      return { ...getPublicProfileByUserId(otherId), createdAt: f.createdAt || 0, friendshipId: f.id || socialPairKey(uid, otherId) };
-    })
-    .sort((a,b) => a.displayName.localeCompare(b.displayName, 'es', {sensitivity:'base'}));
-
-  const received = social.requests
-    .filter(r => r.to === uid)
-    .map(r => ({ ...r, user: getPublicProfileByUserId(r.from) }))
-    .sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
-
-  const sent = social.requests
-    .filter(r => r.from === uid)
-    .map(r => ({ ...r, user: getPublicProfileByUserId(r.to) }))
-    .sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
-
-  return { social, friends, received, sent };
-}
-async function sendFriendRequest(query){
-  const uid = currentUserId();
-  if(!uid) throw new Error("Debes iniciar sesión.");
-  const q = String(query || "").trim().toLowerCase();
-  if(!q) throw new Error("Escribe un nombre de usuario o email.");
-
-  // Buscar el usuario en Firestore
-  const target = await fsSearchUser(q);
-  if(!target) throw new Error("No se encontró ningún usuario con ese nombre o email.");
-  if(target.uid === uid) throw new Error("No puedes enviarte una solicitud a ti mismo.");
-
-  // Verificar si ya son amigos (caché local)
-  const social = loadSocial();
-  const alreadyFriends = social.friendships.some(f => socialPairKey(f.a,f.b) === socialPairKey(uid, target.uid));
-  if(alreadyFriends) throw new Error("Ya sois amigos.");
-
-  const existing = social.requests.find(r =>
-    (r.from === uid && r.to === target.uid) ||
-    (r.from === target.uid && r.to === uid)
-  );
-  if(existing){
-    if(existing.from === target.uid && existing.to === uid){
-      await fsAcceptFriendRequest(existing.id);
-      await fsLoadSocialData();
-      return { autoAccepted: true, target };
-    }
-    throw new Error("Ya hay una solicitud pendiente.");
-  }
-
-  await fsSendFriendRequest(target.uid);
-  await fsLoadSocialData();
-  return { autoAccepted: false, target };
-}
-async function acceptFriendRequest(requestId){
-  await fsAcceptFriendRequest(requestId);
-  await fsLoadSocialData();
-}
-async function declineFriendRequest(requestId){
-  await fsDeclineFriendRequest(requestId);
-  await fsLoadSocialData();
-}
-async function cancelFriendRequest(requestId){
-  await fsDeclineFriendRequest(requestId);
-  await fsLoadSocialData();
-}
-async function removeFriend(friendId){
-  await fsRemoveFriend(friendId);
-  await fsLoadSocialData();
-}
-function friendRowHtml(user, actions){
-  return `<div class="saleItem" style="align-items:center;">
-    <div style="display:flex;align-items:center;gap:10px;min-width:0;">
-      <img src="${escapeHtml(user.avatar || 'assets/User.jpg')}" alt="avatar" class="sidebarAvatar">
-      <div style="min-width:0;">
-        <div style="font-weight:700;">${escapeHtml(user.displayName || 'Usuario')}</div>
-        <div class="small mono" style="overflow:hidden;text-overflow:ellipsis;">@${escapeHtml(user.username || 'user')}</div>
-        <div class="small">${escapeHtml(user.bio || user.email || 'Sin bio')}</div>
-      </div>
-    </div>
-    <div class="row" style="gap:8px;flex-wrap:wrap;">${actions}</div>
-  </div>`;
-}
-function renderFriendsUI(){
-  const friendsList = document.getElementById('friendsList');
-  const receivedList = document.getElementById('friendRequestsReceived');
-  const sentList = document.getElementById('friendRequestsSent');
-  const friendCount = document.getElementById('friendCount');
-  const friendReceivedCount = document.getElementById('friendReceivedCount');
-  const friendSentCount = document.getElementById('friendSentCount');
-  if(!friendsList || !receivedList || !sentList) return;
-
-  const { friends, received, sent } = getFriendsData();
-  if(friendCount) friendCount.textContent = String(friends.length);
-  if(friendReceivedCount) friendReceivedCount.textContent = String(received.length);
-  if(friendSentCount) friendSentCount.textContent = String(sent.length);
-
-  friendsList.innerHTML = friends.length
-    ? friends.map(f => friendRowHtml(f, `<button class="btn ghost tiny" data-remove-friend="${escapeHtml(f.id)}">Quitar</button>`)).join('')
-    : '<div class="hint">Todavía no tienes amigos añadidos.</div>';
-
-  receivedList.innerHTML = received.length
-    ? received.map(r => friendRowHtml(r.user, `<button class="btn tiny" data-accept-friend="${escapeHtml(r.id)}">Aceptar</button><button class="btn ghost tiny" data-decline-friend="${escapeHtml(r.id)}">Rechazar</button>`)).join('')
-    : '<div class="hint">No tienes solicitudes recibidas.</div>';
-
-  sentList.innerHTML = sent.length
-    ? sent.map(r => friendRowHtml(r.user, `<button class="btn ghost tiny" data-cancel-friend="${escapeHtml(r.id)}">Cancelar</button>`)).join('')
-    : '<div class="hint">No has enviado solicitudes.</div>';
-}
-
-function loadMySales(){
-  const sess = getSession();
-  if(!sess) return [];
-  return cards.filter(c=>!!c.sale);
-}
-
-function renderUserProfilePage(){
-  const hero = document.getElementById("profileHero");
-  const heroEdit = document.getElementById("profileHeroEditPreview");
-  const avatarLarge = document.getElementById("profileAvatarLarge");
-  const avatarPreview = document.getElementById("profileAvatarPreview");
-  const editAvatarPreview = document.getElementById("profileEditAvatarPreview");
-  const editAvatarLarge = document.getElementById("profileEditAvatarLarge");
-  const name = document.getElementById("profileDisplayName");
-  const publicName = document.getElementById("profilePublicName");
-  const editDisplayName = document.getElementById("profileEditDisplayName");
-  const email = document.getElementById("profileDisplayEmail");
-  const editEmail = document.getElementById("profileEditDisplayEmail");
-  const bio = document.getElementById("profilePublicBio");
-  const nameInput = document.getElementById("profileNameInput");
-  const bioInput = document.getElementById("profileBioInput");
-  const bannerCss = getProfileBannerCss();
-
-  if(hero) hero.style.setProperty("--profile-banner", bannerCss);
-  if(heroEdit) heroEdit.style.setProperty("--profile-banner", bannerCss);
-
-  const avatarSrc = getProfileAvatar();
-  if(avatarLarge) avatarLarge.src = avatarSrc;
-  if(avatarPreview) avatarPreview.src = avatarSrc;
-  if(editAvatarPreview) editAvatarPreview.src = avatarSrc;
-  if(editAvatarLarge) editAvatarLarge.src = avatarSrc;
-
-  const displayName = getProfileName();
-  if(name) name.textContent = displayName;
-  if(publicName) publicName.textContent = displayName;
-  if(editDisplayName) editDisplayName.textContent = displayName;
-  if(email) email.textContent = getProfileEmail();
-  if(editEmail) editEmail.textContent = getProfileEmail();
-  if(bio) bio.textContent = profile.bio?.trim() || "Sin bio.";
-  if(nameInput) nameInput.value = profile.displayName || "";
-  if(bioInput) bioInput.value = profile.bio || "";
-
-  const cardsCount = cards.length;
-  const decksCount = decks.length;
-  const wishCount = wishlist.length;
-
-  const totalCopies = cards.reduce((n, c)=> n + (Number(c.count || c.qty || 1) || 1), 0);
-
-  // ── Estadísticas de colección ──
-  // Color dominante
-  const colorCounts = {};
-  for(const c of cards){
-    const qty = Number(c.count || c.qty || 1) || 1;
-    const b = colorBucketFromColorId(c.colorId);
-    colorCounts[b] = (colorCounts[b] || 0) + qty;
-  }
-  const dominantColor = Object.keys(colorCounts).sort((a,b)=>colorCounts[b]-colorCounts[a])[0] || "—";
-  const dominantColorLabel = dominantColor;
-
-  // Tipo dominante
-  const typeCounts = {};
-  for(const c of cards){
-    const qty = Number(c.count || c.qty || 1) || 1;
-    const t = mainTypeBucket(c.type);
-    typeCounts[t] = (typeCounts[t] || 0) + qty;
-  }
-  const dominantType = Object.keys(typeCounts).sort((a,b)=>typeCounts[b]-typeCounts[a])[0] || "—";
-
-  // Rareza dominante
-  const rarCounts = {};
-  for(const c of cards){
-    const qty = Number(c.count || c.qty || 1) || 1;
-    const r = c.rarity || "—";
-    rarCounts[r] = (rarCounts[r] || 0) + qty;
-  }
-  const dominantRarity = Object.keys(rarCounts).sort((a,b)=>rarCounts[b]-rarCounts[a])[0] || "—";
-
-  // Carta más copiada
-  let mostCopied = null, mostCopiedQty = 0;
-  for(const c of cards){
-    const qty = Number(c.count || c.qty || 1) || 1;
-    if(qty > mostCopiedQty){ mostCopiedQty = qty; mostCopied = c; }
-  }
-  const mostCopiedLabel = mostCopied ? `${mostCopied.name || "?"} (×${mostCopiedQty})` : "—";
-
-  // Mazo más grande
-  let biggestDeck = null, biggestDeckCount = 0;
-  for(const d of decks){
-    const cnt = Array.isArray(d.cards) ? d.cards.reduce((n,e)=> n + (Number(e.qty||e.count||1)||1), 0) : 0;
-    if(cnt > biggestDeckCount){ biggestDeckCount = cnt; biggestDeck = d; }
-  }
-  const biggestDeckLabel = biggestDeck ? `${biggestDeck.name || "?"} (${biggestDeckCount})` : "—";
-
-  // Foils y favoritos
-  const foilCount = cards.filter(c=> c.foil === true || c.foil === 1 || c.foil === "true" || c.foil === "1").length;
-  const favCount  = cards.filter(c=> isFav(c)).length;
-
-  // Detalles panel "Sobre" – distribución de rarezas
-  const detailsEl = document.getElementById("profileCollectionDetails");
-  if(detailsEl){
-    const rarOrder = ["Mítica","Rara","Poco común","Común"];
-    const rarRows = rarOrder.map(r=>{
-      const count = cards.filter(c=> (c.rarity||"").toLowerCase().includes(r.toLowerCase().split(" ")[0])).length;
-      if(!count) return "";
-      return `<div class="profileCollDetailItem"><span class="label">${r}</span><span class="val">${count} carta${count!==1?"s":""}</span></div>`;
-    }).filter(Boolean).join("");
-    detailsEl.innerHTML = rarRows || `<div class="hint" style="padding:10px;">Sin cartas aún.</div>`;
-  }
-
-  const ids = {
-    profileCardsCount: cardsCount,
-    profileDecksCount: decksCount,
-    profileWishCount: wishCount,
-    profileStatCards: cardsCount,
-    profileStatDecks: decksCount,
-    profileStatWishes: wishCount,
-    profileAboutName: displayName,
-    profileAboutEmail: getProfileEmail(),
-    rankCollectionValue: cardsCount,
-    rankDeckValue: decksCount,
-    rankWishValue: wishCount,
-    rankDominantColor: dominantColorLabel,
-    rankDominantType: dominantType,
-    rankDominantRarity: dominantRarity,
-    rankMostCopied: mostCopiedLabel,
-    rankBiggestDeck: biggestDeckLabel,
-    rankFoilCount: foilCount,
-    rankFavCount: favCount
-  };
-
-  Object.entries(ids).forEach(([id, value])=>{
-    const el = document.getElementById(id);
-    if(el) el.textContent = String(value);
-  });
-
-  renderFriendsUI();
-  renderSidebarProfile();
-  openProfileTab(getSavedProfileTab());
-}
-function initUserProfilePage(){
-  const avatarInput = document.getElementById("profileAvatarInput");
-  const bannerInput = document.getElementById("profileBannerInput");
-  const btnResetAvatar = document.getElementById("btnResetAvatar");
-  const btnResetBanner = document.getElementById("btnResetBanner");
-  const btnSaveText = document.getElementById("btnSaveProfileText");
-  const btnTopProfile = document.getElementById("btnTopProfile");
-  const btnProfileGoCollection = document.getElementById('btnProfileGoCollection');
-  const btnProfileGoStore = document.getElementById('btnProfileGoStore');
-  const btnBackFromProfileSettings = document.getElementById('btnBackFromProfileSettings');
-
-  if(btnTopProfile) btnTopProfile.onclick = ()=> { showPage("usuario"); openProfileTab('resumen'); };
-  if(btnProfileGoCollection) btnProfileGoCollection.onclick = ()=> showPage('coleccion');
-  if(btnProfileGoStore) btnProfileGoStore.onclick = ()=> showPage('tienda');
-  if(btnBackFromProfileSettings) btnBackFromProfileSettings.onclick = ()=> openProfileTab('resumen');
-
-  document.querySelectorAll('[data-profile-tab]').forEach(btn=>{
-    btn.addEventListener('click', ()=> openProfileTab(btn.dataset.profileTab));
-  });
-
-  // ── Avatar ──
-  // Usamos delegación en document para evitar problemas si el input no está visible aún
-  document.addEventListener("change", async (e)=>{
-    if(e.target.id !== "profileAvatarInput") return;
-    const file = e.target.files?.[0];
-    if(!file) return;
-    const label = document.querySelector('label[for="profileAvatarInput"]');
-    if(label){ label.textContent = "Guardando…"; label.style.opacity = ".6"; }
-    try{
-      // 1) Guardar base64 local inmediatamente — visible al instante
-      const dataUrl = await fileToDataUrl(file);
-      profile.avatar = dataUrl;
-      saveProfile();
-      renderUserProfilePage();
-      renderSalesTable();
-      // Mostrar botón quitar
-      const resetBtn = document.getElementById("btnResetAvatar");
-      if(resetBtn) resetBtn.style.display = "";
-      // 2) Intentar subir a Storage en segundo plano (no bloquea UI)
-      if(currentUserId()){
-        fsUploadAvatar(file).then(url=>{
-          if(url){ profile.avatar = url; saveProfile(); renderUserProfilePage(); renderSalesTable(); }
-        }).catch(()=>{}); // fallo silencioso — ya se guardó base64
-      }
-    }catch(err){
-      console.warn("Avatar error:", err);
-    }finally{
-      if(label){ label.textContent = "Subir foto"; label.style.opacity = ""; }
-      e.target.value = "";
-    }
-  }, { capture: false });
-
-  // ── Banner ──
-  document.addEventListener("change", async (e)=>{
-    if(e.target.id !== "profileBannerInput") return;
-    const file = e.target.files?.[0];
-    if(!file) return;
-    const label = document.querySelector('label[for="profileBannerInput"]');
-    if(label){ label.textContent = "Guardando…"; label.style.opacity = ".6"; }
-    try{
-      const dataUrl = await fileToDataUrl(file);
-      profile.banner = dataUrl;
-      saveProfile();
-      renderUserProfilePage();
-      // Mostrar botón quitar
-      const resetBannerBtn = document.getElementById("btnResetBanner");
-      if(resetBannerBtn) resetBannerBtn.style.display = "";
-      if(currentUserId()){
-        fsUploadBanner(file).then(url=>{
-          if(url){ profile.banner = url; saveProfile(); renderUserProfilePage(); }
-        }).catch(()=>{});
-      }
-    }catch(err){
-      console.warn("Banner error:", err);
-    }finally{
-      if(label){ label.textContent = "Subir banner"; label.style.opacity = ""; }
-      e.target.value = "";
-    }
-  }, { capture: false });
-
-  if(btnResetAvatar){
-    // Mostrar u ocultar según si hay avatar
-    btnResetAvatar.textContent = "Quitar foto";
-    btnResetAvatar.style.display = profile.avatar ? "" : "none";
-    btnResetAvatar.onclick = async ()=>{
-      profile.avatar = "";
-      saveProfile();
-      btnResetAvatar.style.display = "none";
-      renderUserProfilePage();
-      renderSalesTable();
-      // Limpiar en Firestore también
-      if(currentUserId()){
-        try{
-          await _fbUser.updateProfile({ photoURL: "" });
-          await fbDb.collection("users").doc(currentUserId()).update({ avatar: "" });
-        }catch(e){ console.warn("reset avatar Firestore:", e); }
-      }
-    };
-  }
-
-  if(btnResetBanner){
-    // Mostrar u ocultar según si hay banner
-    btnResetBanner.textContent = "Quitar banner";
-    btnResetBanner.style.display = profile.banner ? "" : "none";
-    btnResetBanner.onclick = async ()=>{
-      profile.banner = "";
-      saveProfile();
-      btnResetBanner.style.display = "none";
-      renderUserProfilePage();
-      if(currentUserId()){
-        try{
-          await fbDb.collection("users").doc(currentUserId()).update({ banner: "" });
-        }catch(e){ console.warn("reset banner Firestore:", e); }
-      }
-    };
-  }
-
-  if(btnSaveText){
-    btnSaveText.onclick = ()=>{
-      const nameInput = document.getElementById("profileNameInput");
-      const bioInput = document.getElementById("profileBioInput");
-      profile.displayName = nameInput?.value?.trim() || "";
-      profile.bio = bioInput?.value?.trim() || "";
-      saveProfile();
-      renderUserProfilePage();
-      setAuthTop(getCurrentSessionUser());
-      renderSalesTable();
-      openProfileTab('resumen');
-      // feedback sin alert
-      const btn = document.getElementById("btnSaveProfileText");
-      if(btn){ const t = btn.textContent; btn.textContent = "Guardado"; setTimeout(()=>{ btn.textContent = t; }, 1800); }
-    };
-  }
-
-  // ── Búsqueda de usuarios con preview ──
-  const btnSearchUser    = document.getElementById("btnSearchUser");
-  const friendSearchInput2 = document.getElementById("friendSearchInput");
-  const friendSearchResult = document.getElementById("friendSearchResult");
-
-  function setFriendSearchMsg(text, isError){
-    if(!friendSearchResult) return;
-    friendSearchResult.innerHTML = `<div class="friendSearchMsg" style="color:${isError ? 'var(--danger, #f87171)' : 'var(--muted)'};">${escapeHtml(text)}</div>`;
-  }
-
-  function renderUserPreview(userData){
-    if(!friendSearchResult) return;
-    const uid = currentUserId();
-    const social = loadSocial();
-    const alreadyFriend = social.friendships.some(f => socialPairKey(f.a,f.b) === socialPairKey(uid, userData.uid));
-    const pendingOut    = social.requests.some(r => r.from === uid && r.to === userData.uid);
-    const pendingIn     = social.requests.some(r => r.from === userData.uid && r.to === uid);
-    const isSelf        = userData.uid === uid;
-
-    let actions = "";
-    if(isSelf)           actions = `<span class="hint" style="font-size:.78rem;">Eres tú</span>`;
-    else if(alreadyFriend) actions = `<span class="hint" style="font-size:.78rem;">Ya sois amigos</span>`;
-    else if(pendingIn)   actions = `<button class="btn tiny" id="btnConfirmAccept" data-uid="${escapeHtml(userData.uid)}">Aceptar solicitud</button>`;
-    else if(pendingOut)  actions = `<span class="hint" style="font-size:.78rem;">Solicitud enviada</span>`;
-    else                 actions = `<button class="btn tiny" id="btnConfirmAdd" data-uid="${escapeHtml(userData.uid)}">Añadir</button>`;
-
-    friendSearchResult.innerHTML = `
-      <div class="friendPreviewCard">
-        <img src="${escapeHtml(userData.avatar || 'assets/User.jpg')}" alt="avatar">
-        <div>
-          <div class="fpName">${escapeHtml(userData.displayName || userData.username || 'Usuario')}</div>
-          <div class="fpSub">@${escapeHtml(userData.username || '')}${userData.bio ? ' · ' + escapeHtml(userData.bio) : ''}</div>
-        </div>
-        <div class="fpActions">${actions}</div>
-      </div>`;
-
-    document.getElementById("btnConfirmAdd")?.addEventListener("click", async (e)=>{
-      const btn = e.currentTarget;
-      btn.disabled = true; btn.textContent = "Enviando…";
-      try{
-        await fsSendFriendRequest(btn.dataset.uid);
-        await fsLoadSocialData();
-        renderUserProfilePage();
-        setFriendSearchMsg("Solicitud enviada.", false);
-      }catch(err){ setFriendSearchMsg(err?.message || "Error al enviar solicitud.", true); }
-    });
-
-    document.getElementById("btnConfirmAccept")?.addEventListener("click", async (e)=>{
-      const btn = e.currentTarget;
-      btn.disabled = true; btn.textContent = "Aceptando…";
-      try{
-        const social2 = loadSocial();
-        const req = social2.requests.find(r => r.from === btn.dataset.uid && r.to === uid);
-        if(!req) throw new Error("Solicitud no encontrada.");
-        await fsAcceptFriendRequest(req.id);
-        await fsLoadSocialData();
-        renderUserProfilePage();
-        setFriendSearchMsg("¡Ya sois amigos!", false);
-      }catch(err){ setFriendSearchMsg(err?.message || "Error al aceptar solicitud.", true); }
-    });
-  }
-
-  async function doUserSearch(){
-    const query = friendSearchInput2?.value?.trim() || "";
-    if(!query){ setFriendSearchMsg("Escribe un nombre o email.", true); return; }
-    if(friendSearchResult) friendSearchResult.innerHTML = `<div class="friendSearchMsg">Buscando…</div>`;
-    try{
-      const found = await fsSearchUser(query);
-      if(!found){ setFriendSearchMsg("No se encontró ningún usuario con ese nombre o email.", true); return; }
-      // Cachear perfil
-      localStorage.setItem(scopedKey(LS_PROFILE, found.uid), JSON.stringify({
-        displayName: found.displayName || found.username || "",
-        username: found.username || "",
-        bio: found.bio || "",
-        avatar: found.avatar || ""
-      }));
-      renderUserPreview(found);
-    }catch(err){ setFriendSearchMsg(err?.message || "Error al buscar.", true); }
-  }
-
-  if(btnSearchUser) btnSearchUser.onclick = doUserSearch;
-  if(friendSearchInput2){
-    friendSearchInput2.addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); doUserSearch(); } });
-  }
-
-  if(!window.__friendsDelegated){ window.__friendsDelegated = true; document.addEventListener('click', async (e)=>{
-    const acceptBtn = e.target.closest('[data-accept-friend]');
-    const declineBtn = e.target.closest('[data-decline-friend]');
-    const cancelBtn = e.target.closest('[data-cancel-friend]');
-    const removeBtn = e.target.closest('[data-remove-friend]');
-    try{
-      if(acceptBtn){ await acceptFriendRequest(acceptBtn.dataset.acceptFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
-      if(declineBtn){ await declineFriendRequest(declineBtn.dataset.declineFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
-      if(cancelBtn){ await cancelFriendRequest(cancelBtn.dataset.cancelFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
-      if(removeBtn){ await removeFriend(removeBtn.dataset.removeFriend); renderUserProfilePage(); openProfileTab('amigos'); }
-    }catch(err){
-      alert(err?.message || err);
-    }
-  }); }
-
-  initSettingsUI();
-  renderUserProfilePage();
-}
-
-/************************************************************
- * ARRANQUE
- ************************************************************/
-function closeSidebar(){ const appShell=document.getElementById("appShell"), backdrop=document.getElementById("sidebarBackdrop"); if(!appShell) return; backdrop?.classList.remove("is-open"); appShell.classList.remove("sidebar-open"); appShell.classList.add("sidebar-collapsed"); }
-function syncSidebarMode(){
-  const appShell=document.getElementById("appShell"), backdrop=document.getElementById("sidebarBackdrop");
-  if(!appShell) return;
-  if(window.innerWidth <= 820){
-    appShell.classList.remove("sidebar-collapsed");
-    appShell.classList.remove("sidebar-open");
-    backdrop?.classList.remove("is-open");
-  }else{
-    appShell.classList.add("sidebar-collapsed");
-    appShell.classList.remove("sidebar-open");
-    backdrop?.classList.remove("is-open");
-  }
-}
-function toggleSidebar(){ const appShell=document.getElementById("appShell"), backdrop=document.getElementById("sidebarBackdrop"); if(!appShell) return; if(window.innerWidth <= 820){ const willOpen = !appShell.classList.contains("sidebar-open"); appShell.classList.toggle("sidebar-open", willOpen); backdrop?.classList.toggle("is-open", willOpen); }else{ appShell.classList.toggle("sidebar-collapsed"); } }
-function initSidebarUI(){ const toggle=document.getElementById("menuToggle"), backdrop=document.getElementById("sidebarBackdrop"); syncSidebarMode(); if(toggle) toggle.addEventListener("click", toggleSidebar); if(backdrop) backdrop.addEventListener("click", closeSidebar); window.addEventListener("resize", syncSidebarMode); document.querySelectorAll(".sidebar .tabbtn").forEach(btn=> btn.addEventListener("click", closeSidebar)); }
-
-/************************************************************
- * Modal de selección de impresión
- ************************************************************/
-let _printingAllCards = [];
-let _printingSelected = null;
-let _printingLang = "es";
-
-async function fetchAllPrintings(cardName){
-  const base = await fetchCardByName(cardName);
-  let url = base.prints_search_uri;
-  if(!url) return [base];
-  const all = [];
-  let guard = 0;
-  while(url && guard < 30){
-    guard++;
-    const r = await fetch(url);
-    const j = await r.json();
-    if(j.object === "error") break;
-    if(Array.isArray(j.data)) all.push(...j.data);
-    url = j.has_more ? j.next_page : null;
-  }
-  return all.length ? all : [base];
-}
-
-function renderPrintingGrid(cards, lang, filterQ, filterRarity){
-  const body = document.getElementById("printingModalBody");
-  const countPill = document.getElementById("printingCount");
-  if(!body) return;
-
-  const q = (filterQ || "").trim().toLowerCase();
-  const rar = filterRarity || "";
-
-  let view = cards.slice();
-  if(q){
-    view = view.filter(c=>{
-      const setName = (c.set_name || "").toLowerCase();
-      const setCode = (c.set || "").toLowerCase();
-      const year = (c.released_at || "").slice(0,4);
-      return setName.includes(q) || setCode.includes(q) || year.includes(q);
-    });
-  }
-  if(rar) view = view.filter(c=> (c.rarity || "") === rar);
-
-  // más reciente primero
-  view.sort((a,b)=> (b.released_at || "").localeCompare(a.released_at || ""));
-
-  if(countPill) countPill.textContent = `${view.length} versión${view.length !== 1 ? "es" : ""}`;
-
-  if(!view.length){
-    body.innerHTML = `<div class="printingEmpty">No se encontraron impresiones con ese filtro.</div>`;
-    return;
-  }
-
-  const grid = document.createElement("div");
-  grid.className = "printingGrid";
-
-  for(const c of view){
-    const imgUrl = c.image_uris?.normal
-      || c.image_uris?.small
-      || c.card_faces?.[0]?.image_uris?.normal
-      || "";
-
-    const priceEur = c.prices?.eur || c.prices?.eur_foil || "";
-    const priceUsd = c.prices?.usd || c.prices?.usd_foil || "";
-    const priceLabel = priceEur ? `${parseFloat(priceEur).toFixed(2)} €`
-                     : priceUsd ? `${parseFloat(priceUsd).toFixed(2)} $`
-                     : "Sin precio";
-
-    const year = (c.released_at || "").slice(0,4);
-    const isSelected = _printingSelected && _printingSelected.id === c.id;
-    const rarityLabels = { common:"Común", uncommon:"Poco común", rare:"Rara", mythic:"Mítica", special:"Especial" };
-    const rarLabel = rarityLabels[c.rarity] || c.rarity || "";
-    const rarTag = rarLabel
-      ? `<div class="printingCardRarity"><span class="tag ${rarityClass(rarLabel)}" style="font-size:.62rem;padding:2px 6px;">${escapeHtml(rarLabel)}</span></div>`
-      : "";
-
-    const card = document.createElement("div");
-    card.className = "printingCard" + (isSelected ? " selected" : "");
-    card.dataset.scryfallId = c.id;
-
-    const imgHtml = imgUrl
-      ? `<img class="printingCardImg" src="${escapeHtml(imgUrl)}" alt="${escapeHtml(c.name || "")}" loading="lazy">`
-      : `<div class="printingCardImg placeholder">${escapeHtml(c.set_name || c.name || "")}</div>`;
-
-    card.innerHTML = `
-      ${imgHtml}
-      <div class="printingCardInfo">
-        <div class="printingCardSet">${escapeHtml((c.set || "").toUpperCase())} · ${escapeHtml(c.set_name || "")}</div>
-        <div class="printingCardNum">#${escapeHtml(c.collector_number || "")}</div>
-        <div class="printingCardYear">${escapeHtml(year)}</div>
-        ${rarTag}
-        <div class="printingCardPrice">${escapeHtml(priceLabel)}</div>
-      </div>`;
-
-    card.addEventListener("click", ()=>{
-      _printingSelected = c;
-      grid.querySelectorAll(".printingCard").forEach(el=> el.classList.remove("selected"));
-      card.classList.add("selected");
-      const info = document.getElementById("printingSelectedInfo");
-      const btn = document.getElementById("printingModalConfirm");
-      if(info) info.textContent = `Seleccionada: ${c.name} · ${(c.set||"").toUpperCase()} #${c.collector_number}`;
-      if(btn) btn.disabled = false;
-    });
-
-    card.addEventListener("dblclick", ()=>{
-      _printingSelected = c;
-      confirmPrintingSelection();
-    });
-
-    grid.appendChild(card);
-  }
-
-  body.innerHTML = "";
-  body.appendChild(grid);
-}
-
-function applyPrintingFilters(){
-  const q = document.getElementById("printingFilterQ")?.value || "";
-  const rar = document.getElementById("printingFilterRarity")?.value || "";
-  renderPrintingGrid(_printingAllCards, _printingLang, q, rar);
-}
-
-async function openPrintingModal(cardName, lang){
-  const modal = document.getElementById("printingModal");
-  const body = document.getElementById("printingModalBody");
-  const nameEl = document.getElementById("printingModalCardName");
-  const subEl = document.getElementById("printingModalCardSubtitle");
-  const confirmBtn = document.getElementById("printingModalConfirm");
-  const infoEl = document.getElementById("printingSelectedInfo");
-  if(!modal || !body) return;
-
-  _printingSelected = null;
-  _printingLang = lang || "es";
-  _printingAllCards = [];
-
-  if(nameEl) nameEl.textContent = cardName || "Impresiones disponibles";
-  if(subEl) subEl.textContent = "Cargando todas las impresiones…";
-  if(confirmBtn) confirmBtn.disabled = true;
-  if(infoEl) infoEl.textContent = "Haz clic para seleccionar · Doble clic para añadir directamente";
-  document.getElementById("printingFilterQ").value = "";
-  document.getElementById("printingFilterRarity").value = "";
-  document.getElementById("printingCount").textContent = "…";
-
-  body.innerHTML = `<div class="printingLoader"><div class="printingLoaderSpinner"></div>Buscando impresiones…</div>`;
-  modal.classList.add("open");
-  document.body.style.overflow = "hidden";
-
-  try{
-    _printingAllCards = await fetchAllPrintings(cardName);
-    if(subEl) subEl.textContent = "Selecciona la versión exacta de tu carta";
-    renderPrintingGrid(_printingAllCards, _printingLang, "", "");
-  }catch(e){
-    body.innerHTML = `<div class="printingEmpty">Error al cargar impresiones: ${escapeHtml(e?.message || String(e))}</div>`;
-  }
-}
-
-function closePrintingModal(){
-  const modal = document.getElementById("printingModal");
-  if(modal) modal.classList.remove("open");
-  document.body.style.overflow = "";
-}
-
-async function confirmPrintingSelection(){
-  if(!_printingSelected) return;
-  const c = _printingSelected;
-  closePrintingModal();
-
-  const inputName = document.getElementById("inName")?.value?.trim() || c.name;
-  const lang = document.getElementById("inLang")?.value || _printingLang;
-  const qty = Math.max(1, parseInt(document.getElementById("inQty")?.value || "1", 10));
-  const proxy = !!document.getElementById("inProxy")?.checked;
-  const foil = !!document.getElementById("inFoil")?.checked;
-  const promo = !!document.getElementById("inPromo")?.checked;
-  const promoPre = !!document.getElementById("inPromoPre")?.checked;
-  const sale = !!document.getElementById("inSale")?.checked;
-
-  showErr("Añadiendo carta…");
-
-  try{
-    const t = typesEs(c.type_line || "");
-    const price = priceTextFromPrices(c.prices);
-    const bestSell = bestSellPriceText(price);
-    const logoUrl = await fetchSetIconUrl(c.set);
-    const colorId = computeColorId(c);
-    const mv = manaValueFromCard(c);
-
-    const newItem = {
-      id: crypto.randomUUID(),
-      _addedAt: Date.now(),
-      inputName: inputName || c.name,
-      name: c.name || inputName,
-      nameEn: c.name || "",
-      setCode: String(c.set || "").toUpperCase(),
-      setName: c.set_name || "",
-      collectorNumber: String(c.collector_number || ""),
-      type: t.main,
-      subtype: t.sub,
-      colorId,
-      color: colorToEmojisFromCI(colorId),
-      mana: manaToEmojis(c.mana_cost || c.card_faces?.[0]?.mana_cost || ""),
-      manaValue: mv,
-      rarity: rarityMap[c.rarity] || c.rarity || "",
-      logoUrl,
-      imgUrl: c.image_uris?.normal || c.image_uris?.large || c.card_faces?.[0]?.image_uris?.normal || "",
-      oracleText: c.oracle_text || c.card_faces?.[0]?.oracle_text || "",
-      priceText: price,
-      proxy, foil, promo, promoPre,
-      lang,
-      qty,
-      bestSell,
-      fav: false,
-      sale,
-      priceHist: []
-    };
-
-    updatePriceHistory(newItem, newItem.priceText);
-    cards.unshift(newItem);
-    saveCards();
-    clearAddForm();
-    showErr("");
-    renderCardsTableFull();
-    showPage("cartas");
-  }catch(e){
-    showErr("Error al añadir: " + (e?.message || e));
-  }
-}
-
-function initPrintingModal(){
-  const modal = document.getElementById("printingModal");
-  const closeBtn = document.getElementById("printingModalClose");
-  const cancelBtn = document.getElementById("printingModalCancel");
-  const confirmBtn = document.getElementById("printingModalConfirm");
-  const filterQ = document.getElementById("printingFilterQ");
-  const filterRarity = document.getElementById("printingFilterRarity");
-
-  if(closeBtn) closeBtn.addEventListener("click", closePrintingModal);
-  if(cancelBtn) cancelBtn.addEventListener("click", closePrintingModal);
-  if(modal) modal.addEventListener("click", e=>{ if(e.target === modal) closePrintingModal(); });
-  if(confirmBtn) confirmBtn.addEventListener("click", confirmPrintingSelection);
-  if(filterQ) filterQ.addEventListener("input", applyPrintingFilters);
-  if(filterRarity) filterRarity.addEventListener("change", applyPrintingFilters);
-  document.addEventListener("keydown", e=>{
-    if(e.key === "Escape" && modal?.classList.contains("open")) closePrintingModal();
-  });
-}
-
-// ── initAppUI: registra listeners de UI que no dependen del usuario ──
-// Se llama UNA vez al cargar el DOM, antes de que Firebase resuelva la sesión.
-let _appUIInited = false;
-function initAppUI(){
-  if(_appUIInited) return;
-  _appUIInited = true;
-
-  applySettings();
-  initSidebarUI();
-
-  // Colección: filtro favoritos
-  const colFavSel = document.getElementById("colFavFilter");
-  if(colFavSel){
-    colFavSel.value = settings.colFavFilter || "all";
-    colFavSel.addEventListener("change", ()=>{
-      settings.colFavFilter = colFavSel.value;
-      saveSettings();
-      renderColeccion();
-    });
-  }
-
-  // Colección: búsqueda en tiempo real
-  const colSearchInput = document.getElementById("colSearchInput");
-  if(colSearchInput) colSearchInput.addEventListener("input", ()=> renderColeccion());
-
-  // Deseos
-  const bWishAdd = document.getElementById("btnWishAdd");
-  if(bWishAdd) bWishAdd.onclick = ()=> addWishFromInputs();
-  const bWishRef = document.getElementById("btnWishRefresh");
-  if(bWishRef) bWishRef.onclick = ()=> refreshWishlistPrices();
-  const wq = document.getElementById("wishQ");
-  if(wq) wq.oninput = ()=> renderWishlist();
-
-  const bDeckToWish = document.getElementById("btnDeckToWish");
-  if(bDeckToWish) bDeckToWish.onclick = ()=> addMissingDeckToWishlist(selectedDeck());
-
-  const marketSearch = document.getElementById("marketSearch");
-  if(marketSearch) marketSearch.addEventListener("input", ()=> renderSalesTable());
-
-  // Botón "Ver impresiones"
-  const btnOpenPrintings = document.getElementById("btnOpenPrintings");
-  if(btnOpenPrintings){
-    btnOpenPrintings.addEventListener("click", ()=>{
-      const name = document.getElementById("inName")?.value?.trim();
-      if(!name){
-        showErr("Escribe el nombre de la carta antes de buscar impresiones.");
-        return;
-      }
-      showErr("");
-      const lang = document.getElementById("inLang")?.value || "es";
-      openPrintingModal(name, lang);
-    });
-  }
-
-  // Enter en nombre abre el modal de impresiones
-  document.getElementById("inName")?.addEventListener("keydown", e=>{
-    if(e.key === "Enter"){
-      e.preventDefault();
-      document.getElementById("btnOpenPrintings")?.click();
-    }
-  });
-
-  // Inicializar modal de impresiones
-  initPrintingModal();
-
-  loadIntroSets();
-  setTimeout(initCardDetailUI, 0);
-}
-function renderSalesTable(){
-  const tbody = document.querySelector("#tblSales tbody");
-  const pill = document.getElementById("salesCountPill");
-  const otherPill = document.getElementById("otherSalesCountPill");
-  const otherTbody = document.querySelector("#tblOtherSales tbody");
-  const marketSearch = document.getElementById("marketSearch");
-  const mine = cards.filter(c=>!!c.sale);
-  if(pill) pill.textContent = "En venta: " + mine.reduce((a,c)=>a+(c.qty||1),0);
-  if(tbody){
-    tbody.innerHTML = "";
-    for(const c of mine){
-      const tr = document.createElement("tr");
-      tr.dataset.id = c.id;
-      const bg = gradientFromColorIds(c.colorId);
-      if (bg) { tr.style.background = bg; }
-
-      tr.innerHTML = `
-        <td class="center"><button class="starBtn" data-star="1" title="Favorito">${c.fav ? "★" : "☆"}</button></td>
-        <td><b>${escapeHtml(c.name)}</b><div class="small">${escapeHtml(c.inputName||"")}</div></td>
-        <td class="mono">${escapeHtml(c.setCode||"")}</td>
-        <td class="mono">${escapeHtml(c.collectorNumber||"")}</td>
-        <td class="right"><span class="mono">${escapeHtml(c.qty||1)}</span></td>
-        <td class="right mono">${escapeHtml(c.priceText||"")}</td>
-        <td class="right mono">${escapeHtml(c.bestSell||"")}</td>
-        <td class="right"><button class="btn ghost" data-sold="1">Vendida</button></td>`;
-      tbody.appendChild(tr);
-    }
-  }
-  if(otherTbody){
-    // Mostrar caché local mientras carga Firestore
-    _renderOtherSales(otherTbody, otherPill, marketSearch);
-    // Actualizar desde Firestore en segundo plano
-    if(currentUserId()){
-      fsLoadMarket().then(()=>{
-        _renderOtherSales(otherTbody, otherPill, marketSearch);
-      }).catch(()=>{});
-    }
-  }
-}
-
-function _renderOtherSales(otherTbody, otherPill, marketSearch){
-  const sess = getSession();
-  const q = (marketSearch?.value || "").trim().toLowerCase();
-  let market = loadMarketOffers().filter(x => x.sellerId && x.qty > 0);
-  if(sess?.id) market = market.filter(x => x.sellerId !== sess.id);
-  if(q){
-    market = market.filter(x =>
-      String(x.name||"").toLowerCase().includes(q) ||
-      String(x.sellerName||"").toLowerCase().includes(q) ||
-      String(x.setCode||"").toLowerCase().includes(q)
-    );
-  }
-  if(otherPill) otherPill.textContent = "Otros usuarios: " + market.reduce((a,c)=>a+(c.qty||1),0);
-  otherTbody.innerHTML = "";
-  for(const item of market){
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><div class="row" style="gap:8px;flex-wrap:nowrap;"><img src="${escapeHtml(item.sellerAvatar || 'assets/User.jpg')}" alt="avatar" class="sidebarAvatar" style="width:34px;height:34px;"><div><b>${escapeHtml(item.sellerName || "Usuario")}</b><div class="small">Vendedor</div></div></div></td>
-      <td><b>${escapeHtml(item.name)}</b></td>
-      <td class="mono">${escapeHtml(item.setCode||"")}</td>
-      <td class="mono">${escapeHtml(item.collectorNumber||"")}</td>
-      <td class="right mono">${escapeHtml(item.qty||1)}</td>
-      <td class="right mono">${escapeHtml(item.priceText||"")}</td>
-      <td class="right mono">${escapeHtml(item.bestSell||"")}</td>
-      <td><span class="pill">Disponible</span></td>`;
-    otherTbody.appendChild(tr);
-  }
-  if(!market.length){
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td colspan="8"><div class="marketEmpty">Sin anuncios activos de otros usuarios.</div></td>`;
-    otherTbody.appendChild(tr);
-  }
-}
-
-/* === FIX: ventas "Vendida" (handler directo) === */
-function markSoldById(id){
-  const item = cards.find(x=>x.id===id);
-  if(!item) return;
-
-  // Descontar 1 unidad; si era la última, eliminar la carta
-  item.qty = Math.max(0, (item.qty||1) - 1);
-  if(item.qty<=0){
-    cards = cards.filter(x=>x.id!==item.id);
-  }
-
-  // Guardar y re-renderizar lo que ya existe en la app
-  saveCards();
-  renderCardsTableFull();
-  renderSalesTable();
-  updateCardsMetrics();
-  updateInvestmentUI();
-}
-
-
-/************************************************************
- * Nube (desactivado): sin Supabase
- * - Se mantiene el guardado local (localStorage)
- * - Estas funciones quedan como no-ops para no romper el resto del código
- ************************************************************/
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  LEGACY — Funciones de nube desactivadas (sin Supabase)        ║
+// ╚══════════════════════════════════════════════════════════════╝
 function getAppPayload(){
   return { cards, decks, wishlist, settings, sortState, profile };
 }
 
-/************************************************************
- * Firebase Auth — login / registro / logout
- ************************************************************/
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  AUTH — Login, registro, recuperación de contraseña y sesión   ║
+// ╚══════════════════════════════════════════════════════════════╝
 
 function showLogin(){
   document.body.classList.add("not-authenticated");
@@ -6753,6 +6811,7 @@ function showLogin(){
   }
 }
 
+// Oculta la pantalla de login y muestra la app principal con animación
 function showApp(){
   const scr = document.getElementById("authScreen");
   if(scr){
@@ -6806,6 +6865,7 @@ function showAuthView(which){
   try{ setMsg2(""); }catch{}
 }
 
+// Cierra la sesión de Firebase y vuelve a la pantalla de login
 function signOutAndReturnToLogin(){
   fbAuth.signOut().then(()=>{
     _fbUser = null;
@@ -6815,10 +6875,12 @@ function signOutAndReturnToLogin(){
   });
 }
 
+// Valida que un string sea un email con formato correcto
 function isValidEmail(email){
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(email||"").trim());
 }
 
+// Valida que una contraseña tenga al menos 6 caracteres (mínimo Firebase)
 function isStrongPassword(pw){
   const p = String(pw||"");
   return p.length >= 6; // Firebase requiere mínimo 6 caracteres
@@ -6888,7 +6950,7 @@ async function initAuth(){
   showLogin();
   showAuthView("login");
 
-  // ── Botón: ir a pantalla de registro ──
+  // — Botón: ir a pantalla de registro
   if(btnUp){
     btnUp.onclick = ()=>{
       setMsg("");
@@ -6900,12 +6962,12 @@ async function initAuth(){
     };
   }
 
-  // ── Botón: volver al login ──
+  // — Botón: volver al login
   if(btnBack){
     btnBack.onclick = ()=> showAuthView("login");
   }
 
-  // ── Recuperar contraseña ──
+  // — Recuperar contraseña
   if(btnForgot){
     btnForgot.onclick = async ()=>{
       const email = (emailEl?.value || "").trim();
@@ -6927,12 +6989,12 @@ async function initAuth(){
     };
   }
 
-  // ── Cerrar sesión ──
+  // — Cerrar sesión
   if(btnOutTop){
     btnOutTop.onclick = ()=> signOutAndReturnToLogin();
   }
 
-  // ── Crear cuenta con Firebase Auth ──
+  // — Crear cuenta con Firebase Auth
   if(btnCreate){
     btnCreate.onclick = async ()=>{
       setMsg2("");
@@ -6969,7 +7031,7 @@ async function initAuth(){
     };
   }
 
-  // ── Iniciar sesión con Firebase Auth ──
+  // — Iniciar sesión con Firebase Auth
   if(btnIn){
     btnIn.onclick = async ()=>{
       setMsg("");
@@ -6994,13 +7056,14 @@ async function initAuth(){
     };
   }
 
-  // ── Enter en inputs de login ──
+  // — Enter en inputs de login
   [emailEl, passEl].forEach(el=>{
     el?.addEventListener("keydown", e=>{ if(e.key==="Enter") btnIn?.click(); });
   });
 }
 
 // Traduce códigos de error de Firebase a español
+// Traduce los códigos de error de Firebase Auth al español
 function _fbErrorMsg(err){
   const code = err?.code || "";
   const map = {
@@ -7016,7 +7079,7 @@ function _fbErrorMsg(err){
   return map[code] || (err?.message || "Error desconocido.");
 }
 
-// ── Punto de entrada: DOMContentLoaded ──
+// — Punto de entrada: DOMContentLoaded
 // 1. Inicializa la UI estática inmediatamente
 // 2. Espera a Firebase para saber si hay sesión
 window.addEventListener("DOMContentLoaded", ()=>{
@@ -7033,6 +7096,7 @@ window.addEventListener("DOMContentLoaded", ()=>{
     }
   });
 });
+
 
 </script>
 
