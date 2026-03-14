@@ -43,6 +43,7 @@
       --soft-rgb: 61,32,96;
       --card-rgb: 33,20,61;
       --bg-rgb: 26,15,46;
+      --bg2-rgb: 18,10,34;
     }
 
     @keyframes starFloat {
@@ -78,9 +79,9 @@
       font-family: 'Crimson Text', 'Georgia', serif;
       background: var(--bg);
       background-image:
-        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(93,40,140,.35) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(var(--soft-rgb),.55) 0%, transparent 55%),
-        radial-gradient(ellipse 40% 30% at 50% 50%, rgba(var(--accent-rgb),.04) 0%, transparent 70%);
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(var(--soft-rgb),.45) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(var(--soft-rgb),.35) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 30% at 50% 50%, rgba(var(--accent-rgb),.05) 0%, transparent 70%);
       color: var(--text);
       min-height: 100vh;
     }
@@ -390,7 +391,8 @@
     }
     tbody tr:hover{ background: rgba(var(--accent-rgb),.05) !important; }
 
-    .icon{ width:28px;height:28px; display:inline-block;vertical-align:middle; border-radius:6px; border:1px solid rgba(var(--accent-rgb),.2); background:var(--card); }
+    .icon{ width:28px;height:28px; display:inline-block;vertical-align:middle; border-radius:6px; border:1px solid rgba(var(--accent-rgb),.2); background:rgba(255,255,255,.92); padding:2px; }
+    .icon img, .icon{ filter: none; }
 
     .tag{
       display:inline-block;
@@ -514,10 +516,10 @@
     }
     .cField .k{ font-size:.66rem; color:var(--muted); font-family:'Cinzel',serif; letter-spacing:.05em; text-transform:uppercase; }
     .cField .v{ font-size:.85rem; font-family:'Crimson Text',serif; }
-    .cIcon{ width:26px;height:26px;border-radius:6px;border:1px solid rgba(var(--accent-rgb),.2); background:var(--card); padding:3px; flex:0 0 auto; }
+    .cIcon{ width:28px;height:28px;border-radius:6px;border:1px solid rgba(var(--accent-rgb),.2); background:rgba(255,255,255,.90); padding:3px; flex:0 0 auto; }
     .cRight{ display:flex; align-items:center; gap:8px; }
 
-    .setIcon{ width:24px; height:24px; border-radius:5px; border:1px solid rgba(var(--accent-rgb),.2); background:var(--card); padding:2px; }
+    .setIcon{ width:26px; height:26px; border-radius:5px; border:1px solid rgba(var(--accent-rgb),.2); background:rgba(255,255,255,.90); padding:3px; }
 
     /* ── DECK VIEW ── */
     .deckViewGrid{ display:grid; grid-template-columns: 1.2fr .8fr; gap:12px; height: calc(100vh - 220px); }
@@ -619,9 +621,9 @@
       display: flex; align-items: center; justify-content: center;
       padding: 24px;
       background:
-        radial-gradient(ellipse 70% 60% at 20% 20%, rgba(93,40,140,.5) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 50% at 80% 80%, rgba(var(--soft-rgb),.6) 0%, transparent 55%),
-        radial-gradient(ellipse 100% 80% at 50% 50%, rgba(26,15,46,1) 0%, transparent 100%);
+        radial-gradient(ellipse 70% 60% at 20% 20%, rgba(var(--soft-rgb),.55) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 80% 80%, rgba(var(--soft-rgb),.45) 0%, transparent 55%),
+        radial-gradient(ellipse 100% 80% at 50% 50%, rgba(var(--bg2-rgb),1) 0%, transparent 100%);
       background-color: var(--deep);
       z-index: 9999;
       opacity: 1;
@@ -721,13 +723,14 @@
       position:sticky;top:0;height:100vh;
       padding:16px 12px;
       border-right:1px solid rgba(var(--accent-rgb),.18);
-      background: linear-gradient(180deg, rgba(26,15,46,.98), rgba(var(--bg-rgb),.99));
-      backdrop-filter: blur(16px);
+      background: rgba(var(--bg2-rgb),.96);
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
       display:flex;flex-direction:column;gap:12px;
       z-index:15;
       /* subtle ray pattern */
       background-image:
-        linear-gradient(180deg, rgba(26,15,46,.98), rgba(var(--bg-rgb),.99)),
+        linear-gradient(180deg, rgba(var(--bg2-rgb),.97), rgba(var(--bg-rgb),.98)),
         repeating-linear-gradient(
           0deg,
           transparent,
@@ -775,8 +778,9 @@
       padding:10px 14px;
       border:1px solid rgba(var(--accent-rgb),.2);
       border-radius:10px;
-      background: rgba(26,15,46,.88);
-      backdrop-filter:blur(12px);
+      background: rgba(var(--bg2-rgb),.85);
+      backdrop-filter:blur(18px) saturate(1.3);
+      -webkit-backdrop-filter:blur(18px) saturate(1.3);
       box-shadow: var(--shadow);
     }
     .menuToggle{
@@ -2343,12 +2347,12 @@ function loadWithMigration(primaryKey, oldKeys, fallback){
  * Ajustes (Tema + letra + extras)
  ************************************************************/
 const THEME_PRESETS = {
-  pink:  { bg:"#1a0f2e", card:"#21143d", pink:"#c9963a", pink2:"#e8b84b", soft:"#3d2060", line:"#4a2d6f", text:"#e8d5b0", muted:"#9e86c2", inputBg:"#180e2a", inputText:"#e8d5b0", tableBg:"#1e1236", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(201,150,58,.08)", accentRgb:"201,150,58", accent2Rgb:"232,184,75", softRgb:"61,32,96",  cardRgb:"33,20,61",  bgRgb:"26,15,46" },
-  red:   { bg:"#200a0a", card:"#2d1010", pink:"#e05555", pink2:"#f87171", soft:"#4a1515", line:"#6b2222", text:"#f0d0d0", muted:"#c28080", inputBg:"#180808", inputText:"#f0d0d0", tableBg:"#1a0808", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(224,85,85,.08)", accentRgb:"224,85,85",  accent2Rgb:"248,113,113", softRgb:"74,21,21",  cardRgb:"45,16,16",  bgRgb:"32,10,10" },
-  green: { bg:"#0a1a0f", card:"#102415", pink:"#3abf70", pink2:"#5de08a", soft:"#1a4028", line:"#2a6040", text:"#d0f0d8", muted:"#70c290", inputBg:"#081408", inputText:"#d0f0d8", tableBg:"#081408", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(58,191,112,.08)", accentRgb:"58,191,112", accent2Rgb:"93,224,138",  softRgb:"26,64,40",  cardRgb:"16,36,21",  bgRgb:"10,26,15" },
-  yellow:{ bg:"#1a1400", card:"#251c00", pink:"#d4a500", pink2:"#f0c000", soft:"#3d3000", line:"#5a4800", text:"#f5e8b0", muted:"#b89a40", inputBg:"#140f00", inputText:"#f5e8b0", tableBg:"#141000", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(212,165,0,.08)", accentRgb:"212,165,0",  accent2Rgb:"240,192,0",   softRgb:"61,48,0",   cardRgb:"37,28,0",   bgRgb:"26,20,0" },
-  blue:  { bg:"#080e1e", card:"#0e1628", pink:"#4f8ef0", pink2:"#7cb0ff", soft:"#162040", line:"#1e3060", text:"#c8d8f8", muted:"#6888c0", inputBg:"#060c18", inputText:"#c8d8f8", tableBg:"#080e1e", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(79,142,240,.08)", accentRgb:"79,142,240", accent2Rgb:"124,176,255",  softRgb:"22,32,64",  cardRgb:"14,22,40",  bgRgb:"8,14,30" },
-  black: { bg:"#080808", card:"#101010", pink:"#888888", pink2:"#aaaaaa", soft:"#1a1a1a", line:"#2a2a2a", text:"#d0d0d0", muted:"#606060", inputBg:"#060606", inputText:"#d0d0d0", tableBg:"#0c0c0c", shadow:"0 10px 40px rgba(0,0,0,.7)", accentRgb:"136,136,136", accent2Rgb:"170,170,170", softRgb:"26,26,26",  cardRgb:"16,16,16",  bgRgb:"8,8,8" },
+  pink:  { bg:"#1a0f2e", card:"#21143d", pink:"#c9963a", pink2:"#e8b84b", soft:"#3d2060", line:"#4a2d6f", text:"#e8d5b0", muted:"#9e86c2", inputBg:"#180e2a", inputText:"#e8d5b0", tableBg:"#1e1236", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(201,150,58,.08)", accentRgb:"201,150,58", accent2Rgb:"232,184,75", softRgb:"61,32,96",  cardRgb:"33,20,61",  bgRgb:"26,15,46",  bg2Rgb:"18,10,34" },
+  red:   { bg:"#200a0a", card:"#2d1010", pink:"#e05555", pink2:"#f87171", soft:"#4a1515", line:"#6b2222", text:"#f0d0d0", muted:"#c28080", inputBg:"#180808", inputText:"#f0d0d0", tableBg:"#1a0808", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(224,85,85,.08)", accentRgb:"224,85,85",  accent2Rgb:"248,113,113", softRgb:"74,21,21",  cardRgb:"45,16,16",  bgRgb:"32,10,10",  bg2Rgb:"16,5,5" },
+  green: { bg:"#0a1a0f", card:"#102415", pink:"#3abf70", pink2:"#5de08a", soft:"#1a4028", line:"#2a6040", text:"#d0f0d8", muted:"#70c290", inputBg:"#081408", inputText:"#d0f0d8", tableBg:"#081408", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(58,191,112,.08)", accentRgb:"58,191,112", accent2Rgb:"93,224,138",  softRgb:"26,64,40",  cardRgb:"16,36,21",  bgRgb:"10,26,15",  bg2Rgb:"5,14,8" },
+  yellow:{ bg:"#1a1400", card:"#251c00", pink:"#d4a500", pink2:"#f0c000", soft:"#3d3000", line:"#5a4800", text:"#f5e8b0", muted:"#b89a40", inputBg:"#140f00", inputText:"#f5e8b0", tableBg:"#141000", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(212,165,0,.08)", accentRgb:"212,165,0",  accent2Rgb:"240,192,0",   softRgb:"61,48,0",   cardRgb:"37,28,0",   bgRgb:"26,20,0",   bg2Rgb:"14,10,0" },
+  blue:  { bg:"#080e1e", card:"#0e1628", pink:"#4f8ef0", pink2:"#7cb0ff", soft:"#162040", line:"#1e3060", text:"#c8d8f8", muted:"#6888c0", inputBg:"#060c18", inputText:"#c8d8f8", tableBg:"#080e1e", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(79,142,240,.08)", accentRgb:"79,142,240", accent2Rgb:"124,176,255",  softRgb:"22,32,64",  cardRgb:"14,22,40",  bgRgb:"8,14,30",   bg2Rgb:"4,7,18" },
+  black: { bg:"#080808", card:"#101010", pink:"#888888", pink2:"#aaaaaa", soft:"#1a1a1a", line:"#2a2a2a", text:"#d0d0d0", muted:"#606060", inputBg:"#060606", inputText:"#d0d0d0", tableBg:"#0c0c0c", shadow:"0 10px 40px rgba(0,0,0,.7)", accentRgb:"136,136,136", accent2Rgb:"170,170,170", softRgb:"26,26,26",  cardRgb:"16,16,16",  bgRgb:"8,8,8",     bg2Rgb:"3,3,3" },
 };
 
 const DEFAULT_SETTINGS = {
@@ -2397,6 +2401,7 @@ function applyThemePreset(key){
   root.style.setProperty("--soft-rgb",    preset.softRgb    || "61,32,96");
   root.style.setProperty("--card-rgb",    preset.cardRgb    || "33,20,61");
   root.style.setProperty("--bg-rgb",      preset.bgRgb      || "26,15,46");
+  root.style.setProperty("--bg2-rgb",     preset.bg2Rgb     || "18,10,34");
   root.style.setProperty("--glow", `0 0 18px rgba(${preset.accentRgb || "201,150,58"},.22)`);
   document.body.dataset.theme = key;
 }
