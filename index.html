@@ -390,10 +390,15 @@
       font-size:.85rem;
       background: transparent;
       font-family:'Crimson Text',serif;
+    }
+    /* Blur en filas con color de carta */
+    tbody tr[style*="background"]{
+      isolation: isolate;
+    }
+    tbody tr[style*="background"] td{
       backdrop-filter: blur(6px) saturate(1.2);
       -webkit-backdrop-filter: blur(6px) saturate(1.2);
     }
-    tbody tr{ isolation: isolate; }
     tbody tr:hover{ background: rgba(var(--accent-rgb),.05) !important; }
 
     .icon{ width:28px;height:28px; display:inline-block;vertical-align:middle; border-radius:6px; border:1px solid rgba(var(--accent-rgb),.2); background:rgba(255,255,255,.92); padding:2px; }
@@ -2838,7 +2843,7 @@ function colorToEmojisFromCI(ci){
 }
 
 // Tintes de color muy tenues para usar sobre fondos oscuros
-const PASTEL = { W:"rgba(220,195,50,.20)", U:"rgba(60,130,230,.18)", B:"rgba(10,5,20,.55)", R:"rgba(210,65,55,.18)", G:"rgba(60,175,90,.17)", C:"rgba(180,180,180,.07)" };
+const PASTEL = { W:"rgba(220,195,50,.20)", U:"rgba(60,130,230,.18)", B:"rgba(90,60,155,.22)", R:"rgba(210,65,55,.18)", G:"rgba(60,175,90,.17)", C:"rgba(180,180,180,.07)" };
 
 function normalizeColorId(colorId){
   const order = ["W","U","B","R","G"];
