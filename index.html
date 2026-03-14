@@ -1529,6 +1529,33 @@ body[data-theme="black"] .pageHeader h2{color:var(--text);}
           <div class="profileStatGrid"><div class="profileStat"><div class="k">Cartas distintas</div><div class="v" id="profileStatCards">0</div></div><div class="profileStat"><div class="k">Total mazos</div><div class="v" id="profileStatDecks">0</div></div><div class="profileStat"><div class="k">Lista de deseos</div><div class="v" id="profileStatWishes">0</div></div><div class="profileStat"><div class="k">Valor estimado</div><div class="v" id="profileStatValue">0.00€</div></div></div>
         </div>
       </div>
+
+      <div class="profileGrid" style="margin-top:14px;">
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Amigos</h3>
+          <div class="hint">Busca por nombre de usuario o email local y envía solicitud. Todo queda en este navegador, así que no es Facebook, es su primo artesanal.</div>
+          <div class="row mt12" style="gap:8px; align-items:center;">
+            <input id="friendSearchInput" placeholder="Usuario o email">
+            <button class="btn" id="btnSendFriendRequest">Añadir amigo</button>
+          </div>
+          <div class="row mt10" style="gap:8px; flex-wrap:wrap;">
+            <span class="pill">Amigos: <b id="friendCount">0</b></span>
+            <span class="pill">Solicitudes recibidas: <b id="friendReceivedCount">0</b></span>
+            <span class="pill">Solicitudes enviadas: <b id="friendSentCount">0</b></span>
+          </div>
+          <div id="friendsList" style="margin-top:12px;"></div>
+        </div>
+
+        <div class="panel soft" style="box-shadow:none;">
+          <h3 class="h3">Solicitudes pendientes</h3>
+          <div class="hint">Acepta, rechaza o cancela. Pequeña diplomacia de cartones.</div>
+          <h4 class="h3" style="font-size:1rem;margin-top:14px;">Recibidas</h4>
+          <div id="friendRequestsReceived" style="margin-top:8px;"></div>
+          <hr class="hr">
+          <h4 class="h3" style="font-size:1rem;">Enviadas</h4>
+          <div id="friendRequestsSent" style="margin-top:8px;"></div>
+        </div>
+      </div>
     </section>
 
     <section class="panel is-hidden" data-page="editar_perfil" style="display:none;">
@@ -1708,6 +1735,7 @@ const LS_SETTINGS   = "mtg_rosita_settings_v9";
 
 const LS_WISHLIST   = "mtg_rosita_wishlist_v1";
 const LS_PROFILE    = "mtg_rosita_profile_v1";
+const LS_SOCIAL     = "mtg_rosita_social_v1";
 const LS_MARKET     = "mtg_rosita_market_v1";
 /* Backups */
 const LS_BACKUP_LAST    = "mtg_rosita_backup_last_v1";
@@ -4538,6 +4566,160 @@ function getProfileEmail(){ const sess = getCurrentSessionUser(); return sess?.e
 function getProfileAvatar(){ return profile.avatar || "assets/logo.png"; }
 function getProfileBannerCss(){ return profile.banner ? `url("${profile.banner}")` : "linear-gradient(135deg, #c084fc, #7c3aed, #312e81)"; }
 function renderSidebarProfile(){ const avatar = document.getElementById("sidebarAvatar"); const mini = document.getElementById("sidebarUserMini"); if(avatar) avatar.src = getProfileAvatar(); if(mini) mini.textContent = profile.bio?.trim() || "Perfil local"; }
+
+function loadSocial(){
+  const raw = loadJson(LS_SOCIAL, null);
+  return {
+    requests: Array.isArray(raw?.requests) ? raw.requests : [],
+    friendships: Array.isArray(raw?.friendships) ? raw.friendships : []
+  };
+}
+function saveSocial(data){
+  localStorage.setItem(LS_SOCIAL, JSON.stringify({
+    requests: Array.isArray(data?.requests) ? data.requests : [],
+    friendships: Array.isArray(data?.friendships) ? data.friendships : []
+  }));
+}
+function socialPairKey(a,b){ return [String(a||""), String(b||"")].sort().join("__"); }
+function getPublicProfileByUserId(userId){
+  const users = loadUsers();
+  const u = users.find(x => String(x.id) === String(userId));
+  const p = loadJson(scopedKey(LS_PROFILE, userId), {});
+  return {
+    id: userId,
+    username: u?.username || "Usuario",
+    email: u?.email || "",
+    displayName: p?.displayName?.trim() || u?.username || u?.email || "Usuario",
+    bio: p?.bio?.trim() || "",
+    avatar: p?.avatar || "assets/logo.png"
+  };
+}
+function getFriendsData(){
+  const uid = currentUserId();
+  const social = loadSocial();
+  const friends = social.friendships
+    .filter(f => f.a === uid || f.b === uid)
+    .map(f => {
+      const otherId = f.a === uid ? f.b : f.a;
+      return { ...getPublicProfileByUserId(otherId), createdAt: f.createdAt || 0, friendshipId: f.id || socialPairKey(uid, otherId) };
+    })
+    .sort((a,b) => a.displayName.localeCompare(b.displayName, 'es', {sensitivity:'base'}));
+
+  const received = social.requests
+    .filter(r => r.to === uid)
+    .map(r => ({ ...r, user: getPublicProfileByUserId(r.from) }))
+    .sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
+
+  const sent = social.requests
+    .filter(r => r.from === uid)
+    .map(r => ({ ...r, user: getPublicProfileByUserId(r.to) }))
+    .sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
+
+  return { social, friends, received, sent };
+}
+function sendFriendRequest(query){
+  const uid = currentUserId();
+  if(!uid) throw new Error('Debes iniciar sesión.');
+  const q = String(query || '').trim().toLowerCase();
+  if(!q) throw new Error('Escribe un usuario o email.');
+
+  const users = loadUsers();
+  const target = users.find(u => String(u.username||'').toLowerCase() === q || String(u.email||'').toLowerCase() === q);
+  if(!target) throw new Error('No existe ese usuario en este navegador.');
+  if(String(target.id) === String(uid)) throw new Error('No puedes enviarte amistad a ti mismo. Un poco narcisista sí, pero no tanto.');
+
+  const social = loadSocial();
+  const alreadyFriends = social.friendships.some(f => socialPairKey(f.a,f.b) === socialPairKey(uid, target.id));
+  if(alreadyFriends) throw new Error('Ya sois amigos.');
+
+  const existing = social.requests.find(r => (r.from === uid && r.to === target.id) || (r.from === target.id && r.to === uid));
+  if(existing){
+    if(existing.from === target.id && existing.to === uid){
+      acceptFriendRequest(existing.id);
+      return { autoAccepted:true, target:getPublicProfileByUserId(target.id) };
+    }
+    throw new Error('Ya hay una solicitud pendiente entre vosotros.');
+  }
+
+  social.requests.push({
+    id: crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()),
+    from: uid,
+    to: target.id,
+    createdAt: Date.now()
+  });
+  saveSocial(social);
+  return { autoAccepted:false, target:getPublicProfileByUserId(target.id) };
+}
+function acceptFriendRequest(requestId){
+  const uid = currentUserId();
+  const social = loadSocial();
+  const req = social.requests.find(r => r.id === requestId && r.to === uid);
+  if(!req) throw new Error('Solicitud no encontrada.');
+  const pair = socialPairKey(req.from, req.to);
+  if(!social.friendships.some(f => socialPairKey(f.a,f.b) === pair)){
+    social.friendships.push({ id: pair, a: req.from, b: req.to, createdAt: Date.now() });
+  }
+  social.requests = social.requests.filter(r => r.id !== requestId);
+  saveSocial(social);
+}
+function declineFriendRequest(requestId){
+  const uid = currentUserId();
+  const social = loadSocial();
+  social.requests = social.requests.filter(r => !(r.id === requestId && r.to === uid));
+  saveSocial(social);
+}
+function cancelFriendRequest(requestId){
+  const uid = currentUserId();
+  const social = loadSocial();
+  social.requests = social.requests.filter(r => !(r.id === requestId && r.from === uid));
+  saveSocial(social);
+}
+function removeFriend(friendId){
+  const uid = currentUserId();
+  const social = loadSocial();
+  social.friendships = social.friendships.filter(f => socialPairKey(f.a,f.b) !== socialPairKey(uid, friendId));
+  saveSocial(social);
+}
+function friendRowHtml(user, actions){
+  return `<div class="saleItem" style="align-items:center;">
+    <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+      <img src="${escapeHtml(user.avatar || 'assets/logo.png')}" alt="avatar" class="sidebarAvatar">
+      <div style="min-width:0;">
+        <div style="font-weight:700;">${escapeHtml(user.displayName || 'Usuario')}</div>
+        <div class="small mono" style="overflow:hidden;text-overflow:ellipsis;">@${escapeHtml(user.username || 'user')}</div>
+        <div class="small">${escapeHtml(user.bio || user.email || 'Sin bio')}</div>
+      </div>
+    </div>
+    <div class="row" style="gap:8px;flex-wrap:wrap;">${actions}</div>
+  </div>`;
+}
+function renderFriendsUI(){
+  const friendsList = document.getElementById('friendsList');
+  const receivedList = document.getElementById('friendRequestsReceived');
+  const sentList = document.getElementById('friendRequestsSent');
+  const friendCount = document.getElementById('friendCount');
+  const friendReceivedCount = document.getElementById('friendReceivedCount');
+  const friendSentCount = document.getElementById('friendSentCount');
+  if(!friendsList || !receivedList || !sentList) return;
+
+  const { friends, received, sent } = getFriendsData();
+  if(friendCount) friendCount.textContent = String(friends.length);
+  if(friendReceivedCount) friendReceivedCount.textContent = String(received.length);
+  if(friendSentCount) friendSentCount.textContent = String(sent.length);
+
+  friendsList.innerHTML = friends.length
+    ? friends.map(f => friendRowHtml(f, `<button class="btn ghost tiny" data-remove-friend="${escapeHtml(f.id)}">Quitar</button>`)).join('')
+    : '<div class="hint">Todavía no tienes amigos añadidos.</div>';
+
+  receivedList.innerHTML = received.length
+    ? received.map(r => friendRowHtml(r.user, `<button class="btn tiny" data-accept-friend="${escapeHtml(r.id)}">Aceptar</button><button class="btn ghost tiny" data-decline-friend="${escapeHtml(r.id)}">Rechazar</button>`)).join('')
+    : '<div class="hint">No tienes solicitudes recibidas.</div>';
+
+  sentList.innerHTML = sent.length
+    ? sent.map(r => friendRowHtml(r.user, `<button class="btn ghost tiny" data-cancel-friend="${escapeHtml(r.id)}">Cancelar</button>`)).join('')
+    : '<div class="hint">No has enviado solicitudes.</div>';
+}
+
 function renderUserProfilePage(){
   const hero = document.getElementById("profileHero");
   const heroEdit = document.getElementById("profileHeroEditPreview");
@@ -4594,6 +4776,7 @@ function renderUserProfilePage(){
     if(el) el.textContent = String(value);
   });
 
+  renderFriendsUI();
   renderSidebarProfile();
 }
 function initUserProfilePage(){
@@ -4605,6 +4788,8 @@ function initUserProfilePage(){
   const btnGoUserPage = document.getElementById("btnGoUserPage");
   const btnGoEdit = document.getElementById("btnGoEditProfile");
   const btnGoProfileView = document.getElementById("btnGoProfileView");
+  const btnSendFriend = document.getElementById("btnSendFriendRequest");
+  const friendSearchInput = document.getElementById("friendSearchInput");
 
   if(btnGoUserPage) btnGoUserPage.onclick = ()=> showPage("usuario");
   if(btnGoEdit) btnGoEdit.onclick = ()=> showPage("editar_perfil");
@@ -4671,6 +4856,44 @@ function initUserProfilePage(){
       alert("Perfil guardado ✅");
     };
   }
+
+  if(btnSendFriend){
+    btnSendFriend.onclick = ()=>{
+      try{
+        const query = friendSearchInput?.value || "";
+        const res = sendFriendRequest(query);
+        if(friendSearchInput) friendSearchInput.value = "";
+        renderUserProfilePage();
+        alert(res.autoAccepted ? "Solicitud mutua detectada: ya sois amigos ✅" : "Solicitud enviada ✅");
+      }catch(err){
+        alert(err?.message || err);
+      }
+    };
+  }
+
+  if(friendSearchInput){
+    friendSearchInput.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        btnSendFriend?.click();
+      }
+    });
+  }
+
+  if(!window.__friendsDelegated){ window.__friendsDelegated = true; document.addEventListener('click', (e)=>{
+    const acceptBtn = e.target.closest('[data-accept-friend]');
+    const declineBtn = e.target.closest('[data-decline-friend]');
+    const cancelBtn = e.target.closest('[data-cancel-friend]');
+    const removeBtn = e.target.closest('[data-remove-friend]');
+    try{
+      if(acceptBtn){ acceptFriendRequest(acceptBtn.dataset.acceptFriend); renderUserProfilePage(); }
+      if(declineBtn){ declineFriendRequest(declineBtn.dataset.declineFriend); renderUserProfilePage(); }
+      if(cancelBtn){ cancelFriendRequest(cancelBtn.dataset.cancelFriend); renderUserProfilePage(); }
+      if(removeBtn){ removeFriend(removeBtn.dataset.removeFriend); renderUserProfilePage(); }
+    }catch(err){
+      alert(err?.message || err);
+    }
+  }, { passive:true }); }
 
   renderUserProfilePage();
 }
@@ -4878,6 +5101,7 @@ function setAuthTop(user){
     }else status.textContent = "No logueado";
   }
   if(btnOut) btnOut.style.display = user ? "" : "none";
+  renderFriendsUI();
   renderSidebarProfile();
 }
 
