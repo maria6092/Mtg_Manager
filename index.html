@@ -10,6 +10,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -944,13 +945,9 @@
         <input id="authEmail" type="email" placeholder="Email" autocomplete="email" />
         <input id="authPass" type="password" placeholder="Contraseña" autocomplete="current-password" />
 
-        <label class="auth-remember">
-          <input id="authRemember" type="checkbox" checked />
-          <span>Recordarme</span>
-        </label>
-
         <button class="btn auth-btn" id="btnSignIn">Iniciar sesión</button>
         <button class="btn ghost auth-btn" id="btnSignUp">Crear cuenta</button>
+        <button class="btn ghost auth-btn" id="btnForgotPass" style="font-size:.75rem;padding:7px 14px;opacity:.8;">¿Olvidaste tu contraseña?</button>
 
         <div class="auth-msg" id="authMsg"></div>
       </div>
@@ -1844,8 +1841,9 @@ const firebaseConfig = {
   measurementId: "G-T3PQ24KKCF"
 };
 firebase.initializeApp(firebaseConfig);
-const fbAuth = firebase.auth();
-const fbDb   = firebase.firestore();
+const fbAuth    = firebase.auth();
+const fbDb      = firebase.firestore();
+const fbStorage = firebase.storage();
 
 // Usuario activo en memoria (se actualiza por onAuthStateChanged)
 let _fbUser = null;
@@ -1857,6 +1855,36 @@ function currentUserId(){ return _fbUser?.uid || ""; }
  ************************************************************/
 
 // Guarda el perfil público del usuario en Firestore (users/{uid})
+// Sube una imagen a Firebase Storage y devuelve la URL pública
+async function fsUploadImage(file, storagePath){
+  const ref = fbStorage.ref(storagePath);
+  const snap = await ref.put(file);
+  return await snap.ref.getDownloadURL();
+}
+
+// Sube el avatar a Storage y actualiza perfil
+async function fsUploadAvatar(file){
+  const uid = currentUserId();
+  if(!uid || !file) return null;
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const url = await fsUploadImage(file, `avatars/${uid}.${ext}`);
+  profile.avatar = url;
+  saveProfile();
+  await _fbUser.updateProfile({ photoURL: url });
+  return url;
+}
+
+// Sube el banner a Storage y actualiza perfil
+async function fsUploadBanner(file){
+  const uid = currentUserId();
+  if(!uid || !file) return null;
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const url = await fsUploadImage(file, `banners/${uid}.${ext}`);
+  profile.banner = url;
+  saveProfile();
+  return url;
+}
+
 async function fsSaveProfile(){
   const uid = currentUserId();
   if(!uid) return;
@@ -2145,9 +2173,7 @@ let settings = (() => {
   }
 })();
 
-function saveSettings(){ userSave(LS_SETTINGS, settings); 
-  try{ cloudSaveAll(); }catch{}
-}
+function saveSettings(){ userSave(LS_SETTINGS, settings); }
 
 function applyThemePreset(key){
   const preset = THEME_PRESETS[key] || THEME_PRESETS.pink;
@@ -2242,12 +2268,8 @@ function saveCards(){
   if(currentUserId()) fsSyncAllSaleCards().catch(()=>{});
   try{ renderWishlist(); }catch{}
 }
-function saveDecks(){ userSave(LS_DECKS, decks); 
-  try{ cloudSaveAll(); }catch{}
-}
-function saveWishlist(){ userSave(LS_WISHLIST, wishlist); 
-  try{ cloudSaveAll(); }catch{}
-}
+function saveDecks(){ userSave(LS_DECKS, decks); }
+function saveWishlist(){ userSave(LS_WISHLIST, wishlist); }
 
 function touchDeck(d){
   d._updatedAt = Date.now();
@@ -5207,15 +5229,24 @@ function initUserProfilePage(){
     avatarInput.addEventListener("change", async (e)=>{
       const file = e.target.files?.[0];
       if(!file) return;
+      const btn = document.querySelector('label[for="profileAvatarInput"]');
+      if(btn) btn.textContent = "Subiendo…";
       try{
-        profile.avatar = await fileToDataUrl(file);
-        saveProfile();
+        if(currentUserId()){
+          await fsUploadAvatar(file);
+        }else{
+          // Fallback local si no hay sesión Firebase activa
+          profile.avatar = await fileToDataUrl(file);
+          saveProfile();
+        }
         renderUserProfilePage();
         renderSalesTable();
-      }catch{
-        alert("No se pudo cargar la imagen.");
+      }catch(err){
+        alert("No se pudo subir la imagen: " + (err?.message || err));
+      }finally{
+        if(btn) btn.textContent = "Subir foto";
+        e.target.value = "";
       }
-      e.target.value = "";
     });
   }
 
@@ -5223,14 +5254,22 @@ function initUserProfilePage(){
     bannerInput.addEventListener("change", async (e)=>{
       const file = e.target.files?.[0];
       if(!file) return;
+      const btn = document.querySelector('label[for="profileBannerInput"]');
+      if(btn) btn.textContent = "Subiendo…";
       try{
-        profile.banner = await fileToDataUrl(file);
-        saveProfile();
+        if(currentUserId()){
+          await fsUploadBanner(file);
+        }else{
+          profile.banner = await fileToDataUrl(file);
+          saveProfile();
+        }
         renderUserProfilePage();
-      }catch{
-        alert("No se pudo cargar el banner.");
+      }catch(err){
+        alert("No se pudo subir el banner: " + (err?.message || err));
+      }finally{
+        if(btn) btn.textContent = "Subir banner";
+        e.target.value = "";
       }
-      e.target.value = "";
     });
   }
 
@@ -5478,16 +5517,6 @@ function getAppPayload(){
   return { cards, decks, wishlist, settings, sortState, profile };
 }
 
-async function cloudSaveAll(){
-  // Sin Supabase: no hacemos nada
-}
-
-async function cloudLoadAll(){
-  // Sin Supabase: no cargamos nada extra
-  return false;
-}
-
-
 /************************************************************
  * Firebase Auth — login / registro / logout
  ************************************************************/
@@ -5609,6 +5638,7 @@ async function initAuth(){
   const passEl     = document.getElementById("authPass");
   const btnUp      = document.getElementById("btnSignUp");
   const btnIn      = document.getElementById("btnSignIn");
+  const btnForgot  = document.getElementById("btnForgotPass");
   const btnOutTop  = document.getElementById("btnSignOutTop");
 
   const suUserEl   = document.getElementById("suUsername");
@@ -5638,6 +5668,28 @@ async function initAuth(){
   // ── Botón: volver al login ──
   if(btnBack){
     btnBack.onclick = ()=> showAuthView("login");
+  }
+
+  // ── Recuperar contraseña ──
+  if(btnForgot){
+    btnForgot.onclick = async ()=>{
+      const email = (emailEl?.value || "").trim();
+      if(!email || !isValidEmail(email)){
+        setMsg("Escribe tu email arriba y pulsa este botón.");
+        return;
+      }
+      btnForgot.disabled = true;
+      btnForgot.textContent = "Enviando…";
+      try{
+        await fbAuth.sendPasswordResetEmail(email);
+        setMsg(`Email de recuperación enviado a ${email}. Revisa tu bandeja.`, true);
+      }catch(err){
+        setMsg(_fbErrorMsg(err));
+      }finally{
+        btnForgot.disabled = false;
+        btnForgot.textContent = "¿Olvidaste tu contraseña?";
+      }
+    };
   }
 
   // ── Cerrar sesión ──
