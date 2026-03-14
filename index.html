@@ -310,7 +310,7 @@
     .spacer{flex:1 1 auto}
 
     .hint{
-      font: size 0.1em;
+      font-size: 0.9em;
       color:var(--muted);
       margin-top:8px;
       font-family:'Crimson Text',serif;
@@ -6397,6 +6397,7 @@ function showAuthView(which){
 function signOutAndReturnToLogin(){
   fbAuth.signOut().then(()=>{
     _fbUser = null;
+    window._authInited = false;
     setAuthTop(null);
     showLogin();
   });
@@ -6417,7 +6418,7 @@ function _onFirebaseLogin(firebaseUser){
   setAuthTop(getSession());
 
   // Inicializa listeners de UI estáticos (solo la primera vez)
-  initAppUI();
+  if(!window._appUIInited){ initAppUI(); window._appUIInited = true; }
 
   // Tabs y perfil (dependen del usuario)
   initTabs();
@@ -6448,6 +6449,14 @@ function _onFirebaseLogin(firebaseUser){
 }
 
 async function initAuth(){
+  // Evitar registrar handlers duplicados si initAuth se llama más de una vez
+  if(window._authInited){
+    showLogin();
+    showAuthView("login");
+    return;
+  }
+  window._authInited = true;
+
   const emailEl    = document.getElementById("authEmail");
   const passEl     = document.getElementById("authPass");
   const btnUp      = document.getElementById("btnSignUp");
@@ -6599,13 +6608,13 @@ function _fbErrorMsg(err){
 // 1. Inicializa la UI estática inmediatamente
 // 2. Espera a Firebase para saber si hay sesión
 window.addEventListener("DOMContentLoaded", ()=>{
-  initAppUI(); // listeners de UI que no dependen de auth
-
+  // initAppUI se llama desde _onFirebaseLogin (con guard) o cuando no hay sesión
   fbAuth.onAuthStateChanged(async (firebaseUser)=>{
     if(firebaseUser){
       _onFirebaseLogin(firebaseUser);
     }else{
       _fbUser = null;
+      if(!window._appUIInited){ initAppUI(); window._appUIInited = true; }
       setAuthTop(null);
       await initAuth();
       showLogin();
