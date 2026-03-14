@@ -3389,7 +3389,7 @@ function initCardDetailUI(){
 
       const pt      = (sf.power && sf.toughness) ? `${sf.power}/${sf.toughness}` : "";
       const loyalty = sf.loyalty || "";
-      const legalities = Object.entries(sf.legalities||{}).filter(([,v])=>v==="legal").map(([k])=>k).slice(0,4).join(", ");
+      const legalities = Object.entries(sf.legalities||{}).filter(([,v])=>v==="legal").map(([k])=>k).join(", ");
 
       cmdGrid.innerHTML = `
         ${field("Colección", card.setCode ? `${card.setCode} #${card.collectorNumber}` : sf.set_name||"")}
