@@ -38,12 +38,11 @@
       --plum: #2d1854;
       --deep: #120a22;
       --glow: 0 0 18px rgba(var(--accent-rgb),.22);
-      /* RGB channels para usar con opacidad variable */
       --accent-rgb: 201,150,58;
       --accent2-rgb: 232,184,75;
-      --soft-rgb: 45,24,84;
+      --soft-rgb: 61,32,96;
       --card-rgb: 33,20,61;
-      --bg-rgb: 18,10,34;
+      --bg-rgb: 26,15,46;
     }
 
     @keyframes starFloat {
@@ -493,11 +492,14 @@
       background: var(--card);
       box-shadow: var(--shadow);
       overflow:hidden;
-      transition: border-color .2s, box-shadow .2s;
+      transition: border-color .2s, box-shadow .2s, transform .15s;
+      cursor:pointer;
+      position:relative;
     }
     .cCard:hover{
       border-color: rgba(var(--accent-rgb),.4);
       box-shadow: 0 0 20px rgba(var(--accent-rgb),.12), var(--shadow);
+      transform: translateY(-2px);
     }
     .cTop{ padding:10px 12px; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
     .cName{ font-weight:600; color: var(--gold2); line-height:1.15; font-family:'Cinzel',serif; font-size:.88rem; }
@@ -970,6 +972,95 @@
     ::-webkit-scrollbar-thumb{ background:rgba(var(--accent-rgb),.3); border-radius:3px; }
     ::-webkit-scrollbar-thumb:hover{ background:rgba(var(--accent-rgb),.5); }
 
+
+    /* ── Card hover preview ── */
+    .cCardPreview{
+      position:fixed; z-index:900; pointer-events:none;
+      display:none; flex-direction:column; gap:0;
+      width:224px;
+      border-radius:14px; overflow:hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,.75), 0 0 0 1px rgba(var(--accent-rgb),.3);
+      background: var(--bg);
+      opacity:0; transition: opacity .12s;
+    }
+    .cCardPreview.visible{ display:flex; opacity:1; }
+    .cCardPreview img{ width:100%; display:block; }
+    .cCardPreview .previewOracle{
+      padding:10px 12px;
+      font-family:'Crimson Text',serif; font-size:.82rem; line-height:1.45;
+      color:rgba(255,255,255,.82); white-space:pre-wrap;
+      max-height:140px; overflow-y:auto;
+      border-top:1px solid rgba(var(--accent-rgb),.18);
+    }
+
+    /* ── Card detail modal ── */
+    .cardModal{
+      position:fixed; inset:0; z-index:1000;
+      display:none; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.78);
+      backdrop-filter:blur(6px);
+      padding:16px;
+    }
+    .cardModal.open{ display:flex; }
+    .cardModalInner{
+      position:relative;
+      display:grid;
+      grid-template-columns:280px 1fr;
+      gap:0;
+      width:min(860px,100%);
+      max-height:90vh;
+      border-radius:18px;
+      overflow:hidden;
+      border:1px solid rgba(var(--accent-rgb),.3);
+      box-shadow:0 30px 80px rgba(0,0,0,.8);
+      background:var(--bg);
+    }
+    @media(max-width:640px){
+      .cardModalInner{ grid-template-columns:1fr; }
+      .cardModalImg{ max-height:260px; }
+    }
+    .cardModalImg{
+      background:rgba(var(--bg-rgb),1);
+      display:flex; align-items:center; justify-content:center;
+      padding:20px;
+    }
+    .cardModalImg img{ width:100%; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,.6); display:block; }
+    .cardModalBody{
+      padding:24px 22px 20px;
+      overflow-y:auto;
+      display:flex; flex-direction:column; gap:14px;
+    }
+    .cardModalClose{
+      position:absolute; top:12px; right:14px;
+      background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15);
+      color:#fff; border-radius:50%; width:32px; height:32px;
+      font-size:16px; cursor:pointer; display:grid; place-items:center;
+      z-index:10; transition:background .15s;
+    }
+    .cardModalClose:hover{ background:rgba(255,255,255,.2); }
+    .cardModalName{
+      font-family:'Cinzel',serif; font-size:1.25rem; font-weight:700;
+      color:var(--gold2); line-height:1.2; padding-right:38px;
+    }
+    .cardModalMeta{ display:flex; flex-wrap:wrap; gap:6px; }
+    .cardModalOracle{
+      font-family:'Crimson Text',serif; font-size:.95rem; line-height:1.55;
+      color:rgba(255,255,255,.85); white-space:pre-wrap;
+      padding:12px 14px; border-radius:8px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(var(--accent-rgb),.12);
+    }
+    .cardModalFlavor{
+      font-family:'Crimson Text',serif; font-size:.85rem; font-style:italic;
+      color:var(--muted); line-height:1.4;
+    }
+    .cardModalGrid{ display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; }
+    .cardModalField .k{
+      font-family:'Cinzel',serif; font-size:.65rem; color:var(--muted);
+      letter-spacing:.06em; text-transform:uppercase;
+    }
+    .cardModalField .v{ font-family:'Crimson Text',serif; font-size:.9rem; margin-top:2px; }
+
   </style>
 </head>
 
@@ -1037,6 +1128,7 @@
           <div class="small" id="sidebarUserMini">Perfil local</div>
         </div>
       </div>
+      <button id="btnSignOutSidebar" class="btn ghost" style="width:100%;margin-top:8px;font-size:.78rem;padding:6px 10px;display:none;">Cerrar sesión</button>
     </div>
 
     <div class="sidebarFooter">✦ MTG Manager</div>
@@ -1738,15 +1830,15 @@
             </div>
             <div class="rankCard big">
               <div class="rankIcon"></div>
-              <div style="font-weight:800;">Copias</div>
-              <div class="rankPts" id="rankTotalCopies">0</div>
-              <div class="hint">en colección</div>
-            </div>
-            <div class="rankCard">
-              <div class="rankIcon"></div>
               <div style="font-weight:800;">Mazos</div>
               <div class="rankPts" id="rankDeckValue">0</div>
               <div class="hint">guardados</div>
+            </div>
+            <div class="rankCard">
+              <div class="rankIcon"></div>
+              <div style="font-weight:800;">Deseos</div>
+              <div class="rankPts" id="rankWishValue">0</div>
+              <div class="hint">en seguimiento</div>
             </div>
           </div>
           <div class="rankList" id="profileCollStats">
@@ -1757,7 +1849,6 @@
             <div class="rankListItem"><span>Mazo más grande</span><span id="rankBiggestDeck">—</span></div>
             <div class="rankListItem"><span>Foils</span><span id="rankFoilCount">0</span></div>
             <div class="rankListItem"><span>Favoritos</span><span id="rankFavCount">0</span></div>
-            <div class="rankListItem"><span>Deseos</span><span id="rankWishValue">0</span></div>
           </div>
         </div>
       </div>
@@ -2030,6 +2121,36 @@ async function fsDeclineFriendRequest(reqId){
   await fbDb.collection("friend_requests").doc(reqId).delete();
 }
 
+
+// ── Wishlist sync con Firestore ──
+async function fsSaveWishlist(){
+  const uid = currentUserId();
+  if(!uid) return;
+  try{
+    await fbDb.collection("wishlists").doc(uid).set({
+      uid,
+      items: wishlist,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }catch(e){ console.warn("fsSaveWishlist:", e); }
+}
+
+async function fsLoadWishlist(){
+  const uid = currentUserId();
+  if(!uid) return;
+  try{
+    const snap = await fbDb.collection("wishlists").doc(uid).get();
+    if(snap.exists){
+      const data = snap.data();
+      if(Array.isArray(data.items) && data.items.length > 0){
+        wishlist = data.items;
+        userSave(LS_WISHLIST, wishlist);
+        normalizeWishlist();
+      }
+    }
+  }catch(e){ console.warn("fsLoadWishlist:", e); }
+}
+
 // Elimina amistad
 async function fsRemoveFriend(friendUid){
   const uid = currentUserId();
@@ -2222,12 +2343,12 @@ function loadWithMigration(primaryKey, oldKeys, fallback){
  * Ajustes (Tema + letra + extras)
  ************************************************************/
 const THEME_PRESETS = {
-  pink:  { bg:"#1a0f2e", card:"#21143d", pink:"#c9963a", pink2:"#e8b84b", soft:"#3d2060", line:"#4a2d6f", text:"#e8d5b0", muted:"#9e86c2", inputBg:"#180e2a", inputText:"#e8d5b0", tableBg:"#1e1236", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(201,150,58,.08)", accentRgb:"201,150,58", accent2Rgb:"232,184,75", softRgb:"61,32,96", cardRgb:"33,20,61", bgRgb:"26,15,46" },
-  red:   { bg:"#200a0a", card:"#2d1010", pink:"#e05555", pink2:"#f87171", soft:"#4a1515", line:"#6b2222", text:"#f0d0d0", muted:"#c28080", inputBg:"#180808", inputText:"#f0d0d0", tableBg:"#1a0808", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(224,85,85,.08)", accentRgb:"224,85,85", accent2Rgb:"248,113,113", softRgb:"74,21,21", cardRgb:"45,16,16", bgRgb:"32,10,10" },
-  green: { bg:"#0a1a0f", card:"#102415", pink:"#3abf70", pink2:"#5de08a", soft:"#1a4028", line:"#2a6040", text:"#d0f0d8", muted:"#70c290", inputBg:"#081408", inputText:"#d0f0d8", tableBg:"#081408", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(58,191,112,.08)", accentRgb:"58,191,112", accent2Rgb:"93,224,138", softRgb:"26,64,40", cardRgb:"16,36,21", bgRgb:"10,26,15" },
-  yellow:{ bg:"#1a1400", card:"#251c00", pink:"#d4a500", pink2:"#f0c000", soft:"#3d3000", line:"#5a4800", text:"#f5e8b0", muted:"#b89a40", inputBg:"#140f00", inputText:"#f5e8b0", tableBg:"#141000", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(212,165,0,.08)", accentRgb:"212,165,0", accent2Rgb:"240,192,0", softRgb:"61,48,0", cardRgb:"37,28,0", bgRgb:"26,20,0" },
-  blue:  { bg:"#080e1e", card:"#0e1628", pink:"#4f8ef0", pink2:"#7cb0ff", soft:"#162040", line:"#1e3060", text:"#c8d8f8", muted:"#6888c0", inputBg:"#060c18", inputText:"#c8d8f8", tableBg:"#080e1e", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(79,142,240,.08)", accentRgb:"79,142,240", accent2Rgb:"124,176,255", softRgb:"22,32,64", cardRgb:"14,22,40", bgRgb:"8,14,30" },
-  black: { bg:"#080808", card:"#101010", pink:"#888888", pink2:"#aaaaaa", soft:"#1a1a1a", line:"#2a2a2a", text:"#d0d0d0", muted:"#606060", inputBg:"#060606", inputText:"#d0d0d0", tableBg:"#0c0c0c", shadow:"0 10px 40px rgba(0,0,0,.7)", accentRgb:"136,136,136", accent2Rgb:"170,170,170", softRgb:"26,26,26", cardRgb:"16,16,16", bgRgb:"8,8,8" },
+  pink:  { bg:"#1a0f2e", card:"#21143d", pink:"#c9963a", pink2:"#e8b84b", soft:"#3d2060", line:"#4a2d6f", text:"#e8d5b0", muted:"#9e86c2", inputBg:"#180e2a", inputText:"#e8d5b0", tableBg:"#1e1236", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(201,150,58,.08)", accentRgb:"201,150,58", accent2Rgb:"232,184,75", softRgb:"61,32,96",  cardRgb:"33,20,61",  bgRgb:"26,15,46" },
+  red:   { bg:"#200a0a", card:"#2d1010", pink:"#e05555", pink2:"#f87171", soft:"#4a1515", line:"#6b2222", text:"#f0d0d0", muted:"#c28080", inputBg:"#180808", inputText:"#f0d0d0", tableBg:"#1a0808", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(224,85,85,.08)", accentRgb:"224,85,85",  accent2Rgb:"248,113,113", softRgb:"74,21,21",  cardRgb:"45,16,16",  bgRgb:"32,10,10" },
+  green: { bg:"#0a1a0f", card:"#102415", pink:"#3abf70", pink2:"#5de08a", soft:"#1a4028", line:"#2a6040", text:"#d0f0d8", muted:"#70c290", inputBg:"#081408", inputText:"#d0f0d8", tableBg:"#081408", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(58,191,112,.08)", accentRgb:"58,191,112", accent2Rgb:"93,224,138",  softRgb:"26,64,40",  cardRgb:"16,36,21",  bgRgb:"10,26,15" },
+  yellow:{ bg:"#1a1400", card:"#251c00", pink:"#d4a500", pink2:"#f0c000", soft:"#3d3000", line:"#5a4800", text:"#f5e8b0", muted:"#b89a40", inputBg:"#140f00", inputText:"#f5e8b0", tableBg:"#141000", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(212,165,0,.08)", accentRgb:"212,165,0",  accent2Rgb:"240,192,0",   softRgb:"61,48,0",   cardRgb:"37,28,0",   bgRgb:"26,20,0" },
+  blue:  { bg:"#080e1e", card:"#0e1628", pink:"#4f8ef0", pink2:"#7cb0ff", soft:"#162040", line:"#1e3060", text:"#c8d8f8", muted:"#6888c0", inputBg:"#060c18", inputText:"#c8d8f8", tableBg:"#080e1e", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(79,142,240,.08)", accentRgb:"79,142,240", accent2Rgb:"124,176,255",  softRgb:"22,32,64",  cardRgb:"14,22,40",  bgRgb:"8,14,30" },
+  black: { bg:"#080808", card:"#101010", pink:"#888888", pink2:"#aaaaaa", soft:"#1a1a1a", line:"#2a2a2a", text:"#d0d0d0", muted:"#606060", inputBg:"#060606", inputText:"#d0d0d0", tableBg:"#0c0c0c", shadow:"0 10px 40px rgba(0,0,0,.7)", accentRgb:"136,136,136", accent2Rgb:"170,170,170", softRgb:"26,26,26",  cardRgb:"16,16,16",  bgRgb:"8,8,8" },
 };
 
 const DEFAULT_SETTINGS = {
@@ -2271,13 +2392,12 @@ function applyThemePreset(key){
   root.style.setProperty("--shadow", preset.shadow);
   root.style.setProperty("--deep", preset.bg);
   root.style.setProperty("--plum", preset.soft);
-  // Variables RGB para rgba() dinámico en CSS
-  root.style.setProperty("--accent-rgb",  preset.accentRgb);
-  root.style.setProperty("--accent2-rgb", preset.accent2Rgb);
-  root.style.setProperty("--soft-rgb",    preset.softRgb);
-  root.style.setProperty("--card-rgb",    preset.cardRgb);
-  root.style.setProperty("--bg-rgb",      preset.bgRgb);
-  root.style.setProperty("--glow", `0 0 18px rgba(${preset.accentRgb},.22)`);
+  root.style.setProperty("--accent-rgb",  preset.accentRgb  || "201,150,58");
+  root.style.setProperty("--accent2-rgb", preset.accent2Rgb || "232,184,75");
+  root.style.setProperty("--soft-rgb",    preset.softRgb    || "61,32,96");
+  root.style.setProperty("--card-rgb",    preset.cardRgb    || "33,20,61");
+  root.style.setProperty("--bg-rgb",      preset.bgRgb      || "26,15,46");
+  root.style.setProperty("--glow", `0 0 18px rgba(${preset.accentRgb || "201,150,58"},.22)`);
   document.body.dataset.theme = key;
 }
 
@@ -2353,7 +2473,10 @@ function saveCards(){
   try{ renderWishlist(); }catch{}
 }
 function saveDecks(){ userSave(LS_DECKS, decks); }
-function saveWishlist(){ userSave(LS_WISHLIST, wishlist); }
+function saveWishlist(){
+  userSave(LS_WISHLIST, wishlist);
+  if(currentUserId()) fsSaveWishlist().catch(()=>{});
+}
 
 function touchDeck(d){
   d._updatedAt = Date.now();
@@ -2562,6 +2685,7 @@ function showPage(id){
     if (id === "mazos") renderDecks();
     if (id === "usuario") { renderUserProfilePage(); initSettingsUI(); }
     if (id === "coleccion") {
+      initCardDetailUI();
       const sel = document.getElementById("colFavFilter");
       if(sel) sel.value = settings.colFavFilter || sel.value || "all";
       renderColeccion();
@@ -2704,7 +2828,7 @@ function colorToEmojisFromCI(ci){
 }
 
 // Tintes de color muy tenues para usar sobre fondos oscuros
-const PASTEL = { W:"rgba(220,195,120,.07)", U:"rgba(80,140,220,.09)", B:"rgba(120,110,160,.08)", R:"rgba(200,80,70,.09)", G:"rgba(80,170,100,.08)", C:"rgba(180,180,180,.04)" };
+const PASTEL = { W:"rgba(220,195,50,.20)", U:"rgba(60,130,230,.18)", B:"rgba(90,60,155,.22)", R:"rgba(210,65,55,.18)", G:"rgba(60,175,90,.17)", C:"rgba(180,180,180,.07)" };
 
 function normalizeColorId(colorId){
   const order = ["W","U","B","R","G"];
@@ -3124,6 +3248,159 @@ let _colFavBound = false;
     renderColeccion();
   });
 })();
+
+
+// ── Hover preview y modal de detalle en Colección ──
+let _cardDetailBound = false;
+function initCardDetailUI(){
+  if(_cardDetailBound) return;
+  const grid = document.getElementById("collectionGrid");
+  if(!grid) return;
+  _cardDetailBound = true;
+
+  const preview     = document.getElementById("cardHoverPreview");
+  const modal       = document.getElementById("cardDetailModal");
+  const modalClose  = document.getElementById("cardModalClose");
+  if(!preview || !modal) return;
+
+  const previewImg    = document.getElementById("chpImg");
+  const previewOracle = document.getElementById("chpOracle");
+
+  // Caché Scryfall para no repetir fetch
+  const _sfCache = new Map();
+  async function getSF(card){
+    if(_sfCache.has(card.id)) return _sfCache.get(card.id);
+    try{
+      let d = null;
+      if(card.setCode && card.collectorNumber) d = await fetchCardExact(card.setCode, card.collectorNumber);
+      else if(card.name) d = await fetchCardByName(card.name);
+      _sfCache.set(card.id, d);
+      return d;
+    }catch{ _sfCache.set(card.id, null); return null; }
+  }
+
+  // ── Hover ──
+  let hoverTimer = null, activeHover = null;
+  grid.addEventListener("mouseover", (e)=>{
+    const el = e.target.closest(".cCard");
+    if(!el || el === activeHover) return;
+    activeHover = el;
+    clearTimeout(hoverTimer);
+    hoverTimer = setTimeout(async ()=>{
+      const card = cards.find(c=>c.id===el.dataset.id);
+      if(!card) return;
+
+      // Posicionar preview
+      const rect = el.getBoundingClientRect();
+      let left = rect.right + 12;
+      if(left + 236 > window.innerWidth) left = Math.max(8, rect.left - 236);
+      preview.style.left = left + "px";
+      preview.style.top  = Math.min(rect.top, window.innerHeight - 430) + "px";
+
+      if(card.imgUrl){ previewImg.src = card.imgUrl; previewImg.style.display = "block"; }
+      else previewImg.style.display = "none";
+      previewOracle.style.display = "none";
+      preview.classList.add("visible");
+
+      const sf = await getSF(card);
+      if(sf && activeHover === el){
+        const img = sf.image_uris?.normal || sf.card_faces?.[0]?.image_uris?.normal || "";
+        if(img){ previewImg.src = img; previewImg.style.display = "block"; }
+        const oracle = sf.oracle_text || sf.card_faces?.[0]?.oracle_text || "";
+        if(oracle){ previewOracle.textContent = oracle; previewOracle.style.display = ""; }
+      }
+    }, 180);
+  });
+  grid.addEventListener("mouseleave", ()=>{
+    clearTimeout(hoverTimer); activeHover = null;
+    preview.classList.remove("visible");
+  });
+
+  // ── Click: modal ──
+  grid.addEventListener("click", async (e)=>{
+    if(e.target.closest("button[data-colstar]")) return;
+    const el = e.target.closest(".cCard");
+    if(!el) return;
+    const card = cards.find(c=>c.id===el.dataset.id);
+    if(!card) return;
+
+    preview.classList.remove("visible");
+
+    const cmdImg    = document.getElementById("cmdImg");
+    const cmdName   = document.getElementById("cmdName");
+    const cmdMeta   = document.getElementById("cmdMeta");
+    const cmdOracle = document.getElementById("cmdOracle");
+    const cmdFlavor = document.getElementById("cmdFlavor");
+    const cmdGrid   = document.getElementById("cmdGrid");
+
+    // Rellenar con datos locales primero
+    cmdName.textContent = card.name || "";
+    cmdImg.src = card.imgUrl || ""; cmdImg.style.display = card.imgUrl ? "block" : "none";
+    cmdOracle.style.display = "none"; cmdOracle.textContent = "";
+    cmdFlavor.style.display = "none"; cmdFlavor.textContent = "";
+
+    const flags = [card.proxy?"Proxy":"", card.foil?"Foil":"", card.promo?"Promo":"", card.promoPre?"Pre":""].filter(Boolean);
+    cmdMeta.innerHTML = `
+      <span class="tag ${rarityClass(card.rarity)}">${escapeHtml(card.rarity||"")}</span>
+      <span class="tag">${escapeHtml(card.color||"")}</span>
+      ${card.mana ? `<span class="tag mono">${escapeHtml(card.mana)}</span>` : ""}
+      ${Number.isFinite(card.manaValue) ? `<span class="tag mono">MV ${card.manaValue}</span>` : ""}
+      ${flags.map(f=>`<span class="tag">${f}</span>`).join("")}
+    `;
+
+    const field = (k,v) => v ? `<div class="cardModalField"><div class="k">${k}</div><div class="v">${escapeHtml(String(v))}</div></div>` : "";
+    cmdGrid.innerHTML = `
+      ${field("Colección", card.setCode ? `${card.setCode} #${card.collectorNumber}` : "")}
+      ${field("Idioma", card.lang)}
+      ${field("Tipo", card.type)}
+      ${field("Cantidad", card.qty||1)}
+      ${field("Precio", card.priceText)}
+    `;
+
+    modal.classList.add("open");
+    document.body.style.overflow = "hidden";
+
+    // Enriquecer con Scryfall
+    const sf = await getSF(card);
+    if(sf){
+      const img = sf.image_uris?.normal || sf.card_faces?.[0]?.image_uris?.normal || card.imgUrl || "";
+      if(img){ cmdImg.src = img; cmdImg.style.display = "block"; }
+      if(sf.name) cmdName.textContent = sf.name;
+
+      const oracle = sf.oracle_text || sf.card_faces?.[0]?.oracle_text || "";
+      if(oracle){ cmdOracle.textContent = oracle; cmdOracle.style.display = ""; }
+      const flavor = sf.flavor_text || sf.card_faces?.[0]?.flavor_text || "";
+      if(flavor){ cmdFlavor.textContent = `"${flavor}"`; cmdFlavor.style.display = ""; }
+
+      const pt      = (sf.power && sf.toughness) ? `${sf.power}/${sf.toughness}` : "";
+      const loyalty = sf.loyalty || "";
+      const legalities = Object.entries(sf.legalities||{}).filter(([,v])=>v==="legal").map(([k])=>k).slice(0,4).join(", ");
+
+      cmdGrid.innerHTML = `
+        ${field("Colección", card.setCode ? `${card.setCode} #${card.collectorNumber}` : sf.set_name||"")}
+        ${field("Idioma", card.lang)}
+        ${field("Tipo", sf.type_line || card.type)}
+        ${field("Maná", sf.mana_cost || card.mana)}
+        ${field("Cantidad", card.qty||1)}
+        ${field("Precio", card.priceText)}
+        ${pt ? field("F/R", pt) : ""}
+        ${loyalty ? field("Lealtad", loyalty) : ""}
+        ${field("Artista", sf.artist)}
+        ${legalities ? field("Legal en", legalities) : ""}
+      `;
+    }
+  });
+
+  // Cerrar modal
+  function closeModal(){
+    modal.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+  if(modalClose) modalClose.addEventListener("click", closeModal);
+  modal.addEventListener("click", e=>{ if(e.target===modal) closeModal(); });
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape" && modal.classList.contains("open")) closeModal(); });
+}
+
 
 /* tabla cartas listeners */
 const cardsTbody = document.querySelector("#tbl tbody");
@@ -5345,7 +5622,6 @@ function renderUserProfilePage(){
     profileAboutEmail: getProfileEmail(),
     rankCollectionValue: cardsCount,
     rankDeckValue: decksCount,
-    rankTotalCopies: totalCopies,
     rankWishValue: wishCount,
     rankDominantColor: dominantColorLabel,
     rankDominantType: dominantType,
@@ -5637,6 +5913,7 @@ function initAppUI(){
   if(marketSearch) marketSearch.addEventListener("input", ()=> renderSalesTable());
 
   loadIntroSets();
+  setTimeout(initCardDetailUI, 0);
 }
 function renderSalesTable(){
   const tbody = document.querySelector("#tblSales tbody");
@@ -5771,7 +6048,12 @@ function showApp(){
 
 function setAuthTop(user){
   const btnOut = document.getElementById("btnSignOutTop");
+  const btnOutSidebar = document.getElementById("btnSignOutSidebar");
   if(btnOut) btnOut.style.display = user ? "" : "none";
+  if(btnOutSidebar){
+    btnOutSidebar.style.display = user ? "" : "none";
+    btnOutSidebar.onclick = ()=> signOutAndReturnToLogin();
+  }
   renderFriendsUI();
   renderSidebarProfile();
 }
@@ -5855,6 +6137,7 @@ function _onFirebaseLogin(firebaseUser){
   fsSaveProfile().catch(()=>{});
   fsLoadSocialData().then(()=> renderUserProfilePage()).catch(()=>{});
   fsSyncAllSaleCards().catch(()=>{});
+  fsLoadWishlist().then(()=> renderWishlist()).catch(()=>{});
 }
 
 async function initAuth(){
@@ -6024,6 +6307,30 @@ window.addEventListener("DOMContentLoaded", ()=>{
 });
 
 </script>
+
+
+<!-- ── Hover preview flotante ── -->
+<div id="cardHoverPreview" class="cCardPreview">
+  <img id="chpImg" src="" alt="">
+  <div id="chpOracle" class="previewOracle" style="display:none;"></div>
+</div>
+
+<!-- ── Modal detalle de carta ── -->
+<div id="cardDetailModal" class="cardModal" role="dialog" aria-modal="true">
+  <div class="cardModalInner">
+    <button class="cardModalClose" id="cardModalClose" aria-label="Cerrar">✕</button>
+    <div class="cardModalImg">
+      <img id="cmdImg" src="" alt="">
+    </div>
+    <div class="cardModalBody">
+      <div class="cardModalName" id="cmdName"></div>
+      <div class="cardModalMeta" id="cmdMeta"></div>
+      <div id="cmdOracle" class="cardModalOracle" style="display:none;"></div>
+      <div id="cmdFlavor" class="cardModalFlavor" style="display:none;"></div>
+      <div class="cardModalGrid" id="cmdGrid"></div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
