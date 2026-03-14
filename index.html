@@ -931,7 +931,7 @@
         <!-- Placeholder de logo (luego lo cambias por imagen) -->
         <img class="auth-logo-img" src="assets/logo.png" alt="Logo MTG Manager">
         <h1 class="auth-title">MTG Manager</h1>
-        <p class="auth-subtitle">Accede a tu colección arcana</p>
+        <p class="auth-subtitle">Tu colección, sin complicaciones</p>
       </div>
 
       <!-- Vista: Login -->
@@ -974,7 +974,7 @@
       <img class="sidebarLogoImg" src="assets/logo.png" alt="Logo MTG Manager">
       <div>
         <div class="sidebarTitle">✦ MTG Manager</div>
-        <div class="sidebarSub">Colección arcana</div>
+        <div class="sidebarSub">Tu colección</div>
       </div>
     </div>
 
@@ -990,7 +990,7 @@
       </div>
     </div>
 
-    <div class="sidebarFooter">✦ Luna Cosmic · Local</div>
+    <div class="sidebarFooter">✦ MTG Manager</div>
 
     <div id="globalErrorBox" class="notice" style="display:none;"></div>
   </aside>
@@ -1013,36 +1013,35 @@
     <section class="panel" data-page="intro">
       <h2 class="h2">Introducción</h2>
 
-      <div class="pill">Bienvenido al mejor gestor de cartas de Magic</div>
+      <div class="pill">Gestor de colección para Magic: The Gathering</div>
 
       <p class="hint">
-        Aquí podrás guardar, gestionar y revisar tu colección de cartas de Magic.
-        Con un par de datos podremos almacenar tus cartas por colores, tipo, rareza, colección...
-        Además de ver estadísticas (colores, tipos) y dinero invertido. También guardamos datos de tus mazos.
+        Registra tu colección de Magic con datos de Scryfall: precio, rareza, color, tipo y más.
+        Organiza mazos, lleva una lista de deseos y consulta estadísticas de lo que tienes.
       </p>
 
       <div class="two mt12">
         <div class="panel soft" style="box-shadow:none;">
           <h3 class="h3">Modo de uso</h3>
-          <p class="hint" style="margin:0;">No sabemos adivinar cartas a la perfección, así que danos algunos datos:</p>
+          <p class="hint" style="margin:0;">Para identificar una carta correctamente necesitas:</p>
           <ul class="hint" style="margin:0;padding-left:16px;">
             <li>Nombre de la carta en español o en inglés</li>
             <li>Código de la colección</li>
             <li>Número de la carta</li>
           </ul>
-          <p class="hint" style="margin:0;">Si no sabes código/número:</p>
+          <p class="hint" style="margin:0;">Si no tienes el código o número:</p>
           <ul class="hint" style="margin:0;padding-left:16px;">
-            <li>Pon solo el nombre (se busca la impresión más antigua).</li>
-            <li>Revisa esta guía: <b>https://i.imgur.com/VHDtcZc.jpeg</b></li>
-            <li>Más abajo tienes una tabla con todas las colecciones y sus códigos.</li>
+            <li>Escribe solo el nombre — se carga la impresión más antigua.</li>
+            <li>Guía visual de dónde encontrar el código: <b>https://i.imgur.com/VHDtcZc.jpeg</b></li>
+            <li>La tabla al final de esta página lista todas las colecciones y sus códigos.</li>
           </ul>
         </div>
 
         <div class="panel soft" style="box-shadow:none;">
           <h3 class="h3">Ajustes y guardado</h3>
-          <p class="hint" style="margin:0;">Los datos se guardan en tu navegador. Puedes exportar/importar JSON.</p>
-          <p class="hint" style="margin:0;">También puedes importar tus mazos y cartas en JSON o TXT/CSV.</p>
-          <p class="hint" style="margin:0;">Tema, moneda, tamaño de letra y extras están en Ajustes.</p>
+          <p class="hint" style="margin:0;">Todo se guarda localmente en el navegador. Exporta e importa en JSON cuando quieras.</p>
+          <p class="hint" style="margin:0;">Los mazos y cartas también se pueden importar en TXT o CSV (ManaBox).</p>
+          <p class="hint" style="margin:0;">Tema, moneda y tamaño de letra se configuran en Ajustes, dentro de tu perfil.</p>
           <div class="pillRow">
             <span class="pill">💾 Guardado local</span>
             <span class="pill">📤 Exportar</span>
@@ -1054,7 +1053,7 @@
 
       <div class="panel" style="box-shadow:none; margin-top:12px;">
         <h3 class="h3">Colecciones de Magic</h3>
-        <p class="hint">Listado completo de colecciones oficiales de Magic: The Gathering (Scryfall).</p>
+        <p class="hint">Colecciones oficiales de Magic: The Gathering según Scryfall.</p>
         <div class="tablewrap" style="max-height:360px;">
           <table id="tblIntroSets" style="min-width:520px;">
             <thead>
@@ -1087,7 +1086,7 @@
         <div>
           <label>Nombre (ES o EN)</label>
           <input id="inName" placeholder="Sol Ring / Anillo solar"/>
-          <div class="hint">Si dejas SetCode y Nº vacíos, se añade la impresión más antigua.</div>
+          <div class="hint">Sin SetCode y Nº se carga la impresión más antigua disponible.</div>
         </div>
         <div>
           <label>SetCode (opcional)</label>
@@ -1230,24 +1229,24 @@
 
       <div class="moneyGrid">
         <div class="panel soft moneyCard" style="box-shadow:none;">
-          <h3 class="h3">Dinero en cartones de colores</h3>
+          <h3 class="h3">Valor total</h3>
           <div class="moneyValue" id="moneyInvestAll">0.00 €</div>
-          <div class="hint">Suma de precio × cantidad</div>
+          <div class="hint">Precio × cantidad de cada carta</div>
         </div>
         <div class="panel soft moneyCard" style="box-shadow:none;">
           <h3 class="h3">Sin proxies</h3>
           <div class="moneyValue" id="moneyInvestNoProxy">0.00 €</div>
-          <div class="hint">Ignora las cartas marcadas como proxy</div>
+          <div class="hint">Excluye proxies</div>
         </div>
         <div class="panel soft moneyCard" style="box-shadow:none;">
           <h3 class="h3">Mejor venta estimada</h3>
           <div class="moneyValue" id="moneyBestSellAll">0.00 €</div>
-          <div class="hint">Usa el campo “Mejor venta” × cantidad</div>
+          <div class="hint">Campo "mejor venta" × cantidad</div>
         </div>
         <div class="panel soft moneyCard" style="box-shadow:none;">
           <h3 class="h3">Beneficio estimado</h3>
           <div class="moneyValue" id="moneyProfitAll">0.00 €</div>
-          <div class="hint">Mejor venta estimada − inversión</div>
+          <div class="hint">Mejor venta − valor total</div>
         </div>
       </div>
     </section>
@@ -1293,7 +1292,7 @@
         <div>
           <label>Color (identidad)</label>
           <select id="searchColors"></select>
-          <div class="hint">Ej: WU = blanco/azul. “Incoloro” = sin WUBRG.</div>
+          <div class="hint">Ej: WU = blanco/azul. Incoloro = sin colores WUBRG.</div>
         </div>
 
         <div>
@@ -1336,7 +1335,7 @@
         <span class="pill">Valor (€): <b id="colSumEur">0.00</b></span>
       </div>
 
-      <div class="hint mb10">Tu colección guardada. Aquí sí se ven las cartas y arriba puedes buscarlas sin invocar al caos.</div>
+      <div class="hint mb10">Todas tus cartas guardadas. Filtra por nombre, set, tipo o texto.</div>
       <div class="row mb10" style="gap:10px; flex-wrap:wrap; align-items:end;">
         <div style="min-width:260px; flex:1 1 320px;">
           <label>Buscar en tu colección</label>
@@ -1386,7 +1385,7 @@
             <button class="btn ghost tiny" id="btnDeckDuplicate">Duplicar</button>
             <button class="btn danger tiny" id="btnDeckDelete">Eliminar</button>
           </div>
-          <div class="hint">Renombrar/Duplicar/Eliminar afectan al mazo seleccionado.</div>
+          <div class="hint">Estas acciones afectan al mazo seleccionado en el desplegable.</div>
 
           <hr class="hr"/>
 
@@ -1412,7 +1411,7 @@
             <div class="spacer"></div>
             <span class="pill">Actual: <b id="deckCommanderLabel">—</b></span>
           </div>
-          <div class="hint">Puedes poner solo el nombre. Si pones set+nº, se verá exacto al exportar y en detalles.</div>
+          <div class="hint">Con solo el nombre es suficiente. Set+nº garantiza la impresión exacta al exportar.</div>
 
           <hr class="hr"/>
 
@@ -1437,7 +1436,7 @@
           </div>
 
           <button class="btn" id="btnAddToDeck" style="margin-top:10px;width:100%;">Añadir al mazo</button>
-          <div class="hint">No consulta Scryfall aquí: guarda referencia (nombre + set + nº) y cantidad.</div>
+          <div class="hint">No consulta Scryfall al añadir: guarda la referencia y la cantidad.</div>
 
           <hr class="hr"/>
 
@@ -1447,7 +1446,7 @@
             <button class="btn ghost" id="btnDeckExportOneJson">Exportar mazo (JSON)</button>
             <button class="btn ghost" id="btnDeckCopyTxt">Copiar TXT</button>
           </div>
-          <div class="hint">Exporta/“copia” el mazo seleccionado.</div>
+          <div class="hint">Exporta o copia el mazo actual.</div>
         </div>
 
         <div class="panel soft" style="box-shadow:none;">
@@ -1492,7 +1491,7 @@
     <section class="panel is-hidden" data-page="mis_ventas" style="display:none;">
       <div class="pageHeader">
         <h2>Tus ventas</h2>
-        <p>Estas son tus cartas marcadas como disponibles para vender.</p>
+        <p>Cartas de tu colección marcadas como disponibles para venta.</p>
       </div>
 
       <div class="sectionActions">
@@ -1517,7 +1516,7 @@
     <section class="panel is-hidden" data-page="tienda" style="display:none;">
       <div class="pageHeader">
         <h2>Tienda</h2>
-        <p>Aquí ves las ventas públicas de otros usuarios guardados en este navegador.</p>
+        <p>Ventas activas de otros usuarios registrados en este navegador.</p>
       </div>
 
       <div class="sectionActions">
@@ -1581,7 +1580,7 @@
 
         <div class="panel soft deckDetailsPanel" style="box-shadow:none;">
           <h3 class="h3">Detalles</h3>
-          <div id="deckViewDetails" class="hint">Selecciona una carta del mazo.</div>
+          <div id="deckViewDetails" class="hint">Selecciona una carta para ver sus detalles.</div>
         </div>
       </div><!-- /deckViewGrid -->
     </section>
@@ -1589,7 +1588,7 @@
     <!-- AJUSTES -->
     <section class="panel is-hidden" data-page="deseos" style="display:none;">
       <h2 class="h2">Lista de deseos</h2>
-      <p class="hint">Guarda cartas que quieres conseguir, compara con tu colección y registra historial de precios.</p>
+      <p class="hint">Cartas que quieres conseguir. Compara con tu colección y rastrea el historial de precios.</p>
 
       <div class="panel soft" style="box-shadow:none;">
         <div class="grid-4">
@@ -1634,7 +1633,7 @@
         <div class="row" style="align-items:flex-start;gap:12px;">
           <div>
             <h2>Mi perfil</h2>
-            <p>Tu rincón público y privado dentro de la app. Aquí miras, editas y gestionas a tu pequeña tribu de cartones.</p>
+            <p>Tu perfil y estadísticas de colección.</p>
           </div>
           <div class="spacer"></div>
           <div class="profileHeaderActions">
@@ -1644,7 +1643,7 @@
         </div>
       </div>
 
-      <div class="profileHero" id="profileHero"><div class="profileHeroOverlay"></div><div class="profileHeroContent"><img id="profileAvatarLarge" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar"><div class="profileMeta"><h2 id="profileDisplayName">Usuario</h2><div class="profileEmail" id="profileDisplayEmail">correo@ejemplo.com</div><div class="profileMini"><span class="pill">Colección: <b id="profileCardsCount">0</b></span><span class="pill">Mazos: <b id="profileDecksCount">0</b></span><span class="pill">Deseos: <b id="profileWishCount">0</b></span></div></div></div></div>
+      <div class="profileHero" id="profileHero"><div class="profileHeroOverlay"></div><div class="profileHeroContent"><img id="profileAvatarLarge" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar"><div class="profileMeta"><h2 id="profileDisplayName">Usuario</h2><div class="profileEmail" id="profileDisplayEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="89eae6fbfbece6c9ece3ece4f9e5e6a7eae6e4">[email&#160;protected]</a></div><div class="profileMini"><span class="pill">Colección: <b id="profileCardsCount">0</b></span><span class="pill">Mazos: <b id="profileDecksCount">0</b></span><span class="pill">Deseos: <b id="profileWishCount">0</b></span></div></div></div></div>
 
       <div class="profileTabs" id="profileTabs">
         <button class="profileTabBtn active" data-profile-tab="resumen">Resumen</button>
@@ -1662,12 +1661,12 @@
               <img id="profileAvatarPreview" class="profileSmallAvatar" src="assets/logo.png" alt="Preview avatar">
               <div>
                 <div><b id="profilePublicName">Usuario</b></div>
-                <div class="hint" id="profilePublicBio">Todavía no has escrito una bio. Un pequeño misterio ambulante.</div>
+                <div class="hint" id="profilePublicBio">Sin bio todavía.</div>
               </div>
             </div>
             <div class="profileAboutList">
               <div class="profileAboutItem"><span class="label">Nombre visible</span><span id="profileAboutName">Usuario</span></div>
-              <div class="profileAboutItem"><span class="label">Email</span><span id="profileAboutEmail">correo@ejemplo.com</span></div>
+              <div class="profileAboutItem"><span class="label">Email</span><span id="profileAboutEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3d5e524f4f58527d585758504d5152135e5250">[email&#160;protected]</a></span></div>
               <div class="profileAboutItem"><span class="label">Cartas distintas</span><span id="profileStatCards">0</span></div>
               <div class="profileAboutItem"><span class="label">Mazos</span><span id="profileStatDecks">0</span></div>
               <div class="profileAboutItem"><span class="label">Deseos</span><span id="profileStatWishes">0</span></div>
@@ -1679,40 +1678,40 @@
             <div class="profileBadgeBox">
               <div>
                 <div style="font-size:42px;line-height:1;">🏵️</div>
-                <div style="font-weight:800;margin-top:10px;">Todavía no has desbloqueado insignias</div>
-                <div class="hint" style="margin-top:6px;">Pero ya tienes un perfil con más personalidad que muchas apps enteras.</div>
+                <div style="font-weight:800;margin-top:10px;">Sin insignias desbloqueadas</div>
+                <div class="hint" style="margin-top:6px;">Las insignias se añadirán próximamente.</div>
               </div>
             </div>
           </div>
         </div>
 
         <div class="panel soft profileRanking" style="box-shadow:none;">
-          <h3 class="h3">Ranking de cartones</h3>
+          <h3 class="h3">Estadísticas</h3>
           <div class="profileRankingTop">
             <div class="rankCard">
               <div class="rankIcon">🥉</div>
               <div style="font-weight:800;">Deseos</div>
               <div class="rankPts" id="rankWishValue">0</div>
-              <div class="hint">Cartas en seguimiento</div>
+              <div class="hint">En seguimiento</div>
             </div>
             <div class="rankCard big">
               <div class="rankIcon">🥇</div>
               <div style="font-weight:800;">Colección</div>
               <div class="rankPts" id="rankCollectionValue">0</div>
-              <div class="hint">Cartas distintas guardadas</div>
+              <div class="hint">Cartas distintas</div>
             </div>
             <div class="rankCard">
               <div class="rankIcon">🥈</div>
               <div style="font-weight:800;">Mazos</div>
               <div class="rankPts" id="rankDeckValue">0</div>
-              <div class="hint">Construcciones activas</div>
+              <div class="hint">Mazos activos</div>
             </div>
           </div>
           <div class="rankList">
-            <div class="rankListItem"><span>#1</span><span>Cartas totales estimadas</span><span id="rankTotalCards">0</span></div>
-            <div class="rankListItem"><span>#2</span><span>Copias en la colección</span><span id="rankTotalCopies">0</span></div>
-            <div class="rankListItem"><span>#3</span><span>Items en la wishlist</span><span id="rankWishlistTotal">0</span></div>
-            <div class="rankListItem"><span>#4</span><span>Ventas activas</span><span id="rankSalesTotal">0</span></div>
+            <div class="rankListItem"><span>#1</span><span>Cartas (total)</span><span id="rankTotalCards">0</span></div>
+            <div class="rankListItem"><span>#2</span><span>Copias guardadas</span><span id="rankTotalCopies">0</span></div>
+            <div class="rankListItem"><span>#3</span><span>Items en deseos</span><span id="rankWishlistTotal">0</span></div>
+            <div class="rankListItem"><span>#4</span><span>En venta</span><span id="rankSalesTotal">0</span></div>
           </div>
         </div>
       </div>
@@ -1720,7 +1719,7 @@
       <div class="profileTabPane" data-profile-pane="amigos">
         <div class="panel soft" style="box-shadow:none;">
           <h3 class="h3">Amigos</h3>
-          <div class="hint">Busca por nombre de usuario o email local y envía solicitud. Todo queda en este navegador, así que no es una red social galáctica, pero cumple.</div>
+          <div class="hint">Busca por nombre de usuario o email. Los datos se almacenan solo en este navegador.</div>
           <div class="row mt12" style="gap:8px; align-items:center;">
             <input id="friendSearchInput" placeholder="Usuario o email">
             <button class="btn" id="btnSendFriendRequest">Añadir amigo</button>
@@ -1737,7 +1736,7 @@
       <div class="profileTabPane" data-profile-pane="solicitudes">
         <div class="panel soft" style="box-shadow:none;">
           <h3 class="h3">Solicitudes pendientes</h3>
-          <div class="hint">Acepta, rechaza o cancela. Diplomacia ligera, cero dragones.</div>
+          <div class="hint">Acepta, rechaza o cancela solicitudes pendientes.</div>
           <h4 class="h3" style="font-size:1rem;margin-top:14px;">Recibidas</h4>
           <div id="friendRequestsReceived" style="margin-top:8px;"></div>
           <hr class="hr">
@@ -1751,10 +1750,10 @@
           <div class="panel soft" style="box-shadow:none;">
             <h3 class="h3">Imagen de perfil</h3>
             <div class="profilePreviewRow"><img id="profileEditAvatarPreview" class="profileSmallAvatar" src="assets/logo.png" alt="Preview avatar"><div class="row" style="gap:8px;"><label class="btn uploadBtn" for="profileAvatarInput">Subir foto</label><button class="btn ghost" id="btnResetAvatar">Restablecer</button></div></div>
-            <input class="fileInput" id="profileAvatarInput" type="file" accept="image/*"><div class="hint">Se guarda en tu navegador. Nada de portales interdimensionales.</div><hr class="hr"><h3 class="h3">Datos del perfil</h3><label>Nombre visible</label><input id="profileNameInput" placeholder="Tu nombre de perfil"><label class="mt10">Biografía corta</label><input id="profileBioInput" placeholder="Ej: Coleccionista de Commander y cartones brillantes"><div class="row mt12"><button class="btn" id="btnSaveProfileText">Guardar perfil</button></div>
+            <input class="fileInput" id="profileAvatarInput" type="file" accept="image/*"><div class="hint">Se guarda localmente en el navegador.</div><hr class="hr"><h3 class="h3">Datos del perfil</h3><label>Nombre visible</label><input id="profileNameInput" placeholder="Nombre visible"><label class="mt10">Biografía corta</label><input id="profileBioInput" placeholder="Descripción breve"><div class="row mt12"><button class="btn" id="btnSaveProfileText">Guardar perfil</button></div>
           </div>
           <div class="panel soft" style="box-shadow:none;">
-            <h3 class="h3">Banner de fondo</h3><div class="row" style="gap:8px; margin-bottom:10px;"><label class="btn uploadBtn" for="profileBannerInput">Subir banner</label><button class="btn ghost" id="btnResetBanner">Restablecer</button></div><input class="fileInput" id="profileBannerInput" type="file" accept="image/*"><div class="hint">Recomendado: imagen horizontal.</div><hr class="hr"><h3 class="h3">Vista previa</h3><div class="profileHero" id="profileHeroEditPreview"><div class="profileHeroOverlay"></div><div class="profileHeroContent"><img id="profileEditAvatarLarge" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar"><div class="profileMeta"><h2 id="profileEditDisplayName">Usuario</h2><div class="profileEmail" id="profileEditDisplayEmail">correo@ejemplo.com</div></div></div></div>
+            <h3 class="h3">Banner de fondo</h3><div class="row" style="gap:8px; margin-bottom:10px;"><label class="btn uploadBtn" for="profileBannerInput">Subir banner</label><button class="btn ghost" id="btnResetBanner">Restablecer</button></div><input class="fileInput" id="profileBannerInput" type="file" accept="image/*"><div class="hint">Mejor en formato horizontal.</div><hr class="hr"><h3 class="h3">Vista previa</h3><div class="profileHero" id="profileHeroEditPreview"><div class="profileHeroOverlay"></div><div class="profileHeroContent"><img id="profileEditAvatarLarge" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar"><div class="profileMeta"><h2 id="profileEditDisplayName">Usuario</h2><div class="profileEmail" id="profileEditDisplayEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f89b978a8a9d97b89d929d95889497d69b9795">[email&#160;protected]</a></div></div></div></div>
           </div>
         </div>
       </div>
@@ -1772,24 +1771,24 @@
             <select id="setTheme">
               <option value="pink">✦ Luna Cosmic</option><option value="red">♂ Sangre</option><option value="green">☽ Esmeralda</option><option value="yellow">☀ Sol Dorado</option><option value="blue">☿ Zafiro</option><option value="black">◉ Ónix</option>
             </select>
-            <div class="hint">Cambia colores de toda la app. “Negro” es modo oscuro.</div>
+            <div class="hint">Cambia la paleta de colores de la app.</div>
           </div>
           <div class="panel soft" style="box-shadow:none;">
             <h3 class="h3">Tamaño de letra</h3>
             <label>Tamaño: <span class="mono" id="fontPxLabel">16</span>px</label>
             <input id="setFontSize" type="range" min="12" max="20" step="1"/>
-            <div class="hint">Recomendado: 15–17 en PC, 16–18 en móvil.</div>
+            <div class="hint">15–17px en escritorio, 16–18px en móvil.</div>
           </div>
           <div class="panel soft" style="box-shadow:none;">
             <h3 class="h3">Comodidad</h3>
-            <div class="toggleRow" style="margin-top:8px;"><input id="setCompact" type="checkbox" class="chk"/><div><b>Modo compacto</b><div class="hint" style="margin:2px 0 0;">Más apretado.</div></div></div>
-            <div class="toggleRow" style="margin-top:10px;"><input id="setReducedMotion" type="checkbox" class="chk"/><div><b>Reducir animaciones</b><div class="hint" style="margin:2px 0 0;">Útil si te marea o va lento en móvil.</div></div></div>
+            <div class="toggleRow" style="margin-top:8px;"><input id="setCompact" type="checkbox" class="chk"/><div><b>Modo compacto</b><div class="hint" style="margin:2px 0 0;">Reduce el espaciado general.</div></div></div>
+            <div class="toggleRow" style="margin-top:10px;"><input id="setReducedMotion" type="checkbox" class="chk"/><div><b>Reducir animaciones</b><div class="hint" style="margin:2px 0 0;">Desactiva transiciones y animaciones.</div></div></div>
           </div>
           <div class="panel soft" style="box-shadow:none;">
             <h3 class="h3">Precios</h3>
             <label>Preferencia de moneda</label>
             <select id="setCurrency"><option value="EUR">Mostrar € primero</option><option value="USD">Mostrar $ primero</option></select>
-            <div class="hint">Si no hay precio en esa moneda, usa la otra.</div>
+            <div class="hint">Si no hay precio en esa divisa, se muestra la otra.</div>
           </div>
         </div>
         <div class="panel soft" style="box-shadow:none;margin-top:14px;">
@@ -1804,7 +1803,7 @@
           <h3 class="h3">Backup automático</h3>
           <div class="toggleRow" style="margin-bottom:10px;">
             <input id="setAutoBackup" type="checkbox" class="chk"/>
-            <div><b>Activar backup automático</b><div class="hint" style="margin:2px 0 0;">Guarda una copia en el navegador cada X minutos.</div></div>
+            <div><b>Activar backup automático</b><div class="hint" style="margin:2px 0 0;">Copia automática en localStorage.</div></div>
           </div>
           <label>Frecuencia</label>
           <select id="setAutoBackupEvery">
@@ -1827,7 +1826,7 @@
   </main>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
 // ===== Auth local (sin Supabase) =====
 // Nota: esto SOLO gestiona login/registro en este archivo.
@@ -2116,12 +2115,12 @@ function doBackupNow(silent=false){
   const payload = buildBackupPayload();
   saveBackupLocal(payload);
   updateBackupInfoUI();
-  if(!silent) alert("Backup guardado ✅");
+  if(!silent) alert("Backup guardado.");
 }
 function restoreLastBackup(){
   const last = getLastBackup();
-  if(!last){ alert("No hay backup para restaurar."); return; }
-  if(!confirm(`¿Restaurar el backup del ${formatTs(last.ts)}? Esto reemplaza tus datos actuales.`)) return;
+  if(!last){ alert("No hay ningún backup guardado."); return; }
+  if(!confirm(`¿Restaurar el backup del ${formatTs(last.ts)}? Se reemplazarán los datos actuales.`)) return;
 
   cards = Array.isArray(last.cards) ? last.cards : [];
   decks = Array.isArray(last.decks) ? last.decks : [];
@@ -2143,7 +2142,7 @@ function restoreLastBackup(){
   if(document.querySelector('section[data-page="coleccion"]:not(.is-hidden)')) renderColeccion();
 
   updateBackupInfoUI();
-  alert("Backup restaurado ✅");
+  alert("Backup restaurado.");
 }
 function downloadBackup(){
   const payload = buildBackupPayload();
@@ -2637,7 +2636,7 @@ function computeInvestmentTotals(){
 function updateInvestmentUI(){
   const t = computeInvestmentTotals();
 
-  // Stats tab: dinero en cartones
+  // Stats tab: dinero en colección
   const elInvAll      = document.getElementById("moneyInvestAll");
   const elInvNoProxy  = document.getElementById("moneyInvestNoProxy");
   const elBestSellAll = document.getElementById("moneyBestSellAll");
@@ -2758,7 +2757,7 @@ function renderColeccion(){
 
     el.innerHTML = `
       <div class="collectionVisual">
-        ${c.imgUrl ? `<img class="collectionThumb" src="${escapeHtml(c.imgUrl)}" alt="${escapeHtml(c.name||"")}">` : `<div class="collectionThumb placeholder">Sin imagen<br>pero sigue siendo cartón noble</div>`}
+        ${c.imgUrl ? `<img class="collectionThumb" src="${escapeHtml(c.imgUrl)}" alt="${escapeHtml(c.name||"")}">` : `<div class="collectionThumb placeholder">Sin imagen</div>`}
         <div>
       <div class="cTop">
         <div>
@@ -3285,7 +3284,7 @@ function duplicateDeck(deckId){
 function deleteDeck(deckId){
   const d = decks.find(x=>x.id===deckId) || selectedDeck();
   if(!d) return alert("No hay mazo para eliminar.");
-  if(!confirm(`¿Eliminar el mazo "${d.name}"?`)) return;
+  if(!confirm(`Eliminar el mazo "${d.name}"?`)) return;
 
   const currentSel = document.getElementById("deckSelect")?.value || null;
   decks = decks.filter(x=>x.id !== d.id);
@@ -3484,7 +3483,7 @@ async function copyDeckTxt(deckId){
   const txt = deckToText(d);
   try{
     await navigator.clipboard.writeText(txt);
-    alert("TXT copiado al portapapeles ✅");
+    alert("TXT copiado al portapapeles.");
   }catch{
     // fallback
     const ta = document.createElement("textarea");
@@ -3493,7 +3492,7 @@ async function copyDeckTxt(deckId){
     ta.select();
     document.execCommand("copy");
     ta.remove();
-    alert("TXT copiado ✅");
+    alert("TXT copiado.");
   }
 }
 
@@ -3862,7 +3861,7 @@ function renderWishlist(){
     `;
 
     row.querySelector('[data-act="del"]').onclick = ()=>{
-      if(!confirm(`¿Eliminar "${w.name}" de deseos?`)) return;
+      if(!confirm(`Eliminar "${w.name}" de deseos?`)) return;
       wishlist = wishlist.filter(x=>x.id !== w.id);
       saveWishlist();
       renderWishlist();
@@ -4248,7 +4247,7 @@ function initSettingsUI(){
   };
 
   document.getElementById("btnResetSettings").onclick = ()=>{
-    if(!confirm("¿Resetear ajustes (tema, letra, etc.)?")) return;
+    if(!confirm("¿Resetear todos los ajustes?")) return;
     settings = {...DEFAULT_SETTINGS};
     saveSettings();
     applySettings();
@@ -4508,7 +4507,7 @@ document.getElementById("btnImportManaBox").onclick = ()=>{
       updateInvestmentUI();
   renderSalesTable();
       showPage("cartas");
-      alert("Importación ManaBox CSV terminada (las filas que fallen se omiten).");
+      alert("Importación completada. Las filas con errores se omitieron.");
     }catch(e){
       alert("No se pudo importar ManaBox CSV: " + (e?.message||e));
     }
@@ -4517,7 +4516,7 @@ document.getElementById("btnImportManaBox").onclick = ()=>{
 };
 
 document.getElementById("btnClear").onclick = ()=>{
-  if(confirm("¿Borrar TODAS las cartas guardadas?")){
+  if(confirm("¿Borrar todas las cartas guardadas?")){
     cards = [];
     saveCards();
     renderCardsTableFull();
@@ -4580,7 +4579,7 @@ document.getElementById("btnSetCommander").onclick = ()=>{
   touchDeck(d);
   saveDecks();
   renderDecks();
-  alert("Comandante guardado ✅");
+  alert("Comandante guardado.");
 };
 
 document.getElementById("btnClearCommander").onclick = ()=>{
@@ -4604,7 +4603,7 @@ document.getElementById("btnAddToDeck").onclick = ()=>{
   const cn = document.getElementById("deckCardCn").value.trim();
   const qty = Math.max(1, parseInt(document.getElementById("deckCardQty").value||"1",10));
 
-  if(!name || !set || !cn){ alert("Rellena nombre + setCode + nº."); return; }
+  if(!name || !set || !cn){ alert("Nombre, SetCode y número son obligatorios."); return; }
 
   const key = `${set}#${cn}`;
   const existing = d.items.find(it=> (it.key===key && it.name.toLowerCase()===name.toLowerCase()));
@@ -4646,7 +4645,7 @@ document.getElementById("btnDeckImport").onclick = ()=>{
       }
 
       if(!Array.isArray(imported) || !imported.length){
-        alert("No se detectaron mazos en el archivo.");
+        alert("No se encontraron mazos en el archivo.");
         return;
       }
 
@@ -4665,7 +4664,7 @@ document.getElementById("btnDeckImport").onclick = ()=>{
       saveDecks();
       normalizeDecks();
       renderDecks();
-      alert(`Importados: ${imported.length} mazo(s).`);
+      alert(`${imported.length} mazo(s) importados.`);
     }catch(e){
       alert("No se pudo importar: " + (e.message||e));
     }
@@ -4953,7 +4952,7 @@ function renderUserProfilePage(){
   if(editDisplayName) editDisplayName.textContent = displayName;
   if(email) email.textContent = getProfileEmail();
   if(editEmail) editEmail.textContent = getProfileEmail();
-  if(bio) bio.textContent = profile.bio?.trim() || "Todavía no has escrito una bio. Un pequeño misterio ambulante.";
+  if(bio) bio.textContent = profile.bio?.trim() || "Sin bio.";
   if(nameInput) nameInput.value = profile.displayName || "";
   if(bioInput) bioInput.value = profile.bio || "";
 
@@ -5024,7 +5023,7 @@ function initUserProfilePage(){
         renderUserProfilePage();
         renderSalesTable();
       }catch{
-        alert("No se pudo cargar la imagen de perfil.");
+        alert("No se pudo cargar la imagen.");
       }
       e.target.value = "";
     });
@@ -5073,7 +5072,7 @@ function initUserProfilePage(){
       setAuthTop(getCurrentSessionUser());
       renderSalesTable();
       openProfileTab('resumen');
-      alert("Perfil guardado ✅");
+      alert("Perfil guardado.");
     };
   }
 
@@ -5085,7 +5084,7 @@ function initUserProfilePage(){
         if(friendSearchInput) friendSearchInput.value = "";
         renderUserProfilePage();
         openProfileTab('amigos');
-        alert(res.autoAccepted ? "Solicitud mutua detectada: ya sois amigos ✅" : "Solicitud enviada ✅");
+        alert(res.autoAccepted ? "Solicitud mutua: ya sois amigos." : "Solicitud enviada.");
       }catch(err){
         alert(err?.message || err);
       }
@@ -5516,30 +5515,4 @@ async function initAuth(){
 
   // Auto-login si hay sesión guardada
   const sess = getSession();
-  if(sess) reloadScopedAppState();
-  setAuthTop(sess);
-  if(sess && getRememberPref()){
-    try{ await cloudLoadAll(); }catch{}
-    initTabs();
-    initUserProfilePage();
-    showPage(getLastTab());
-    renderCardsTableFull();
-    renderDecks();
-    updateInvestmentUI();
-    renderSalesTable();
-    showApp();
-  }else{
-    if(!getRememberPref()) clearSession();
-    showLogin();
-  }
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  initAuth();
-});
-
-
-</script>
-
-</body>
-</html>
+  if(sess) relo
