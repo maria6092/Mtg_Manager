@@ -6608,6 +6608,67 @@ function _fbErrorMsg(err){
 // 1. Inicializa la UI estática inmediatamente
 // 2. Espera a Firebase para saber si hay sesión
 window.addEventListener("DOMContentLoaded", ()=>{
+   // ── Manejar enlace de recuperación de contraseña ──
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get("mode");
+  const oobCode = params.get("oobCode");
+
+  if (mode === "resetPassword" && oobCode) {
+    // Ocultar pantalla de login
+    const authScreen = document.getElementById("authScreen");
+    if (authScreen) authScreen.style.display = "none";
+
+    // Crear pantalla de nueva contraseña con tu estilo existente
+    const div = document.createElement("div");
+    div.className = "auth-screen is-enter";
+    div.style.display = "flex";
+    div.innerHTML = `
+      <div class="auth-card">
+        <div class="auth-brand">
+          <img class="auth-logo-img" src="assets/logo.png" alt="Logo">
+          <h1 class="auth-title">MTG Manager</h1>
+          <p class="auth-subtitle">Establece tu nueva contraseña</p>
+        </div>
+        <div class="auth-form">
+          <input id="newPass1" type="password" placeholder="Nueva contraseña" />
+          <input id="newPass2" type="password" placeholder="Repite la contraseña" />
+          <button class="btn auth-btn" id="btnConfirmReset">Cambiar contraseña</button>
+          <div class="auth-msg" id="resetMsg"></div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(div);
+
+    document.getElementById("btnConfirmReset").onclick = async () => {
+      const p1 = document.getElementById("newPass1").value;
+      const p2 = document.getElementById("newPass2").value;
+      const msg = document.getElementById("resetMsg");
+      msg.style.color = "#f87171";
+
+      if (!p1 || p1 !== p2) { msg.textContent = "Las contraseñas no coinciden."; return; }
+      if (p1.length < 6)    { msg.textContent = "Mínimo 6 caracteres."; return; }
+
+      try {
+        await fbAuth.confirmPasswordReset(oobCode, p1);
+        msg.style.color = "#4ade80";
+        msg.textContent = "¡Contraseña cambiada! Redirigiendo al login…";
+        setTimeout(() => {
+          // Limpiar parámetros de URL y recargar
+          window.history.replaceState({}, document.title, window.location.pathname);
+          window.location.reload();
+        }, 2500);
+      } catch (err) {
+        const msgs = {
+          "auth/expired-action-code": "El enlace ha caducado. Solicita uno nuevo.",
+          "auth/invalid-action-code": "El enlace no es válido o ya fue usado.",
+          "auth/weak-password":       "Contraseña demasiado débil (mínimo 6 caracteres).",
+        };
+        msg.textContent = msgs[err?.code] || err?.message || "Error desconocido.";
+      }
+    };
+
+    return; // No continuar con el flujo normal de auth
+  }
   // initAppUI se llama desde _onFirebaseLogin (con guard) o cuando no hay sesión
   fbAuth.onAuthStateChanged(async (firebaseUser)=>{
     if(firebaseUser){
