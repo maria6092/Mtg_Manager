@@ -981,6 +981,136 @@
     ::-webkit-scrollbar-thumb{ background:rgba(var(--accent-rgb),.3); border-radius:3px; }
     ::-webkit-scrollbar-thumb:hover{ background:rgba(var(--accent-rgb),.5); }
 
+    /* ── Modal de selección de impresión ── */
+    .printingModal{
+      position:fixed; inset:0; z-index:1100;
+      display:none; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.82);
+      backdrop-filter:blur(8px);
+      padding:16px;
+    }
+    .printingModal.open{ display:flex; }
+    .printingModalInner{
+      width:min(1100px,100%);
+      max-height:90vh;
+      border-radius:18px;
+      border:1px solid rgba(var(--accent-rgb),.35);
+      box-shadow:0 30px 80px rgba(0,0,0,.8);
+      background:var(--bg);
+      display:flex; flex-direction:column;
+      overflow:hidden;
+    }
+    .printingModalHeader{
+      padding:18px 22px 14px;
+      border-bottom:1px solid rgba(var(--accent-rgb),.18);
+      display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+      flex:0 0 auto;
+    }
+    .printingModalTitle{
+      font-family:'Cinzel',serif; font-size:1rem; font-weight:700;
+      color:var(--gold2); letter-spacing:.06em; text-transform:uppercase; margin:0;
+    }
+    .printingModalSubtitle{
+      font-size:.82rem; color:var(--muted); font-family:'Crimson Text',serif;
+      font-style:italic; margin-top:2px;
+    }
+    .printingModalClose{
+      margin-left:auto;
+      background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15);
+      color:#fff; border-radius:50%; width:34px; height:34px;
+      font-size:16px; cursor:pointer; display:grid; place-items:center;
+      flex:0 0 auto; transition:background .15s;
+    }
+    .printingModalClose:hover{ background:rgba(255,255,255,.2); }
+    .printingModalFilters{
+      padding:10px 22px;
+      border-bottom:1px solid rgba(var(--accent-rgb),.12);
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      flex:0 0 auto;
+      background:rgba(var(--soft-rgb),.25);
+    }
+    .printingModalFilters input,
+    .printingModalFilters select{ max-width:200px; padding:8px 12px; font-size:.82rem; }
+    .printingModalBody{ flex:1; overflow-y:auto; padding:18px 22px; }
+    .printingGrid{
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap:14px;
+    }
+    @media(max-width:600px){ .printingGrid{ grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap:10px; } }
+    .printingCard{
+      border:1px solid rgba(var(--accent-rgb),.2);
+      border-radius:12px;
+      background: rgba(var(--card-rgb),.7);
+      overflow:hidden; cursor:pointer;
+      transition: border-color .18s, box-shadow .18s, transform .15s;
+      position:relative;
+    }
+    .printingCard:hover{
+      border-color:rgba(var(--accent-rgb),.55);
+      box-shadow:0 0 20px rgba(var(--accent-rgb),.18), 0 6px 20px rgba(0,0,0,.4);
+      transform:translateY(-3px);
+    }
+    .printingCard.selected{
+      border-color:rgba(var(--accent2-rgb),.9);
+      box-shadow:0 0 24px rgba(var(--accent2-rgb),.3);
+    }
+    .printingCard.selected::after{
+      content:'\2713';
+      position:absolute; top:6px; right:8px;
+      background:var(--gold2); color:var(--deep);
+      font-size:11px; font-weight:900;
+      width:20px; height:20px; border-radius:50%;
+      display:grid; place-items:center;
+      font-family:'Cinzel',serif;
+    }
+    .printingCardImg{
+      width:100%; aspect-ratio:63/88;
+      object-fit:cover; display:block;
+      background:rgba(var(--soft-rgb),.5);
+    }
+    .printingCardImg.placeholder{
+      display:flex; align-items:center; justify-content:center;
+      font-size:.7rem; color:var(--muted); font-family:'Crimson Text',serif;
+      font-style:italic; padding:8px; text-align:center;
+    }
+    .printingCardInfo{
+      padding:8px 10px 10px;
+      border-top:1px solid rgba(var(--accent-rgb),.1);
+    }
+    .printingCardSet{
+      font-family:'Cinzel',serif; font-size:.65rem; font-weight:700;
+      letter-spacing:.06em; text-transform:uppercase; color:var(--gold);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .printingCardNum{ font-family:var(--mono); font-size:.68rem; color:var(--muted); margin-top:1px; }
+    .printingCardYear{ font-size:.68rem; color:var(--muted); margin-top:2px; font-family:'Crimson Text',serif; font-style:italic; }
+    .printingCardPrice{ margin-top:5px; font-family:var(--mono); font-size:.78rem; color:var(--gold2); font-weight:700; }
+    .printingCardRarity{ margin-top:4px; }
+    .printingLoader{
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      padding:48px 24px; gap:14px; color:var(--muted);
+      font-family:'Crimson Text',serif; font-style:italic;
+    }
+    .printingLoaderSpinner{
+      width:32px; height:32px; border-radius:50%;
+      border:3px solid rgba(var(--accent-rgb),.15);
+      border-top-color:var(--gold2);
+      animation: orbRotate .8s linear infinite;
+    }
+    .printingEmpty{
+      text-align:center; padding:40px; color:var(--muted);
+      font-family:'Crimson Text',serif; font-style:italic;
+    }
+    .printingModalFooter{
+      padding:12px 22px;
+      border-top:1px solid rgba(var(--accent-rgb),.15);
+      display:flex; gap:10px; align-items:center; flex:0 0 auto;
+      background:rgba(var(--bg-rgb),.9); flex-wrap:wrap;
+    }
+    details > summary::-webkit-details-marker{ display:none; }
+    details[open] .detailsArrow{ transform:rotate(90deg); }
+
 
     /* ── Card hover preview ── */
     .cCardPreview{
@@ -1274,21 +1404,31 @@
       </div>
 
       <div class="grid">
-        <div>
+        <div style="grid-column:1/-1;">
           <label>Nombre (ES o EN)</label>
-          <input id="inName" placeholder="Sol Ring / Anillo solar"/>
-          <div class="hint">Sin SetCode y Nº se carga la impresión más antigua disponible.</div>
+          <div class="row" style="gap:8px;">
+            <input id="inName" placeholder="Sol Ring / Anillo solar" style="flex:1;"/>
+            <button class="btn" type="button" id="btnOpenPrintings" style="flex:0 0 auto;white-space:nowrap;">🔍 Ver impresiones</button>
+            <button class="btn" id="btnAdd" style="flex:0 0 auto;white-space:nowrap;">Añadir carta</button>
+          </div>
+          <div class="hint">Escribe el nombre y pulsa <b>Ver impresiones</b> para elegir la versión exacta con imagen. O introduce SetCode + Nº abajo y pulsa Añadir carta directamente.</div>
         </div>
-        <div>
-          <label>SetCode (opcional)</label>
-          <input id="inSet" placeholder="cmm" class="mono"/>
-        </div>
-        <div>
-          <label>Nº colección (opcional)</label>
-          <input id="inCn" placeholder="001" class="mono"/>
-        </div>
-        <div style="display:flex;align-items:end;gap:10px;">
-          <button class="btn" id="btnAdd" style="width:100%;">Añadir carta</button>
+        <div style="grid-column:1/-1;">
+          <details>
+            <summary style="cursor:pointer;font-size:.75rem;color:var(--muted);font-family:'Cinzel',serif;letter-spacing:.05em;text-transform:uppercase;user-select:none;list-style:none;display:flex;align-items:center;gap:6px;">
+              <span style="transition:transform .2s;" class="detailsArrow">▸</span> Avanzado: introducir SetCode y Nº manualmente
+            </summary>
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+              <div>
+                <label>SetCode (opcional)</label>
+                <input id="inSet" placeholder="cmm" class="mono"/>
+              </div>
+              <div>
+                <label>Nº colección (opcional)</label>
+                <input id="inCn" placeholder="001" class="mono"/>
+              </div>
+            </div>
+          </details>
         </div>
 
         <div>
@@ -6180,6 +6320,252 @@ function syncSidebarMode(){
 function toggleSidebar(){ const appShell=document.getElementById("appShell"), backdrop=document.getElementById("sidebarBackdrop"); if(!appShell) return; if(window.innerWidth <= 820){ const willOpen = !appShell.classList.contains("sidebar-open"); appShell.classList.toggle("sidebar-open", willOpen); backdrop?.classList.toggle("is-open", willOpen); }else{ appShell.classList.toggle("sidebar-collapsed"); } }
 function initSidebarUI(){ const toggle=document.getElementById("menuToggle"), backdrop=document.getElementById("sidebarBackdrop"); syncSidebarMode(); if(toggle) toggle.addEventListener("click", toggleSidebar); if(backdrop) backdrop.addEventListener("click", closeSidebar); window.addEventListener("resize", syncSidebarMode); document.querySelectorAll(".sidebar .tabbtn").forEach(btn=> btn.addEventListener("click", closeSidebar)); }
 
+/************************************************************
+ * Modal de selección de impresión
+ ************************************************************/
+let _printingAllCards = [];
+let _printingSelected = null;
+let _printingLang = "es";
+
+async function fetchAllPrintings(cardName){
+  const base = await fetchCardByName(cardName);
+  let url = base.prints_search_uri;
+  if(!url) return [base];
+  const all = [];
+  let guard = 0;
+  while(url && guard < 30){
+    guard++;
+    const r = await fetch(url);
+    const j = await r.json();
+    if(j.object === "error") break;
+    if(Array.isArray(j.data)) all.push(...j.data);
+    url = j.has_more ? j.next_page : null;
+  }
+  return all.length ? all : [base];
+}
+
+function renderPrintingGrid(cards, lang, filterQ, filterRarity){
+  const body = document.getElementById("printingModalBody");
+  const countPill = document.getElementById("printingCount");
+  if(!body) return;
+
+  const q = (filterQ || "").trim().toLowerCase();
+  const rar = filterRarity || "";
+
+  let view = cards.slice();
+  if(q){
+    view = view.filter(c=>{
+      const setName = (c.set_name || "").toLowerCase();
+      const setCode = (c.set || "").toLowerCase();
+      const year = (c.released_at || "").slice(0,4);
+      return setName.includes(q) || setCode.includes(q) || year.includes(q);
+    });
+  }
+  if(rar) view = view.filter(c=> (c.rarity || "") === rar);
+
+  // más reciente primero
+  view.sort((a,b)=> (b.released_at || "").localeCompare(a.released_at || ""));
+
+  if(countPill) countPill.textContent = `${view.length} versión${view.length !== 1 ? "es" : ""}`;
+
+  if(!view.length){
+    body.innerHTML = `<div class="printingEmpty">No se encontraron impresiones con ese filtro.</div>`;
+    return;
+  }
+
+  const grid = document.createElement("div");
+  grid.className = "printingGrid";
+
+  for(const c of view){
+    const imgUrl = c.image_uris?.normal
+      || c.image_uris?.small
+      || c.card_faces?.[0]?.image_uris?.normal
+      || "";
+
+    const priceEur = c.prices?.eur || c.prices?.eur_foil || "";
+    const priceUsd = c.prices?.usd || c.prices?.usd_foil || "";
+    const priceLabel = priceEur ? `${parseFloat(priceEur).toFixed(2)} €`
+                     : priceUsd ? `${parseFloat(priceUsd).toFixed(2)} $`
+                     : "Sin precio";
+
+    const year = (c.released_at || "").slice(0,4);
+    const isSelected = _printingSelected && _printingSelected.id === c.id;
+    const rarityLabels = { common:"Común", uncommon:"Poco común", rare:"Rara", mythic:"Mítica", special:"Especial" };
+    const rarLabel = rarityLabels[c.rarity] || c.rarity || "";
+    const rarTag = rarLabel
+      ? `<div class="printingCardRarity"><span class="tag ${rarityClass(rarLabel)}" style="font-size:.62rem;padding:2px 6px;">${escapeHtml(rarLabel)}</span></div>`
+      : "";
+
+    const card = document.createElement("div");
+    card.className = "printingCard" + (isSelected ? " selected" : "");
+    card.dataset.scryfallId = c.id;
+
+    const imgHtml = imgUrl
+      ? `<img class="printingCardImg" src="${escapeHtml(imgUrl)}" alt="${escapeHtml(c.name || "")}" loading="lazy">`
+      : `<div class="printingCardImg placeholder">${escapeHtml(c.set_name || c.name || "")}</div>`;
+
+    card.innerHTML = `
+      ${imgHtml}
+      <div class="printingCardInfo">
+        <div class="printingCardSet">${escapeHtml((c.set || "").toUpperCase())} · ${escapeHtml(c.set_name || "")}</div>
+        <div class="printingCardNum">#${escapeHtml(c.collector_number || "")}</div>
+        <div class="printingCardYear">${escapeHtml(year)}</div>
+        ${rarTag}
+        <div class="printingCardPrice">${escapeHtml(priceLabel)}</div>
+      </div>`;
+
+    card.addEventListener("click", ()=>{
+      _printingSelected = c;
+      grid.querySelectorAll(".printingCard").forEach(el=> el.classList.remove("selected"));
+      card.classList.add("selected");
+      const info = document.getElementById("printingSelectedInfo");
+      const btn = document.getElementById("printingModalConfirm");
+      if(info) info.textContent = `Seleccionada: ${c.name} · ${(c.set||"").toUpperCase()} #${c.collector_number}`;
+      if(btn) btn.disabled = false;
+    });
+
+    card.addEventListener("dblclick", ()=>{
+      _printingSelected = c;
+      confirmPrintingSelection();
+    });
+
+    grid.appendChild(card);
+  }
+
+  body.innerHTML = "";
+  body.appendChild(grid);
+}
+
+function applyPrintingFilters(){
+  const q = document.getElementById("printingFilterQ")?.value || "";
+  const rar = document.getElementById("printingFilterRarity")?.value || "";
+  renderPrintingGrid(_printingAllCards, _printingLang, q, rar);
+}
+
+async function openPrintingModal(cardName, lang){
+  const modal = document.getElementById("printingModal");
+  const body = document.getElementById("printingModalBody");
+  const nameEl = document.getElementById("printingModalCardName");
+  const subEl = document.getElementById("printingModalCardSubtitle");
+  const confirmBtn = document.getElementById("printingModalConfirm");
+  const infoEl = document.getElementById("printingSelectedInfo");
+  if(!modal || !body) return;
+
+  _printingSelected = null;
+  _printingLang = lang || "es";
+  _printingAllCards = [];
+
+  if(nameEl) nameEl.textContent = cardName || "Impresiones disponibles";
+  if(subEl) subEl.textContent = "Cargando todas las impresiones…";
+  if(confirmBtn) confirmBtn.disabled = true;
+  if(infoEl) infoEl.textContent = "Haz clic para seleccionar · Doble clic para añadir directamente";
+  document.getElementById("printingFilterQ").value = "";
+  document.getElementById("printingFilterRarity").value = "";
+  document.getElementById("printingCount").textContent = "…";
+
+  body.innerHTML = `<div class="printingLoader"><div class="printingLoaderSpinner"></div>Buscando impresiones…</div>`;
+  modal.classList.add("open");
+  document.body.style.overflow = "hidden";
+
+  try{
+    _printingAllCards = await fetchAllPrintings(cardName);
+    if(subEl) subEl.textContent = "Selecciona la versión exacta de tu carta";
+    renderPrintingGrid(_printingAllCards, _printingLang, "", "");
+  }catch(e){
+    body.innerHTML = `<div class="printingEmpty">Error al cargar impresiones: ${escapeHtml(e?.message || String(e))}</div>`;
+  }
+}
+
+function closePrintingModal(){
+  const modal = document.getElementById("printingModal");
+  if(modal) modal.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+async function confirmPrintingSelection(){
+  if(!_printingSelected) return;
+  const c = _printingSelected;
+  closePrintingModal();
+
+  const inputName = document.getElementById("inName")?.value?.trim() || c.name;
+  const lang = document.getElementById("inLang")?.value || _printingLang;
+  const qty = Math.max(1, parseInt(document.getElementById("inQty")?.value || "1", 10));
+  const proxy = !!document.getElementById("inProxy")?.checked;
+  const foil = !!document.getElementById("inFoil")?.checked;
+  const promo = !!document.getElementById("inPromo")?.checked;
+  const promoPre = !!document.getElementById("inPromoPre")?.checked;
+  const sale = !!document.getElementById("inSale")?.checked;
+
+  showErr("Añadiendo carta…");
+
+  try{
+    const t = typesEs(c.type_line || "");
+    const price = priceTextFromPrices(c.prices);
+    const bestSell = bestSellPriceText(price);
+    const logoUrl = await fetchSetIconUrl(c.set);
+    const colorId = computeColorId(c);
+    const mv = manaValueFromCard(c);
+
+    const newItem = {
+      id: crypto.randomUUID(),
+      _addedAt: Date.now(),
+      inputName: inputName || c.name,
+      name: c.name || inputName,
+      nameEn: c.name || "",
+      setCode: String(c.set || "").toUpperCase(),
+      setName: c.set_name || "",
+      collectorNumber: String(c.collector_number || ""),
+      type: t.main,
+      subtype: t.sub,
+      colorId,
+      color: colorToEmojisFromCI(colorId),
+      mana: manaToEmojis(c.mana_cost || c.card_faces?.[0]?.mana_cost || ""),
+      manaValue: mv,
+      rarity: rarityMap[c.rarity] || c.rarity || "",
+      logoUrl,
+      imgUrl: c.image_uris?.normal || c.image_uris?.large || c.card_faces?.[0]?.image_uris?.normal || "",
+      oracleText: c.oracle_text || c.card_faces?.[0]?.oracle_text || "",
+      priceText: price,
+      proxy, foil, promo, promoPre,
+      lang,
+      qty,
+      bestSell,
+      fav: false,
+      sale,
+      priceHist: []
+    };
+
+    updatePriceHistory(newItem, newItem.priceText);
+    cards.unshift(newItem);
+    saveCards();
+    clearAddForm();
+    showErr("");
+    renderCardsTableFull();
+    showPage("cartas");
+  }catch(e){
+    showErr("Error al añadir: " + (e?.message || e));
+  }
+}
+
+function initPrintingModal(){
+  const modal = document.getElementById("printingModal");
+  const closeBtn = document.getElementById("printingModalClose");
+  const cancelBtn = document.getElementById("printingModalCancel");
+  const confirmBtn = document.getElementById("printingModalConfirm");
+  const filterQ = document.getElementById("printingFilterQ");
+  const filterRarity = document.getElementById("printingFilterRarity");
+
+  if(closeBtn) closeBtn.addEventListener("click", closePrintingModal);
+  if(cancelBtn) cancelBtn.addEventListener("click", closePrintingModal);
+  if(modal) modal.addEventListener("click", e=>{ if(e.target === modal) closePrintingModal(); });
+  if(confirmBtn) confirmBtn.addEventListener("click", confirmPrintingSelection);
+  if(filterQ) filterQ.addEventListener("input", applyPrintingFilters);
+  if(filterRarity) filterRarity.addEventListener("change", applyPrintingFilters);
+  document.addEventListener("keydown", e=>{
+    if(e.key === "Escape" && modal?.classList.contains("open")) closePrintingModal();
+  });
+}
+
 // ── initAppUI: registra listeners de UI que no dependen del usuario ──
 // Se llama UNA vez al cargar el DOM, antes de que Firebase resuelva la sesión.
 let _appUIInited = false;
@@ -6218,6 +6604,32 @@ function initAppUI(){
 
   const marketSearch = document.getElementById("marketSearch");
   if(marketSearch) marketSearch.addEventListener("input", ()=> renderSalesTable());
+
+  // Botón "Ver impresiones"
+  const btnOpenPrintings = document.getElementById("btnOpenPrintings");
+  if(btnOpenPrintings){
+    btnOpenPrintings.addEventListener("click", ()=>{
+      const name = document.getElementById("inName")?.value?.trim();
+      if(!name){
+        showErr("Escribe el nombre de la carta antes de buscar impresiones.");
+        return;
+      }
+      showErr("");
+      const lang = document.getElementById("inLang")?.value || "es";
+      openPrintingModal(name, lang);
+    });
+  }
+
+  // Enter en nombre abre el modal de impresiones
+  document.getElementById("inName")?.addEventListener("keydown", e=>{
+    if(e.key === "Enter"){
+      e.preventDefault();
+      document.getElementById("btnOpenPrintings")?.click();
+    }
+  });
+
+  // Inicializar modal de impresiones
+  initPrintingModal();
 
   loadIntroSets();
   setTimeout(initCardDetailUI, 0);
@@ -6608,67 +7020,6 @@ function _fbErrorMsg(err){
 // 1. Inicializa la UI estática inmediatamente
 // 2. Espera a Firebase para saber si hay sesión
 window.addEventListener("DOMContentLoaded", ()=>{
-   // ── Manejar enlace de recuperación de contraseña ──
-  const params = new URLSearchParams(window.location.search);
-  const mode = params.get("mode");
-  const oobCode = params.get("oobCode");
-
-  if (mode === "resetPassword" && oobCode) {
-    // Ocultar pantalla de login
-    const authScreen = document.getElementById("authScreen");
-    if (authScreen) authScreen.style.display = "none";
-
-    // Crear pantalla de nueva contraseña con tu estilo existente
-    const div = document.createElement("div");
-    div.className = "auth-screen is-enter";
-    div.style.display = "flex";
-    div.innerHTML = `
-      <div class="auth-card">
-        <div class="auth-brand">
-          <img class="auth-logo-img" src="assets/logo.png" alt="Logo">
-          <h1 class="auth-title">MTG Manager</h1>
-          <p class="auth-subtitle">Establece tu nueva contraseña</p>
-        </div>
-        <div class="auth-form">
-          <input id="newPass1" type="password" placeholder="Nueva contraseña" />
-          <input id="newPass2" type="password" placeholder="Repite la contraseña" />
-          <button class="btn auth-btn" id="btnConfirmReset">Cambiar contraseña</button>
-          <div class="auth-msg" id="resetMsg"></div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(div);
-
-    document.getElementById("btnConfirmReset").onclick = async () => {
-      const p1 = document.getElementById("newPass1").value;
-      const p2 = document.getElementById("newPass2").value;
-      const msg = document.getElementById("resetMsg");
-      msg.style.color = "#f87171";
-
-      if (!p1 || p1 !== p2) { msg.textContent = "Las contraseñas no coinciden."; return; }
-      if (p1.length < 6)    { msg.textContent = "Mínimo 6 caracteres."; return; }
-
-      try {
-        await fbAuth.confirmPasswordReset(oobCode, p1);
-        msg.style.color = "#4ade80";
-        msg.textContent = "¡Contraseña cambiada! Redirigiendo al login…";
-        setTimeout(() => {
-          // Limpiar parámetros de URL y recargar
-          window.history.replaceState({}, document.title, window.location.pathname);
-          window.location.reload();
-        }, 2500);
-      } catch (err) {
-        const msgs = {
-          "auth/expired-action-code": "El enlace ha caducado. Solicita uno nuevo.",
-          "auth/invalid-action-code": "El enlace no es válido o ya fue usado.",
-          "auth/weak-password":       "Contraseña demasiado débil (mínimo 6 caracteres).",
-        };
-        msg.textContent = msgs[err?.code] || err?.message || "Error desconocido.";
-      }
-    };
-
-    return; // No continuar con el flujo normal de auth
-  }
   // initAppUI se llama desde _onFirebaseLogin (con guard) o cuando no hay sesión
   fbAuth.onAuthStateChanged(async (firebaseUser)=>{
     if(firebaseUser){
@@ -6685,6 +7036,56 @@ window.addEventListener("DOMContentLoaded", ()=>{
 
 </script>
 
+
+<!-- ── Modal de selección de impresión ── -->
+<div id="printingModal" class="printingModal" role="dialog" aria-modal="true">
+  <div class="printingModalInner">
+    <div class="printingModalHeader">
+      <div>
+        <div class="printingModalTitle" id="printingModalCardName">Impresiones disponibles</div>
+        <div class="printingModalSubtitle" id="printingModalCardSubtitle">Selecciona la versión exacta de tu carta</div>
+      </div>
+      <button class="printingModalClose" id="printingModalClose" aria-label="Cerrar">&#x2715;</button>
+    </div>
+    <div class="printingModalFilters">
+      <input id="printingFilterQ" placeholder="Filtrar por set, año..." />
+      <select id="printingFilterLang">
+        <option value="">Todos los idiomas</option>
+        <option value="es">Español</option>
+        <option value="en">Inglés</option>
+        <option value="fr">Francés</option>
+        <option value="de">Alemán</option>
+        <option value="it">Italiano</option>
+        <option value="pt">Portugués</option>
+        <option value="ja">Japonés</option>
+        <option value="ko">Coreano</option>
+        <option value="zhs">Chino Simpl.</option>
+        <option value="zht">Chino Trad.</option>
+      </select>
+      <select id="printingFilterRarity">
+        <option value="">Cualquier rareza</option>
+        <option value="common">Común</option>
+        <option value="uncommon">Poco común</option>
+        <option value="rare">Rara</option>
+        <option value="mythic">Mítica</option>
+        <option value="special">Especial</option>
+      </select>
+      <span class="pill" id="printingCount">0 versiones</span>
+    </div>
+    <div class="printingModalBody" id="printingModalBody">
+      <div class="printingLoader">
+        <div class="printingLoaderSpinner"></div>
+        Buscando impresiones…
+      </div>
+    </div>
+    <div class="printingModalFooter">
+      <span class="hint" id="printingSelectedInfo" style="font-style:italic;">Haz clic para seleccionar · Doble clic para añadir directamente</span>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="printingModalCancel">Cancelar</button>
+      <button class="btn" id="printingModalConfirm" disabled>&#x2713; Añadir seleccionada</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── Hover preview flotante ── -->
 <div id="cardHoverPreview" class="cCardPreview">
