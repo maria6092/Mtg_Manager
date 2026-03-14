@@ -369,7 +369,9 @@
     }
     thead th{
       position:sticky;top:0;
-      background: linear-gradient(180deg, rgba(var(--soft-rgb),.95), rgba(30,18,54,.95));
+      background: rgba(var(--soft-rgb),.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       color: var(--gold);
       font-size:.68rem;
       padding:10px 8px;
@@ -388,6 +390,14 @@
       font-size:.85rem;
       background: transparent;
       font-family:'Crimson Text',serif;
+    }
+    /* Blur en filas con color de carta */
+    tbody tr[style*="background"]{
+      isolation: isolate;
+    }
+    tbody tr[style*="background"] td{
+      backdrop-filter: blur(6px) saturate(1.2);
+      -webkit-backdrop-filter: blur(6px) saturate(1.2);
     }
     tbody tr:hover{ background: rgba(var(--accent-rgb),.05) !important; }
 
@@ -601,7 +611,7 @@
       border:1px solid rgba(var(--accent-rgb),.15);
       border-radius:10px;
       overflow:hidden;
-      background: rgba(30,18,54,.5);
+      background: rgba(var(--card-rgb),.5);
     }
     .deckGroup .cardrow{ border:none; border-radius:0; background:transparent; box-shadow:none; }
     .deckGroup .cardrow:not(:last-child){ border-bottom:1px solid rgba(var(--accent-rgb),.08); }
