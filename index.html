@@ -397,6 +397,8 @@
     @media (max-width: 700px){ .moneyGrid{ grid-template-columns: 1fr; } }
 
     .moneyCard{ padding:20px 24px; min-height:110px; }
+    .moneyValue{ font-size:1.6rem; font-weight:800; color:var(--pink2); margin:8px 0 4px; }
+    body[data-theme="black"] .moneyValue{ color:var(--text); }
 
     .collectionGrid{
       display:grid;
@@ -541,6 +543,24 @@
       border-color: rgba(250,204,21,.70);
     }
     .ownBadge.no{ opacity:.7; }
+    .ownBadge.bad{
+      background: rgba(239,68,68,.18);
+      border-color: rgba(239,68,68,.55);
+      color: #b91c1c;
+    }
+    body[data-theme="black"] .ownBadge.bad{ color: #fca5a5; }
+
+    .saleItem{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:var(--card);
+      margin-bottom:8px;
+      flex-wrap:wrap;
+    }
 .deckGroup {
   border-radius: 16px;
   overflow: hidden;
@@ -877,7 +897,18 @@ body[data-theme="black"] .pageHeader h2{color:var(--text);}
     </div>
 
     <div class="sidebarTabs" id="tabs"></div>
-    <div class="sidebarFooter">Tu acceso al perfil vive arriba a la derecha. Mucho menos barro.</div>
+
+    <div class="sidebarUserBox" id="sidebarUserBox">
+      <div class="sidebarUserRow">
+        <img class="sidebarAvatar" id="sidebarAvatar" src="assets/logo.png" alt="Avatar">
+        <div>
+          <div style="font-weight:700;font-size:.85rem;" id="sidebarUserName">Usuario</div>
+          <div class="small" id="sidebarUserMini">Perfil local</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebarFooter">MTG Manager · Local</div>
 
     <div id="globalErrorBox" class="notice" style="display:none;"></div>
   </aside>
@@ -1444,9 +1475,8 @@ body[data-theme="black"] .pageHeader h2{color:var(--text);}
         <button class="btn danger" id="btnDeckViewDelete">Eliminar mazo</button>
       </div>
 
-      <div class="card" id="deckCmdWarnings" style="margin:10px 0; display:none;"></div>
+      <div class="panel soft" id="deckCmdWarnings" style="margin:10px 0; display:none; box-shadow:none;"></div>
 
-      <div class="deckViewGrid">
       <div class="deckViewGrid">
         <div class="panel soft deckListPanel" style="box-shadow:none;">
           <div class="grid" style="grid-template-columns:2fr 1fr;gap:12px;">
@@ -1471,16 +1501,16 @@ body[data-theme="black"] .pageHeader h2{color:var(--text);}
           <h3 class="h3">Detalles</h3>
           <div id="deckViewDetails" class="hint">Selecciona una carta del mazo.</div>
         </div>
-      </div>
+      </div><!-- /deckViewGrid -->
     </section>
 
     <!-- AJUSTES -->
-    <section class="is-hidden" data-page="deseos">
-      <h2>Lista de deseos</h2>
-      <p class="muted">Guarda cartas que quieres conseguir, compara con tu colección y registra historial de precios.</p>
+    <section class="panel is-hidden" data-page="deseos" style="display:none;">
+      <h2 class="h2">Lista de deseos</h2>
+      <p class="hint">Guarda cartas que quieres conseguir, compara con tu colección y registra historial de precios.</p>
 
-      <div class="card">
-        <div class="grid2">
+      <div class="panel soft" style="box-shadow:none;">
+        <div class="grid-4">
           <div>
             <label>Nombre</label>
             <input id="wishName" placeholder="Ej: Sol Ring">
@@ -1498,7 +1528,7 @@ body[data-theme="black"] .pageHeader h2{color:var(--text);}
             <input id="wishCn" class="mono" placeholder="001">
           </div>
         </div>
-        <div style="display:flex; gap:10px; margin-top:10px;">
+        <div class="row mt10">
           <button class="btn" id="btnWishAdd">Añadir a deseos</button>
           <button class="btn ghost" id="btnWishRefresh">Actualizar precios</button>
           <div class="spacer"></div>
@@ -1506,8 +1536,8 @@ body[data-theme="black"] .pageHeader h2{color:var(--text);}
         </div>
       </div>
 
-      <div class="card" style="margin-top:12px;">
-        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <div class="panel soft mt12" style="box-shadow:none;">
+        <div class="row" style="gap:10px; flex-wrap:wrap;">
           <span class="pill"><b id="wishCount">0</b> items</span>
           <span class="pill">Faltan: <b id="wishMissingCount">0</b></span>
           <span class="pill">Cubiertos: <b id="wishCoveredCount">0</b></span>
@@ -1685,6 +1715,27 @@ body[data-theme="black"] .pageHeader h2{color:var(--text);}
           <div class="row" style="gap:10px;flex-wrap:wrap;">
             <button class="btn ghost" id="btnSignOutTop" style="display:none;">Cerrar sesión</button>
             <button class="btn ghost" id="btnBackFromProfileSettings">Volver al resumen</button>
+          </div>
+        </div>
+
+        <div class="panel soft" style="box-shadow:none;margin-top:14px;">
+          <h3 class="h3">Backup automático</h3>
+          <div class="toggleRow" style="margin-bottom:10px;">
+            <input id="setAutoBackup" type="checkbox" class="chk"/>
+            <div><b>Activar backup automático</b><div class="hint" style="margin:2px 0 0;">Guarda una copia en el navegador cada X minutos.</div></div>
+          </div>
+          <label>Frecuencia</label>
+          <select id="setAutoBackupEvery">
+            <option value="5">Cada 5 minutos</option>
+            <option value="15">Cada 15 minutos</option>
+            <option value="30" selected>Cada 30 minutos</option>
+            <option value="60">Cada hora</option>
+          </select>
+          <div class="hint" id="backupInfo" style="margin-top:8px;">No hay backups aún.</div>
+          <div class="row mt10" style="gap:8px;flex-wrap:wrap;">
+            <button class="btn ghost" id="btnBackupNow">Hacer backup ahora</button>
+            <button class="btn ghost" id="btnBackupDownload">Descargar backup</button>
+            <button class="btn ghost" id="btnBackupRestore">Restaurar último backup</button>
           </div>
         </div>
       </div>
@@ -2062,6 +2113,7 @@ const UI_TABS = {
   intro: "Introducción",
   cartas: "Cartas",
   stats: "Stats",
+  buscador: "Buscador",
   coleccion: "Colección",
   mazos: "Mazos",
   deseos: "Deseos",
@@ -2073,6 +2125,7 @@ const pages = [
   {id:"intro", label:UI_TABS.intro},
   {id:"cartas", label:UI_TABS.cartas},
   {id:"stats", label:UI_TABS.stats},
+  {id:"buscador", label:UI_TABS.buscador},
   {id:"coleccion", label:UI_TABS.coleccion},
   {id:"mazos", label:UI_TABS.mazos},
   {id:"deseos", label:UI_TABS.deseos},
@@ -2497,10 +2550,25 @@ function computeInvestmentTotals(){
 
 function updateInvestmentUI(){
   const t = computeInvestmentTotals();
-  const elInvReal = document.getElementById("invReal");
-  const elInvAll  = document.getElementById("invAll");
-  if(elInvReal) elInvReal.textContent = `${t.invReal.toFixed(2)}€`;
-  if(elInvAll)  elInvAll.textContent  = `${t.invAll.toFixed(2)}€`;
+
+  // Stats tab: dinero en cartones
+  const elInvAll      = document.getElementById("moneyInvestAll");
+  const elInvNoProxy  = document.getElementById("moneyInvestNoProxy");
+  const elBestSellAll = document.getElementById("moneyBestSellAll");
+  const elProfitAll   = document.getElementById("moneyProfitAll");
+
+  if(elInvAll)      elInvAll.textContent      = `${t.invAll.toFixed(2)} €`;
+  if(elInvNoProxy)  elInvNoProxy.textContent  = `${t.invReal.toFixed(2)} €`;
+
+  // Calcular mejor venta total y beneficio
+  let bestSellTotal = 0;
+  for(const c of cards){
+    const qty = c.qty || 1;
+    const bs = parseEuro(c.bestSell);
+    if(Number.isFinite(bs)) bestSellTotal += bs * qty;
+  }
+  if(elBestSellAll) elBestSellAll.textContent = `${bestSellTotal.toFixed(2)} €`;
+  if(elProfitAll)   elProfitAll.textContent   = `${(bestSellTotal - t.invAll).toFixed(2)} €`;
 }
 
 function renderCardsTableFull(){
@@ -4599,10 +4667,12 @@ function getSavedProfileTab(){
 function renderSidebarProfile(){
   const avatar = document.getElementById("sidebarAvatar");
   const mini = document.getElementById("sidebarUserMini");
+  const userName = document.getElementById("sidebarUserName");
   const topAvatar = document.getElementById('topbarAvatar');
   const avatarSrc = getProfileAvatar();
   if(avatar) avatar.src = avatarSrc;
   if(topAvatar) topAvatar.src = avatarSrc;
+  if(userName) userName.textContent = getProfileName();
   if(mini) mini.textContent = profile.bio?.trim() || "Perfil local";
 }
 
@@ -4757,6 +4827,12 @@ function renderFriendsUI(){
   sentList.innerHTML = sent.length
     ? sent.map(r => friendRowHtml(r.user, `<button class="btn ghost tiny" data-cancel-friend="${escapeHtml(r.id)}">Cancelar</button>`)).join('')
     : '<div class="hint">No has enviado solicitudes.</div>';
+}
+
+function loadMySales(){
+  const sess = getSession();
+  if(!sess) return [];
+  return cards.filter(c=>!!c.sale);
 }
 
 function renderUserProfilePage(){
@@ -4993,6 +5069,12 @@ document.addEventListener("DOMContentLoaded", ()=>{
       saveSettings();
       renderColeccion();
     });
+  }
+
+  // Colección: búsqueda en tiempo real
+  const colSearchInput = document.getElementById("colSearchInput");
+  if(colSearchInput){
+    colSearchInput.addEventListener("input", ()=> renderColeccion());
   }
 
 
@@ -5361,7 +5443,6 @@ async function initAuth(){
     renderSalesTable();
     showApp();
   }else{
-    // Si no quiere recordar, siempre arranca en login
     if(!getRememberPref()) clearSession();
     showLogin();
   }
