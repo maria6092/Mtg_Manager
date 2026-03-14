@@ -3177,7 +3177,7 @@ function renderCardsTableFull(){
     tr.dataset.id = c.id;
 
     const bg = gradientFromColorIds(c.colorId);
-    if (bg) { tr.style.background = bg; } // FIX: background shorthand, solo si hay gradiente
+    if (bg) { tr.style.background = bg; }
 
     tr.innerHTML = `
       <td class="center"><button class="starBtn" data-star="1" title="Favorito">${c.fav ? "★" : "☆"}</button></td>
@@ -3275,7 +3275,7 @@ function renderColeccion(){
     const el = document.createElement("div");
     el.className = "cCard";
     el.dataset.id = c.id;
-    if (bg) { el.style.background = bg; } // FIX: background shorthand
+    if (bg) { el.style.background = bg; }
 
     el.innerHTML = `
       <div class="collectionVisual">
@@ -4094,15 +4094,14 @@ function parseDecksJson(text){
 
 // ── Parser universal: soporta Archideck, MTG Arena, MTGO, estándar TXT, ManaBox TXT ──
 function parseDecksTxt(text){
-  const raw = String(text||"").replace(/\r/g,""); // FIX: solo eliminar \r, conservar \n para el split
+  const raw = String(text||"").replace(/\r\n|\r/g,"");
 
   // ── Detectar formato Archideck JSON dentro de TXT ──────────────────────
   if(raw.trimStart().startsWith("{") || raw.trimStart().startsWith("[")) {
     try{ return parseDecksJson(raw); }catch{}
   }
 
-  const lines = raw.split("
-");
+  const lines = raw.split("\n");
   const out = [];
   let current = null;
   let currentSection = "main"; // main | side | commander | companion
@@ -4533,7 +4532,6 @@ function openDeckView(deckId){
   renderDeckView(true);
   showPage("deck_view");
   // validar comandante (async)
-  // FIX: usar el mazo que se abre, no el seleccionado en el dropdown
   const dNow = decks.find(x => x.id === deckId) || null;
   validateCommanderForDeck(dNow).then(renderCommanderWarnings);
 }
@@ -4654,7 +4652,6 @@ function normalizeWishlist(){
     if(typeof w.qty !== "number" || w.qty < 1){ w.qty = 1; changed = true; }
     if(!Array.isArray(w.priceHist)){ w.priceHist = []; changed = true; }
   }
-  // FIX: solo localStorage; Firestore sync espera a que auth resuelva
   if(changed) userSave(LS_WISHLIST, wishlist);
 }
 normalizeWishlist();
@@ -5230,7 +5227,7 @@ document.getElementById("btnRefreshPrices").onclick = async ()=>{
       const price = priceTextFromPrices(card.prices);
       c.priceText = price;
       updatePriceHistory(c, c.priceText);
-      c.bestSell = bestSellPriceText(price); // FIX: eliminada línea duplicada
+      c.bestSell = bestSellPriceText(price);
       c.colorId = computeColorId(card);
       c.color = colorToEmojisFromCI(c.colorId);
       c.manaValue = manaValueFromCard(card);
@@ -6260,7 +6257,7 @@ function renderSalesTable(){
       const tr = document.createElement("tr");
       tr.dataset.id = c.id;
       const bg = gradientFromColorIds(c.colorId);
-      if (bg) { tr.style.background = bg; } // FIX: background shorthand
+      if (bg) { tr.style.background = bg; }
 
       tr.innerHTML = `
         <td class="center"><button class="starBtn" data-star="1" title="Favorito">${c.fav ? "★" : "☆"}</button></td>
@@ -6270,7 +6267,7 @@ function renderSalesTable(){
         <td class="right"><span class="mono">${escapeHtml(c.qty||1)}</span></td>
         <td class="right mono">${escapeHtml(c.priceText||"")}</td>
         <td class="right mono">${escapeHtml(c.bestSell||"")}</td>
-        <td class="right"><button class="btn ghost" data-sold="1">Vendida</button> <!-- FIX: quitado onclick duplicado --></td>`;
+        <td class="right"><button class="btn ghost" data-sold="1">Vendida</button></td>`;
       tbody.appendChild(tr);
     }
   }
