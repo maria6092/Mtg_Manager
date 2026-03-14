@@ -1070,10 +1070,54 @@
     }
     .cardModalField .v{ font-family:'Crimson Text',serif; font-size:.9rem; margin-top:2px; }
 
+    /* ── Modo daltónico ── */
+    body[data-colorblind="protanopia"]   { filter: url(#cb-protanopia);   }
+    body[data-colorblind="deuteranopia"] { filter: url(#cb-deuteranopia); }
+    body[data-colorblind="tritanopia"]   { filter: url(#cb-tritanopia);   }
+    body[data-colorblind="achromatopsia"]{ filter: url(#cb-achroma);      }
+
   </style>
 </head>
 
 <body class="not-authenticated">
+
+<!-- Filtros SVG para modo daltónico (matrices LMS científicas) -->
+<svg aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden;">
+  <defs>
+    <!-- Protanopia: sin conos L (rojo) -->
+    <filter id="cb-protanopia" x="0" y="0" width="100%" height="100%" color-interpolation-filters="linearRGB">
+      <feColorMatrix type="matrix" values="
+        0.152  1.053 -0.205  0  0
+        0.115  0.786  0.099  0  0
+       -0.004 -0.048  1.052  0  0
+        0      0      0      1  0"/>
+    </filter>
+    <!-- Deuteranopia: sin conos M (verde) -->
+    <filter id="cb-deuteranopia" x="0" y="0" width="100%" height="100%" color-interpolation-filters="linearRGB">
+      <feColorMatrix type="matrix" values="
+        0.367  0.861 -0.228  0  0
+        0.280  0.673  0.047  0  0
+       -0.012  0.043  0.969  0  0
+        0      0      0      1  0"/>
+    </filter>
+    <!-- Tritanopia: sin conos S (azul) -->
+    <filter id="cb-tritanopia" x="0" y="0" width="100%" height="100%" color-interpolation-filters="linearRGB">
+      <feColorMatrix type="matrix" values="
+        1.256 -0.077 -0.179  0  0
+       -0.078  0.931  0.148  0  0
+        0.005  0.691  0.304  0  0
+        0      0      0      1  0"/>
+    </filter>
+    <!-- Acromatopsia: sin percepción de color -->
+    <filter id="cb-achroma" x="0" y="0" width="100%" height="100%" color-interpolation-filters="linearRGB">
+      <feColorMatrix type="matrix" values="
+        0.299  0.587  0.114  0  0
+        0.299  0.587  0.114  0  0
+        0.299  0.587  0.114  0  0
+        0      0      0      1  0"/>
+    </filter>
+  </defs>
+</svg>
 
   <!-- AUTH SCREEN (login/registro) -->
   <!-- Nota: dejamos 'is-enter' por defecto para que el formulario sea visible
@@ -1933,6 +1977,18 @@
             <div class="toggleRow" style="margin-top:10px;"><input id="setReducedMotion" type="checkbox" class="chk"/><div><b>Reducir animaciones</b><div class="hint" style="margin:2px 0 0;">Desactiva transiciones y animaciones.</div></div></div>
           </div>
           <div class="panel soft" style="box-shadow:none;">
+            <h3 class="h3">Accesibilidad visual</h3>
+            <label>Modo para daltónicos</label>
+            <select id="setColorblind">
+              <option value="none">Sin ajuste</option>
+              <option value="protanopia">Protanopia (sin rojo)</option>
+              <option value="deuteranopia">Deuteranopia (sin verde)</option>
+              <option value="tritanopia">Tritanopia (sin azul)</option>
+              <option value="achromatopsia">Acromatopsia (escala de grises)</option>
+            </select>
+            <div class="hint">Aplica un filtro de compensación de color a toda la interfaz.</div>
+          </div>
+          <div class="panel soft" style="box-shadow:none;">
             <h3 class="h3">Precios</h3>
             <label>Preferencia de moneda</label>
             <select id="setCurrency"><option value="EUR">Mostrar € primero</option><option value="USD">Mostrar $ primero</option></select>
@@ -2366,6 +2422,7 @@ const DEFAULT_SETTINGS = {
   density: "normal",
   motion: "normal",
   currency: "EUR",
+  colorblind: "none",
   autoBackupEnabled: false,
   autoBackupEveryMin: "30",  colFavFilter: "all",
 };
@@ -2416,6 +2473,9 @@ function applySettings(){
   document.documentElement.style.setProperty("--base-font", `${settings.fontPx}px`);
   document.body.dataset.density = settings.density;
   document.documentElement.dataset.motion = (settings.motion === "reduced") ? "reduced" : "normal";
+  // Modo daltónico
+  const cb = settings.colorblind || "none";
+  document.body.dataset.colorblind = cb === "none" ? "" : cb;
 }
 
 function getCssVar(name){
@@ -3692,15 +3752,41 @@ function renderColorStats(){
   const labels = buckets;
   const data = labels.map(l=>counts[l]||0);
   const accent = getCssVar("--pink");
-  const accent2 = getCssVar("--pink2");
+
+  // Colores MTG auténticos para cada identidad de color
+  const mtgColors = {
+    "Blanco":     { bg:"rgba(248,230,155,.75)", border:"rgba(230,200,80,.9)" },
+    "Azul":       { bg:"rgba(60,120,210,.65)",  border:"rgba(30,90,200,.9)" },
+    "Negro":      { bg:"rgba(30,20,50,.85)",    border:"rgba(80,60,120,.9)" },
+    "Rojo":       { bg:"rgba(200,55,40,.70)",   border:"rgba(180,30,20,.9)" },
+    "Verde":      { bg:"rgba(40,155,75,.65)",   border:"rgba(20,120,50,.9)" },
+    "Multicolor": { bg:"rgba(210,165,30,.75)",  border:"rgba(190,140,0,.9)" },
+    "Incoloro":   { bg:"rgba(180,175,170,.50)", border:"rgba(150,145,140,.9)" },
+  };
+
+  const gridColor = hexToRgba(accent, 0.08);
 
   const ctx = document.getElementById("chartColors");
   if(!ctx) return;
   if(chartColors) chartColors.destroy();
   chartColors = new Chart(ctx, {
     type: "bar",
-    data: { labels, datasets: [{ label: "Cartas por identidad de color (por cantidad)", data, backgroundColor: hexToRgba(accent, 0.30), borderColor: hexToRgba(accent2, 0.90), borderWidth: 1 }]},
-    options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { color: "rgba(216, 27, 96, 0.08)" } }, y: { grid: { color: "rgba(216, 27, 96, 0.08)" } } } }
+    data: { labels, datasets: [{
+      label: "Cartas por color",
+      data,
+      backgroundColor: labels.map(l=> mtgColors[l]?.bg || "rgba(180,175,170,.5)"),
+      borderColor:     labels.map(l=> mtgColors[l]?.border || "rgba(150,145,140,.9)"),
+      borderWidth: 1,
+      borderRadius: 4,
+    }]},
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: getCssVar("--muted") } },
+        y: { grid: { color: gridColor }, ticks: { color: getCssVar("--muted") } }
+      }
+    }
   });
 
   const sumDiv = document.getElementById("colorsSummary");
@@ -3730,36 +3816,87 @@ function renderTypeStats(){
   const accent = getCssVar("--pink");
   const accent2 = getCssVar("--pink2");
 
+  // Colores MTG para tipos
+  const typeColorMap = {
+    "Criatura":      "rgba(60,155,75,.70)",
+    "Planeswalker":  "rgba(210,165,30,.80)",
+    "Instantáneo":   "rgba(60,120,210,.70)",
+    "Conjuro":       "rgba(60,120,210,.50)",
+    "Artefacto":     "rgba(165,160,155,.65)",
+    "Encantamiento": "rgba(248,230,155,.70)",
+    "Tierra":        "rgba(130,100,60,.65)",
+    "Batalla":       "rgba(200,55,40,.65)",
+    "Otro":          "rgba(130,100,180,.50)",
+  };
+  const typeBorderMap = {
+    "Criatura":"rgba(20,120,50,.9)","Planeswalker":"rgba(190,140,0,.9)",
+    "Instantáneo":"rgba(30,90,200,.9)","Conjuro":"rgba(30,90,180,.9)",
+    "Artefacto":"rgba(140,135,130,.9)","Encantamiento":"rgba(230,200,80,.9)",
+    "Tierra":"rgba(100,70,30,.9)","Batalla":"rgba(180,30,20,.9)","Otro":"rgba(100,70,150,.9)",
+  };
+
+  const gridColor = hexToRgba(getCssVar("--pink"), 0.08);
+
   const ctxT = document.getElementById("chartTypes");
   if(ctxT){
     if(chartTypes) chartTypes.destroy();
     chartTypes = new Chart(ctxT, {
       type: "bar",
-      data: { labels: typeLabels, datasets: [{ label: "Tipos (por cantidad)", data: typeData, backgroundColor: hexToRgba(accent, 0.22), borderColor: hexToRgba(accent2, 0.90), borderWidth: 1 }]},
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { color: "rgba(216, 27, 96, 0.08)" } }, y: { grid: { color: "rgba(216, 27, 96, 0.08)" } } } }
+      data: { labels: typeLabels, datasets: [{
+        label: "Tipos",
+        data: typeData,
+        backgroundColor: typeLabels.map(l=> typeColorMap[l] || "rgba(130,100,180,.5)"),
+        borderColor:     typeLabels.map(l=> typeBorderMap[l] || "rgba(100,70,150,.9)"),
+        borderWidth: 1, borderRadius: 4,
+      }]},
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: getCssVar("--muted") } },
+          y: { grid: { color: gridColor }, ticks: { color: getCssVar("--muted") } }
+        }
+      }
     });
   }
 
   const rarLabels = Array.from(rarCounts.keys());
   const rarData = rarLabels.map(k=>rarCounts.get(k));
 
+  // Colores MTG de rareza
+  const rarColorMap = {
+    "Común":       { bg:"rgba(200,200,195,.80)", border:"rgba(170,170,165,.9)" },
+    "Poco común":  { bg:"rgba(130,170,185,.80)", border:"rgba(100,145,165,.9)" },
+    "Rara":        { bg:"rgba(210,185,80,.85)",  border:"rgba(190,160,40,.9)" },
+    "Mítica":      { bg:"rgba(215,110,40,.85)",  border:"rgba(190,80,20,.9)" },
+    "Especial":    { bg:"rgba(155,70,190,.80)",  border:"rgba(130,40,170,.9)" },
+  };
+  const getBgRar   = l => rarColorMap[l]?.bg     || "rgba(180,175,170,.6)";
+  const getBordRar = l => rarColorMap[l]?.border  || "rgba(150,145,140,.9)";
+
   const ctxR = document.getElementById("chartRarity");
   if(ctxR){
     if(chartRarity) chartRarity.destroy();
     chartRarity = new Chart(ctxR, {
       type: "doughnut",
-      data: { labels: rarLabels, datasets: [{ label: "Rarezas (por cantidad)", data: rarData,
-        backgroundColor: [
-          "rgba(255, 255, 255, 0.95)",
-          "rgba(220, 220, 220, 0.95)",
-          "rgba(255, 225, 160, 0.95)",
-          "rgba(255, 170, 120, 0.95)",
-          "rgba(248, 187, 208, 0.95)"
-        ],
-        borderColor: "rgba(216, 27, 96, 0.35)",
-        borderWidth: 1
+      data: { labels: rarLabels, datasets: [{
+        label: "Rarezas",
+        data: rarData,
+        backgroundColor: rarLabels.map(getBgRar),
+        borderColor:     rarLabels.map(getBordRar),
+        borderWidth: 2,
+        hoverOffset: 6,
       }]},
-      options: { responsive: true }
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: "bottom",
+            labels: { color: getCssVar("--text"), font: { size: 11 }, padding: 12 }
+          }
+        }
+      }
     });
   }
 
@@ -3957,20 +4094,46 @@ function parseDecksJson(text){
   return data;
 }
 
+// ── Parser universal: soporta Archideck, MTG Arena, MTGO, estándar TXT, ManaBox TXT ──
 function parseDecksTxt(text){
-  const lines = String(text||"").replace(/\r/g,"").split("\n");
+  const raw = String(text||"").replace(/
+/g,"");
+
+  // ── Detectar formato Archideck JSON dentro de TXT ──────────────────────
+  if(raw.trimStart().startsWith("{") || raw.trimStart().startsWith("[")) {
+    try{ return parseDecksJson(raw); }catch{}
+  }
+
+  const lines = raw.split("
+");
   const out = [];
   let current = null;
+  let currentSection = "main"; // main | side | commander | companion
 
   const flush = ()=>{
-    if(current && current.name && (current.items.length || current.commander)){
-      out.push(current);
+    if(current){
+      // Auto-detectar comandante si no se detectó explícitamente:
+      // Una carta con qty=1 que esté marcada como legendaria en su nombre
+      // o si el mazo tiene exactamente 1 carta con qty=1 que pueda ser comandante
+      if(!current.commander && current.items.length > 0){
+        // Buscar línea marcada como CMDR / comandante por sección
+        const cmdCandidate = current._cmdCandidates || [];
+        if(cmdCandidate.length === 1){
+          current.commander = { ...cmdCandidate[0] };
+          current.items = current.items.filter(it=> it.key !== cmdCandidate[0].key || it.name !== cmdCandidate[0].name);
+        }
+      }
+      delete current._cmdCandidates;
+      if(current.name && (current.items.length || current.commander)){
+        out.push(current);
+      }
     }
     current = null;
+    currentSection = "main";
   };
 
   const ensureDeck = ()=>{
-    if(!current) current = { name: "Mazo importado", items: [], commander: null, _createdAt: Date.now(), _updatedAt: Date.now() };
+    if(!current) current = { name: "Mazo importado", items: [], commander: null, _cmdCandidates: [], _createdAt: Date.now(), _updatedAt: Date.now() };
   };
 
   const mkKey = (set, cn)=> (set && cn) ? `${String(set).toUpperCase()}#${String(cn).trim()}` : "";
@@ -3979,22 +4142,25 @@ function parseDecksTxt(text){
     ensureDeck();
     const S = String(set||"").toUpperCase();
     const N = String(cn||"").trim();
-    current.commander = {
-      name: String(name||"").trim(),
-      set: S,
-      cn: N,
-      key: mkKey(S, N) || String(name||"").trim()
-    };
+    current.commander = { name: String(name||"").trim(), set: S, cn: N, key: mkKey(S, N) || String(name||"").trim() };
+    // Quitar de items si estaba duplicado
+    const key = mkKey(S, N);
+    current.items = current.items.filter(it=> it.name.toLowerCase() !== String(name||"").trim().toLowerCase() || (key && it.key !== key));
     current._updatedAt = Date.now();
   };
 
-  const addItem = (qty, name, set, cn)=>{
+  const addItem = (qty, name, set, cn, isCmd=false)=>{
     ensureDeck();
     qty = Math.max(1, parseInt(qty||"1",10));
     const S = String(set||"").toUpperCase();
     const N = String(cn||"").trim();
     const nm = String(name||"").trim();
     const key = mkKey(S, N);
+
+    if(isCmd){
+      setCommander(nm, S, N);
+      return;
+    }
 
     const existing = current.items.find(it=>{
       const sameRef = (key && it.key===key);
@@ -4004,53 +4170,141 @@ function parseDecksTxt(text){
 
     if(existing) existing.qty += qty;
     else current.items.push({ key: key || nm, name: nm, set: S, cn: N, qty });
-
     current._updatedAt = Date.now();
   };
 
   for(let raw of lines){
     let line = raw.trim();
     if(!line) continue;
-    if(line.startsWith("#") || line.startsWith("//")) continue;
-    if(/^[-]{3,}$/.test(line)) continue;
 
-    const mDeck = line.match(/^mazo:\s*(.+)$/i);
-    if(mDeck){
-      flush();
-      current = { name: mDeck[1].trim() || "Mazo", items: [], commander: null, _createdAt: Date.now(), _updatedAt: Date.now() };
+    // Comentarios
+    if(line.startsWith("//") && !line.match(/^\/\/\s*Commander/i)) continue;
+    if(/^[-=]{3,}$/.test(line)) continue;
+
+    // ── Secciones de Arena / MTGO ──────────────────────────────────────
+    // Arena: "Deck", "Sideboard", "Commander", "Companion"
+    const sectionMatch = line.match(/^(Deck|Sideboard|Commander|Companion|Comandante|Mazo|Side|Sidedeck)\s*:?\s*$/i);
+    if(sectionMatch){
+      const sec = sectionMatch[1].toLowerCase();
+      if(sec === "deck" || sec === "mazo"){
+        ensureDeck(); currentSection = "main";
+      } else if(sec === "sideboard" || sec === "side" || sec === "sidedeck"){
+        ensureDeck(); currentSection = "side";
+      } else if(sec === "commander" || sec === "comandante"){
+        ensureDeck(); currentSection = "commander";
+      } else if(sec === "companion"){
+        ensureDeck(); currentSection = "companion";
+      }
       continue;
     }
 
-    const mCmd = line.match(/^(comandante|commander)\s*:\s*(.+)$/i);
+    // ── Nombre del mazo ──────────────────────────────────────────────────
+    const mDeck = line.match(/^(mazo|deck|name):\s*(.+)$/i);
+    if(mDeck){
+      flush();
+      current = { name: mDeck[2].trim() || "Mazo", items: [], commander: null, _cmdCandidates: [], _createdAt: Date.now(), _updatedAt: Date.now() };
+      continue;
+    }
+
+    // ── Línea de comandante explícita ────────────────────────────────────
+    // Formatos: "Commander: Atraxa (CMM #384)", "Comandante: Atraxa CMM 384"
+    // También: "// Commander: Atraxa"  (algunos exportadores de Arena)
+    const rawCmdLine = line.replace(/^\/\/\s*/, "");
+    const mCmd = rawCmdLine.match(/^(comandante|commander)\s*:\s*(.+)$/i);
     if(mCmd){
       ensureDeck();
       const rest = mCmd[2].trim();
-
       let m = rest.match(/^(.+?)\s*\(\s*([A-Za-z0-9]{2,10})\s*#?\s*([A-Za-z0-9]+)\s*\)\s*$/i);
       if(m){ setCommander(m[1], m[2], m[3]); continue; }
-
       m = rest.match(/^(.+?)\s*\(\s*([A-Za-z0-9]{2,10})\s*\)\s*([A-Za-z0-9]+)\s*$/i);
       if(m){ setCommander(m[1], m[2], m[3]); continue; }
-
+      m = rest.match(/^(.+?)\s+([A-Z]{2,6})\s+(\d+[a-zA-Z]?)\s*$/);
+      if(m){ setCommander(m[1], m[2], m[3]); continue; }
       setCommander(rest, "", "");
       continue;
     }
 
     ensureDeck();
 
-    let m = line.match(/^(\d+)\s*x\s*(.+?)\s*\(\s*([A-Za-z0-9]{2,10})\s*#?\s*([A-Za-z0-9]+)\s*\)\s*$/i);
-    if(m){ addItem(m[1], m[2], m[3], m[4]); continue; }
+    // ── Parsear línea de carta ────────────────────────────────────────────
+    // Archideck: "1 Atraxa, Praetors' Voice (CMM) 384" (sin x, sin #)
+    // Arena:     "1 Atraxa, Praetors' Voice (CMM) 384"
+    // MTGO:      "1 Atraxa, Praetors' Voice"
+    // Estándar:  "1x Atraxa (CMM#384)" o "1x Atraxa (CMM) 384"
+    // ManaBox:   "1 Atraxa (CMM) 384"
 
+    let m;
+
+    // "QTY Name (SET) CN"  ← Arena / Archideck / ManaBox
+    m = line.match(/^(\d+)\s+(.+?)\s+\(([A-Za-z0-9]{2,10})\)\s+([A-Za-z0-9]+)\s*$/i);
+    if(m){ addItem(m[1], m[2], m[3], m[4], currentSection==="commander"); continue; }
+
+    // "QTYx Name (SET #CN)"
+    m = line.match(/^(\d+)\s*x\s*(.+?)\s*\(\s*([A-Za-z0-9]{2,10})\s*#?\s*([A-Za-z0-9]+)\s*\)\s*$/i);
+    if(m){ addItem(m[1], m[2], m[3], m[4], currentSection==="commander"); continue; }
+
+    // "QTY Name (SET#CN)"  con almohadilla sin espacio
+    m = line.match(/^(\d+)\s*x?\s*(.+?)\s*\(([A-Za-z0-9]{2,10})#([A-Za-z0-9]+)\)\s*$/i);
+    if(m){ addItem(m[1], m[2], m[3], m[4], currentSection==="commander"); continue; }
+
+    // "QTY Name (SET) CN"  variante con x
     m = line.match(/^(\d+)\s*x?\s*(.+?)\s*\(\s*([A-Za-z0-9]{2,10})\s*\)\s*([A-Za-z0-9]+)\s*$/i);
-    if(m){ addItem(m[1], m[2], m[3], m[4]); continue; }
+    if(m){ addItem(m[1], m[2], m[3], m[4], currentSection==="commander"); continue; }
 
-    m = line.match(/^(\d+)\s*x\s*(.+?)\s*$/i);
-    if(m){ addItem(m[1], m[2], "", ""); continue; }
+    // "QTY Name" solo nombre (MTGO, Arena sin set)
+    m = line.match(/^(\d+)\s*x?\s*(.+?)\s*$/i);
+    if(m){ addItem(m[1], m[2], "", "", currentSection==="commander"); continue; }
   }
 
   flush();
+
+  // Si no se encontraron mazos, crear uno con todo como principal
+  if(!out.length) return [{ name:"Mazo importado", items:[], commander:null, _createdAt:Date.now(), _updatedAt:Date.now() }];
   return out;
 }
+
+// ── Parser CSV para mazos (Archideck, ManaBox deck export) ──────────────
+function parseDecksCsv(text){
+  const rows = parseCsv(text);  // reutiliza el CSV parser existente
+  if(rows.length < 2) return [];
+
+  const header = rows[0].map(h => String(h||"").trim().toLowerCase());
+  const iName   = header.findIndex(h => /^(name|card.?name|carta)$/i.test(h));
+  const iQty    = header.findIndex(h => /^(qty|quantity|cantidad|count)$/i.test(h));
+  const iSet    = header.findIndex(h => /^(set.?code|set|coleccion|edition)$/i.test(h));
+  const iNum    = header.findIndex(h => /^(collector.?number|number|num[eé]ro?|cn)$/i.test(h));
+  const iDeck   = header.findIndex(h => /^(deck|mazo|deck.?name)$/i.test(h));
+  const iCmd    = header.findIndex(h => /^(commander|comandante|is.?commander)$/i.test(h));
+
+  // Agrupar por nombre de mazo
+  const deckMap = new Map();
+  for(const row of rows.slice(1)){
+    if(!row.some(c=>String(c||"").trim())) continue;
+    const name    = iName  >= 0 ? String(row[iName]||"").trim()  : "";
+    const qty     = iQty   >= 0 ? Math.max(1,parseInt(row[iQty]||"1",10)) : 1;
+    const set     = iSet   >= 0 ? String(row[iSet]||"").trim().toUpperCase()   : "";
+    const cn      = iNum   >= 0 ? String(row[iNum]||"").trim()   : "";
+    const deckNm  = iDeck  >= 0 ? String(row[iDeck]||"").trim()  : "Mazo importado";
+    const isCmd   = iCmd   >= 0 && /^(1|true|yes|sí|commander)$/i.test(String(row[iCmd]||"").trim());
+
+    if(!name) continue;
+
+    if(!deckMap.has(deckNm)) deckMap.set(deckNm, { name: deckNm, items: [], commander: null, _createdAt: Date.now(), _updatedAt: Date.now() });
+    const deck = deckMap.get(deckNm);
+    const key  = (set && cn) ? `${set}#${cn}` : name;
+
+    if(isCmd){
+      deck.commander = { name, set, cn, key };
+    } else {
+      const ex = deck.items.find(it => it.key === key);
+      if(ex) ex.qty += qty;
+      else deck.items.push({ key, name, set, cn, qty });
+    }
+  }
+
+  return [...deckMap.values()].filter(d => d.items.length || d.commander);
+}
+
 
 function deckToText(d){
   const lines = [];
@@ -4813,6 +5067,7 @@ function initSettingsUI(){
   const compactChk = document.getElementById("setCompact");
   const motionChk = document.getElementById("setReducedMotion");
   const currencySel = document.getElementById("setCurrency");
+  const colorblindSel = document.getElementById("setColorblind");
 
   if(!themeSel) return;
 
@@ -4822,6 +5077,7 @@ function initSettingsUI(){
   compactChk.checked = settings.density === "compact";
   motionChk.checked = settings.motion === "reduced";
   currencySel.value = settings.currency;
+  if(colorblindSel) colorblindSel.value = settings.colorblind || "none";
 
   themeSel.onchange = ()=>{
     settings.theme = themeSel.value;
@@ -4861,6 +5117,14 @@ function initSettingsUI(){
   renderSalesTable();
     if(document.querySelector('section[data-page="coleccion"]:not(.is-hidden)')) renderColeccion();
   };
+
+  if(colorblindSel){
+    colorblindSel.onchange = ()=>{
+      settings.colorblind = colorblindSel.value;
+      saveSettings();
+      applySettings();
+    };
+  }
 
   document.getElementById("btnResetSettings").onclick = ()=>{
     if(!confirm("¿Resetear todos los ajustes?")) return;
@@ -5246,7 +5510,7 @@ document.getElementById("btnDeckExport").onclick = ()=>{
 document.getElementById("btnDeckImport").onclick = ()=>{
   const inp = document.createElement("input");
   inp.type="file";
-  inp.accept=".json,.txt,application/json,text/plain";
+  inp.accept=".json,.txt,.csv,application/json,text/plain,text/csv";
   inp.onchange = async ()=>{
     const f = inp.files?.[0];
     if(!f) return;
@@ -5256,9 +5520,15 @@ document.getElementById("btnDeckImport").onclick = ()=>{
 
     try{
       let imported = null;
-      if(ext === "json") imported = parseDecksJson(text);
-      else if(ext === "txt") imported = parseDecksTxt(text);
-      else {
+      // Autodetectar formato
+      if(ext === "json"){
+        try { imported = parseDecksJson(text); }
+        catch { imported = parseDecksTxt(text); }
+      } else if(ext === "csv"){
+        // CSV de Archideck o ManaBox con columnas deck/commander
+        imported = parseDecksCsv(text);
+      } else {
+        // TXT: intentar JSON primero, luego TXT universal
         try { imported = parseDecksJson(text); }
         catch { imported = parseDecksTxt(text); }
       }
@@ -5713,6 +5983,9 @@ function initUserProfilePage(){
       saveProfile();
       renderUserProfilePage();
       renderSalesTable();
+      // Mostrar botón quitar
+      const resetBtn = document.getElementById("btnResetAvatar");
+      if(resetBtn) resetBtn.style.display = "";
       // 2) Intentar subir a Storage en segundo plano (no bloquea UI)
       if(currentUserId()){
         fsUploadAvatar(file).then(url=>{
@@ -5739,6 +6012,9 @@ function initUserProfilePage(){
       profile.banner = dataUrl;
       saveProfile();
       renderUserProfilePage();
+      // Mostrar botón quitar
+      const resetBannerBtn = document.getElementById("btnResetBanner");
+      if(resetBannerBtn) resetBannerBtn.style.display = "";
       if(currentUserId()){
         fsUploadBanner(file).then(url=>{
           if(url){ profile.banner = url; saveProfile(); renderUserProfilePage(); }
@@ -5753,19 +6029,39 @@ function initUserProfilePage(){
   }, { capture: false });
 
   if(btnResetAvatar){
-    btnResetAvatar.onclick = ()=>{
+    // Mostrar u ocultar según si hay avatar
+    btnResetAvatar.textContent = "Quitar foto";
+    btnResetAvatar.style.display = profile.avatar ? "" : "none";
+    btnResetAvatar.onclick = async ()=>{
       profile.avatar = "";
       saveProfile();
+      btnResetAvatar.style.display = "none";
       renderUserProfilePage();
       renderSalesTable();
+      // Limpiar en Firestore también
+      if(currentUserId()){
+        try{
+          await _fbUser.updateProfile({ photoURL: "" });
+          await fbDb.collection("users").doc(currentUserId()).update({ avatar: "" });
+        }catch(e){ console.warn("reset avatar Firestore:", e); }
+      }
     };
   }
 
   if(btnResetBanner){
-    btnResetBanner.onclick = ()=>{
+    // Mostrar u ocultar según si hay banner
+    btnResetBanner.textContent = "Quitar banner";
+    btnResetBanner.style.display = profile.banner ? "" : "none";
+    btnResetBanner.onclick = async ()=>{
       profile.banner = "";
       saveProfile();
+      btnResetBanner.style.display = "none";
       renderUserProfilePage();
+      if(currentUserId()){
+        try{
+          await fbDb.collection("users").doc(currentUserId()).update({ banner: "" });
+        }catch(e){ console.warn("reset banner Firestore:", e); }
+      }
     };
   }
 
