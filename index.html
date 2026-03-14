@@ -390,6 +390,8 @@
       font-size:.85rem;
       background: transparent;
       font-family:'Crimson Text',serif;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
     }
     tbody tr{ isolation: isolate; }
     tbody tr:hover{ background: rgba(var(--accent-rgb),.05) !important; }
@@ -2851,12 +2853,17 @@ function gradientFromColorIds(colorIds){
   if(cols.length === 1){
     return `linear-gradient(135deg, ${cols[0]} 0%, transparent 100%)`;
   }
+  // Gradiente suave: cada color ocupa su zona pero con solapamiento amplio
   const n = cols.length;
   const stops = [];
   for(let i=0;i<n;i++){
-    const start = Math.round((i / n) * 100);
-    const end   = Math.round(((i+1) / n) * 100);
-    stops.push(`${cols[i]} ${start}%`, `${cols[i]} ${end}%`);
+    const center = Math.round((i / (n - 1)) * 100);
+    const half   = Math.round(60 / (n - 1));          // zona de mezcla
+    const from   = Math.max(0,   center - half);
+    const to     = Math.min(100, center + half);
+    if(i === 0)   stops.push(`${cols[i]} 0%`);
+    stops.push(`${cols[i]} ${center}%`);
+    if(i === n-1) stops.push(`${cols[i]} 100%`);
   }
   return `linear-gradient(135deg, ${stops.join(", ")})`;
 }
