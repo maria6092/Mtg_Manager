@@ -519,6 +519,38 @@
     #deckViewDetails img{ display:block; max-height: 70vh; object-fit: contain; }
     .deckListScroll{ flex:1; overflow-y:auto; padding-right:4px; }
 
+    .deckTypeHeader{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:6px 12px; margin: 14px 0 4px;
+      border-left: 3px solid var(--pink2);
+      background: rgba(45,24,84,.4);
+      border-radius: 0 6px 6px 0;
+    }
+    .deckTypeHeader:first-child{ margin-top: 4px; }
+    .deckTypeHeader .typeName{
+      font-family:'Cinzel',serif; font-size:.75rem; font-weight:700;
+      letter-spacing:.08em; text-transform:uppercase; color: var(--gold2);
+    }
+    .deckTypeHeader .typeCount{
+      font-family:'Cinzel',serif; font-size:.75rem; font-weight:700;
+      color: var(--muted); letter-spacing:.04em;
+    }
+
+    .deckCmdHeader{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:8px 14px; margin-bottom: 6px;
+      border-left: 3px solid var(--gold2);
+      background: linear-gradient(90deg, rgba(201,150,58,.14), rgba(33,20,61,0));
+      border-radius: 0 8px 8px 0;
+    }
+    .deckCmdHeader .typeName{
+      font-family:'Cinzel',serif; font-size:.75rem; font-weight:700;
+      letter-spacing:.08em; text-transform:uppercase; color: var(--gold2);
+    }
+    .deckCmdHeader .typeCount{
+      font-size:.7rem; color: var(--gold); font-family:'Cinzel',serif; letter-spacing:.04em;
+    }
+
     .deckCommander{
       border:1px solid rgba(201,150,58,.5);
       background: linear-gradient(90deg, rgba(201,150,58,.12), rgba(33,20,61,0));
@@ -809,6 +841,21 @@
     }
     .profileCollDetailItem .label{color:var(--muted);font-weight:600;font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;}
     .profileCollDetailItem .val{font-weight:700;color:var(--gold2);font-family:'Cinzel',serif;font-size:.85rem;text-align:right;}
+
+    .friendSearchBox{ padding:14px;border-radius:10px;border:1px solid rgba(201,150,58,.15);background:rgba(45,24,84,.25); }
+    .friendPreviewCard{
+      display:flex;align-items:center;gap:12px;
+      padding:12px 14px;border-radius:10px;
+      border:1px solid rgba(201,150,58,.2);
+      background:rgba(33,20,61,.6);
+      margin-top:4px;
+    }
+    .friendPreviewCard img{ width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid rgba(201,150,58,.25);flex:0 0 auto; }
+    .friendPreviewCard .fpName{ font-weight:700;color:var(--gold2);font-family:'Cinzel',serif;font-size:.88rem; }
+    .friendPreviewCard .fpSub{ font-size:.78rem;color:var(--muted);margin-top:2px; }
+    .friendPreviewCard .fpActions{ margin-left:auto;display:flex;gap:8px;flex:0 0 auto; }
+    .friendSearchMsg{ padding:10px;font-size:.82rem;color:var(--muted);font-family:'Crimson Text',serif;font-style:italic; }
+    .mt14{ margin-top:14px; }
     .profileRanking{margin-top:14px;}
     .profileRankingTop{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
     .rankCard{
@@ -1712,15 +1759,17 @@
       <div class="profileTabPane" data-profile-pane="amigos">
         <div class="panel soft" style="box-shadow:none;">
           <h3 class="h3">Amigos</h3>
-          <div class="hint">Busca por nombre de usuario o email. Los datos se almacenan solo en este navegador.</div>
-          <div class="row mt12" style="gap:8px; align-items:center;">
-            <input id="friendSearchInput" placeholder="Usuario o email">
-            <button class="btn" id="btnSendFriendRequest">Añadir amigo</button>
+          <div class="friendSearchBox">
+            <div class="row" style="gap:8px;align-items:center;">
+              <input id="friendSearchInput" placeholder="Buscar por nombre de usuario o email" autocomplete="off">
+              <button class="btn" id="btnSearchUser">Buscar</button>
+            </div>
+            <div id="friendSearchResult" style="margin-top:10px;"></div>
           </div>
-          <div class="row mt10" style="gap:8px; flex-wrap:wrap;">
+          <div class="row mt14" style="gap:8px; flex-wrap:wrap;">
             <span class="pill">Amigos: <b id="friendCount">0</b></span>
             <span class="pill">Solicitudes recibidas: <b id="friendReceivedCount">0</b></span>
-            <span class="pill">Solicitudes enviadas: <b id="friendSentCount">0</b></span>
+            <span class="pill">Enviadas: <b id="friendSentCount">0</b></span>
           </div>
           <div id="friendsList" style="margin-top:12px;"></div>
         </div>
@@ -1894,19 +1943,50 @@ async function fsSaveProfile(){
 
 // Busca un usuario en Firestore por username o email
 async function fsSearchUser(query){
-  const q = String(query||"").trim().toLowerCase();
+  const raw = String(query||"").trim();
+  const q   = raw.toLowerCase();
   if(!q) return null;
-  // Buscar por username exacto
-  let snap = await fbDb.collection("users")
-    .where("username", "==", q)
-    .limit(1).get();
-  if(!snap.empty) return snap.docs[0].data();
-  // Buscar por email exacto
-  snap = await fbDb.collection("users")
-    .where("email", "==", q)
-    .limit(1).get();
-  if(!snap.empty) return snap.docs[0].data();
+
+  // Intentar varias variantes: exacto lowercase, exacto original, displayName
+  const attempts = [
+    fbDb.collection("users").where("username",    "==", q).limit(1).get(),
+    fbDb.collection("users").where("username",    "==", raw).limit(1).get(),
+    fbDb.collection("users").where("email",       "==", q).limit(1).get(),
+    fbDb.collection("users").where("displayName", "==", raw).limit(1).get(),
+    fbDb.collection("users").where("displayName", "==", q).limit(1).get(),
+  ];
+
+  const results = await Promise.allSettled(attempts);
+  for(const r of results){
+    if(r.status === "fulfilled" && !r.value.empty) return r.value.docs[0].data();
+  }
   return null;
+}
+
+// Busca múltiples usuarios cuyo username/displayName empiece por `query` (máx 8)
+async function fsSearchUserSuggest(query){
+  const raw = String(query||"").trim();
+  const q   = raw.toLowerCase();
+  if(q.length < 2) return [];
+
+  const end = q.slice(0,-1) + String.fromCharCode(q.charCodeAt(q.length-1)+1);
+  const [byUser, byDisplay] = await Promise.allSettled([
+    fbDb.collection("users").where("username",">=",q).where("username","<",end).limit(6).get(),
+    fbDb.collection("users").where("displayName",">=",raw).where("displayName","<",raw.slice(0,-1)+String.fromCharCode(raw.charCodeAt(raw.length-1)+1)).limit(6).get(),
+  ]);
+
+  const seen = new Set();
+  const out  = [];
+  const addSnap = snap => {
+    if(snap.status !== "fulfilled") return;
+    snap.value.forEach(d => {
+      const data = d.data();
+      if(!seen.has(data.uid)){ seen.add(data.uid); out.push(data); }
+    });
+  };
+  addSnap(byUser);
+  addSnap(byDisplay);
+  return out.slice(0, 8);
 }
 
 // Envía solicitud de amistad real en Firestore
@@ -2610,7 +2690,8 @@ function colorToEmojisFromCI(ci){
   return order.filter(c=>set.has(c)).map(c=>emojis[c]).join("") || "🔘";
 }
 
-const PASTEL = { W:"#FFF4C9", U:"#DDEBFF", B:"#E6E8EE", R:"#FFE1E6", G:"#DFF7E3", C:"#FFFFFF" };
+// Tintes de color muy tenues para usar sobre fondos oscuros
+const PASTEL = { W:"rgba(220,195,120,.07)", U:"rgba(80,140,220,.09)", B:"rgba(120,110,160,.08)", R:"rgba(200,80,70,.09)", G:"rgba(80,170,100,.08)", C:"rgba(180,180,180,.04)" };
 
 function normalizeColorId(colorId){
   const order = ["W","U","B","R","G"];
@@ -2621,9 +2702,9 @@ function normalizeColorId(colorId){
 function gradientFromColorIds(colorIds){
   const ids = normalizeColorId(colorIds);
   if(!ids.length) return "";
-  const cols = ids.map(id=>PASTEL[id] || "#FFFFFF");
+  const cols = ids.map(id=>PASTEL[id] || PASTEL.C);
   if(cols.length === 1){
-    return `linear-gradient(90deg, ${cols[0]} 0%, ${cols[0]} 100%)`;
+    return `linear-gradient(135deg, ${cols[0]} 0%, transparent 100%)`;
   }
   const n = cols.length;
   const stops = [];
@@ -2632,7 +2713,7 @@ function gradientFromColorIds(colorIds){
     const end   = Math.round(((i+1) / n) * 100);
     stops.push(`${cols[i]} ${start}%`, `${cols[i]} ${end}%`);
   }
-  return `linear-gradient(90deg, ${stops.join(", ")})`;
+  return `linear-gradient(135deg, ${stops.join(", ")})`;
 }
 
 function typesEs(typeLine){
@@ -2885,7 +2966,7 @@ function renderCardsTableFull(){
 
     const bg = gradientFromColorIds(c.colorId);
     tr.style.backgroundImage = bg || "none";
-    if(!bg) tr.style.backgroundColor = PASTEL.C;
+    
 
     tr.innerHTML = `
       <td class="center"><button class="starBtn" data-star="1" title="Favorito">${c.fav ? "★" : "☆"}</button></td>
@@ -2965,7 +3046,7 @@ function renderColeccion(){
     el.className = "cCard";
     el.dataset.id = c.id;
     el.style.backgroundImage = bg || "none";
-    if(!bg) el.style.backgroundColor = PASTEL.C;
+    
 
     el.innerHTML = `
       <div class="collectionVisual">
@@ -3962,12 +4043,11 @@ async function renderDeckView(doPrefetch=false){
   if(d.commander){
     const cmd = d.commander;
     const cmdHeader = document.createElement("div");
-    cmdHeader.className = "pill";
-    cmdHeader.style.justifyContent = "space-between";
-    cmdHeader.innerHTML = `<b>Comandante</b><span class="mono">1</span>`;
+    cmdHeader.className = "deckCmdHeader";
+    cmdHeader.innerHTML = `<span class="typeName">Comandante</span><span class="typeCount">1 carta</span>`;
     listEl.appendChild(cmdHeader);
 
-    renderDeckRow(listEl, detailsEl, { ...cmd, qty: 1 }, "👑 ");
+    renderDeckRow(listEl, detailsEl, { ...cmd, qty: 1 }, "");
   }
 
   const groups = (deckViewState.group === "none")
@@ -3975,10 +4055,10 @@ async function renderDeckView(doPrefetch=false){
     : groupDeckItemsByMainType(items);
 
   for(const [gname, arr] of groups){
+    const count = arr.reduce((a,it)=>a+(it.qty||1),0);
     const h = document.createElement("div");
-    h.className = "pill";
-    h.style.justifyContent = "space-between";
-    h.innerHTML = `<b>${escapeHtml(gname)}</b><span class="mono">${arr.reduce((a,it)=>a+(it.qty||1),0)}</span>`;
+    h.className = "deckTypeHeader";
+    h.innerHTML = `<span class="typeName">${escapeHtml(gname)}</span><span class="typeCount">${count}</span>`;
     listEl.appendChild(h);
 
     arr.forEach(it=> renderDeckRow(listEl, detailsEl, it));
@@ -4993,17 +5073,32 @@ function saveSocial(data){
 }
 function socialPairKey(a,b){ return [String(a||""), String(b||"")].sort().join("__"); }
 function getPublicProfileByUserId(userId){
-  // Con Firebase Auth no tenemos acceso al directorio de usuarios en cliente.
-  // Se usa el perfil guardado en localStorage (scoped) como fuente pública local.
   const p = loadJson(scopedKey(LS_PROFILE, userId), {});
   return {
     id: userId,
-    username: p?.displayName?.trim() || "Usuario",
+    uid: userId,
+    username: p?.username?.trim() || p?.displayName?.trim() || "Usuario",
     email: "",
-    displayName: p?.displayName?.trim() || "Usuario",
+    displayName: p?.displayName?.trim() || p?.username?.trim() || "Usuario",
     bio: p?.bio?.trim() || "",
     avatar: p?.avatar || "assets/logo.png"
   };
+}
+async function fetchAndCachePublicProfile(userId){
+  try{
+    const snap = await fbDb.collection("users").doc(userId).get();
+    if(snap.exists){
+      const p = snap.data();
+      localStorage.setItem(scopedKey(LS_PROFILE, userId), JSON.stringify({
+        displayName: p.displayName || p.username || "",
+        username: p.username || "",
+        bio: p.bio || "",
+        avatar: p.avatar || ""
+      }));
+      return p;
+    }
+  }catch(e){ console.warn("fetchProfile:", e); }
+  return null;
 }
 function getFriendsData(){
   const uid = currentUserId();
@@ -5264,8 +5359,6 @@ function initUserProfilePage(){
   const btnResetBanner = document.getElementById("btnResetBanner");
   const btnSaveText = document.getElementById("btnSaveProfileText");
   const btnTopProfile = document.getElementById("btnTopProfile");
-  const btnSendFriend = document.getElementById("btnSendFriendRequest");
-  const friendSearchInput = document.getElementById("friendSearchInput");
   const btnProfileGoCollection = document.getElementById('btnProfileGoCollection');
   const btnProfileGoStore = document.getElementById('btnProfileGoStore');
   const btnBackFromProfileSettings = document.getElementById('btnBackFromProfileSettings');
@@ -5279,53 +5372,59 @@ function initUserProfilePage(){
     btn.addEventListener('click', ()=> openProfileTab(btn.dataset.profileTab));
   });
 
-  if(avatarInput){
-    avatarInput.addEventListener("change", async (e)=>{
-      const file = e.target.files?.[0];
-      if(!file) return;
-      const btn = document.querySelector('label[for="profileAvatarInput"]');
-      if(btn) btn.textContent = "Subiendo…";
-      try{
-        if(currentUserId()){
-          await fsUploadAvatar(file);
-        }else{
-          // Fallback local si no hay sesión Firebase activa
-          profile.avatar = await fileToDataUrl(file);
-          saveProfile();
-        }
-        renderUserProfilePage();
-        renderSalesTable();
-      }catch(err){
-        alert("No se pudo subir la imagen: " + (err?.message || err));
-      }finally{
-        if(btn) btn.textContent = "Subir foto";
-        e.target.value = "";
+  // ── Avatar ──
+  // Usamos delegación en document para evitar problemas si el input no está visible aún
+  document.addEventListener("change", async (e)=>{
+    if(e.target.id !== "profileAvatarInput") return;
+    const file = e.target.files?.[0];
+    if(!file) return;
+    const label = document.querySelector('label[for="profileAvatarInput"]');
+    if(label){ label.textContent = "Guardando…"; label.style.opacity = ".6"; }
+    try{
+      // 1) Guardar base64 local inmediatamente — visible al instante
+      const dataUrl = await fileToDataUrl(file);
+      profile.avatar = dataUrl;
+      saveProfile();
+      renderUserProfilePage();
+      renderSalesTable();
+      // 2) Intentar subir a Storage en segundo plano (no bloquea UI)
+      if(currentUserId()){
+        fsUploadAvatar(file).then(url=>{
+          if(url){ profile.avatar = url; saveProfile(); renderUserProfilePage(); renderSalesTable(); }
+        }).catch(()=>{}); // fallo silencioso — ya se guardó base64
       }
-    });
-  }
+    }catch(err){
+      console.warn("Avatar error:", err);
+    }finally{
+      if(label){ label.textContent = "Subir foto"; label.style.opacity = ""; }
+      e.target.value = "";
+    }
+  }, { capture: false });
 
-  if(bannerInput){
-    bannerInput.addEventListener("change", async (e)=>{
-      const file = e.target.files?.[0];
-      if(!file) return;
-      const btn = document.querySelector('label[for="profileBannerInput"]');
-      if(btn) btn.textContent = "Subiendo…";
-      try{
-        if(currentUserId()){
-          await fsUploadBanner(file);
-        }else{
-          profile.banner = await fileToDataUrl(file);
-          saveProfile();
-        }
-        renderUserProfilePage();
-      }catch(err){
-        alert("No se pudo subir el banner: " + (err?.message || err));
-      }finally{
-        if(btn) btn.textContent = "Subir banner";
-        e.target.value = "";
+  // ── Banner ──
+  document.addEventListener("change", async (e)=>{
+    if(e.target.id !== "profileBannerInput") return;
+    const file = e.target.files?.[0];
+    if(!file) return;
+    const label = document.querySelector('label[for="profileBannerInput"]');
+    if(label){ label.textContent = "Guardando…"; label.style.opacity = ".6"; }
+    try{
+      const dataUrl = await fileToDataUrl(file);
+      profile.banner = dataUrl;
+      saveProfile();
+      renderUserProfilePage();
+      if(currentUserId()){
+        fsUploadBanner(file).then(url=>{
+          if(url){ profile.banner = url; saveProfile(); renderUserProfilePage(); }
+        }).catch(()=>{});
       }
-    });
-  }
+    }catch(err){
+      console.warn("Banner error:", err);
+    }finally{
+      if(label){ label.textContent = "Subir banner"; label.style.opacity = ""; }
+      e.target.value = "";
+    }
+  }, { capture: false });
 
   if(btnResetAvatar){
     btnResetAvatar.onclick = ()=>{
@@ -5355,37 +5454,95 @@ function initUserProfilePage(){
       setAuthTop(getCurrentSessionUser());
       renderSalesTable();
       openProfileTab('resumen');
-      alert("Perfil guardado.");
+      // feedback sin alert
+      const btn = document.getElementById("btnSaveProfileText");
+      if(btn){ const t = btn.textContent; btn.textContent = "Guardado"; setTimeout(()=>{ btn.textContent = t; }, 1800); }
     };
   }
 
-  if(btnSendFriend){
-    btnSendFriend.onclick = async ()=>{
+  // ── Búsqueda de usuarios con preview ──
+  const btnSearchUser    = document.getElementById("btnSearchUser");
+  const friendSearchInput2 = document.getElementById("friendSearchInput");
+  const friendSearchResult = document.getElementById("friendSearchResult");
+
+  function setFriendSearchMsg(text, isError){
+    if(!friendSearchResult) return;
+    friendSearchResult.innerHTML = `<div class="friendSearchMsg" style="color:${isError ? 'var(--danger, #f87171)' : 'var(--muted)'};">${escapeHtml(text)}</div>`;
+  }
+
+  function renderUserPreview(userData){
+    if(!friendSearchResult) return;
+    const uid = currentUserId();
+    const social = loadSocial();
+    const alreadyFriend = social.friendships.some(f => socialPairKey(f.a,f.b) === socialPairKey(uid, userData.uid));
+    const pendingOut    = social.requests.some(r => r.from === uid && r.to === userData.uid);
+    const pendingIn     = social.requests.some(r => r.from === userData.uid && r.to === uid);
+    const isSelf        = userData.uid === uid;
+
+    let actions = "";
+    if(isSelf)           actions = `<span class="hint" style="font-size:.78rem;">Eres tú</span>`;
+    else if(alreadyFriend) actions = `<span class="hint" style="font-size:.78rem;">Ya sois amigos</span>`;
+    else if(pendingIn)   actions = `<button class="btn tiny" id="btnConfirmAccept" data-uid="${escapeHtml(userData.uid)}">Aceptar solicitud</button>`;
+    else if(pendingOut)  actions = `<span class="hint" style="font-size:.78rem;">Solicitud enviada</span>`;
+    else                 actions = `<button class="btn tiny" id="btnConfirmAdd" data-uid="${escapeHtml(userData.uid)}">Añadir</button>`;
+
+    friendSearchResult.innerHTML = `
+      <div class="friendPreviewCard">
+        <img src="${escapeHtml(userData.avatar || 'assets/logo.png')}" alt="avatar">
+        <div>
+          <div class="fpName">${escapeHtml(userData.displayName || userData.username || 'Usuario')}</div>
+          <div class="fpSub">@${escapeHtml(userData.username || '')}${userData.bio ? ' · ' + escapeHtml(userData.bio) : ''}</div>
+        </div>
+        <div class="fpActions">${actions}</div>
+      </div>`;
+
+    document.getElementById("btnConfirmAdd")?.addEventListener("click", async (e)=>{
+      const btn = e.currentTarget;
+      btn.disabled = true; btn.textContent = "Enviando…";
       try{
-        btnSendFriend.disabled = true;
-        btnSendFriend.textContent = "Buscando…";
-        const query = friendSearchInput?.value || "";
-        const res = await sendFriendRequest(query);
-        if(friendSearchInput) friendSearchInput.value = "";
+        await fsSendFriendRequest(btn.dataset.uid);
+        await fsLoadSocialData();
         renderUserProfilePage();
-        openProfileTab('amigos');
-        alert(res.autoAccepted ? "Solicitud mutua: ya sois amigos." : "Solicitud enviada.");
-      }catch(err){
-        alert(err?.message || err);
-      }finally{
-        btnSendFriend.disabled = false;
-        btnSendFriend.textContent = "Añadir amigo";
-      }
-    };
+        setFriendSearchMsg("Solicitud enviada.", false);
+      }catch(err){ setFriendSearchMsg(err?.message || "Error al enviar solicitud.", true); }
+    });
+
+    document.getElementById("btnConfirmAccept")?.addEventListener("click", async (e)=>{
+      const btn = e.currentTarget;
+      btn.disabled = true; btn.textContent = "Aceptando…";
+      try{
+        const social2 = loadSocial();
+        const req = social2.requests.find(r => r.from === btn.dataset.uid && r.to === uid);
+        if(!req) throw new Error("Solicitud no encontrada.");
+        await fsAcceptFriendRequest(req.id);
+        await fsLoadSocialData();
+        renderUserProfilePage();
+        setFriendSearchMsg("¡Ya sois amigos!", false);
+      }catch(err){ setFriendSearchMsg(err?.message || "Error al aceptar solicitud.", true); }
+    });
   }
 
-  if(friendSearchInput){
-    friendSearchInput.addEventListener('keydown', (e)=>{
-      if(e.key === 'Enter'){
-        e.preventDefault();
-        btnSendFriend?.click();
-      }
-    });
+  async function doUserSearch(){
+    const query = friendSearchInput2?.value?.trim() || "";
+    if(!query){ setFriendSearchMsg("Escribe un nombre o email.", true); return; }
+    if(friendSearchResult) friendSearchResult.innerHTML = `<div class="friendSearchMsg">Buscando…</div>`;
+    try{
+      const found = await fsSearchUser(query);
+      if(!found){ setFriendSearchMsg("No se encontró ningún usuario con ese nombre o email.", true); return; }
+      // Cachear perfil
+      localStorage.setItem(scopedKey(LS_PROFILE, found.uid), JSON.stringify({
+        displayName: found.displayName || found.username || "",
+        username: found.username || "",
+        bio: found.bio || "",
+        avatar: found.avatar || ""
+      }));
+      renderUserPreview(found);
+    }catch(err){ setFriendSearchMsg(err?.message || "Error al buscar.", true); }
+  }
+
+  if(btnSearchUser) btnSearchUser.onclick = doUserSearch;
+  if(friendSearchInput2){
+    friendSearchInput2.addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); doUserSearch(); } });
   }
 
   if(!window.__friendsDelegated){ window.__friendsDelegated = true; document.addEventListener('click', async (e)=>{
@@ -5483,7 +5640,7 @@ function renderSalesTable(){
       tr.dataset.id = c.id;
       const bg = gradientFromColorIds(c.colorId);
       tr.style.backgroundImage = bg || "none";
-      if(!bg) tr.style.backgroundColor = PASTEL.C;
+      
       tr.innerHTML = `
         <td class="center"><button class="starBtn" data-star="1" title="Favorito">${c.fav ? "★" : "☆"}</button></td>
         <td><b>${escapeHtml(c.name)}</b><div class="small">${escapeHtml(c.inputName||"")}</div></td>
