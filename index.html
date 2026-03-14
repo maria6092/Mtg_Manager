@@ -751,6 +751,32 @@ body[data-theme="black"] .appTopbar{background:rgba(17,24,39,.88);}
 .appTopbarBrand{display:flex;align-items:center;gap:10px;min-width:0;}
 .appTopbarLogo{width:40px;height:40px;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:#fff;flex:0 0 auto;}
 .appTopbarTitle{font-weight:800;color:var(--pink2);font-size:1.05rem;line-height:1.1;}
+.appTopbarSpacer{flex:1 1 auto;}
+.profileQuickBtn{width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:var(--card);padding:0;display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow);overflow:hidden;}
+.profileQuickBtn img{width:100%;height:100%;object-fit:cover;}
+.profileQuickBtn:hover{transform:translateY(-1px);}
+.sidebarFooter{margin-top:auto;padding:10px 12px;border-top:1px solid var(--line);color:var(--muted);font-size:.8rem;}
+.profileTabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 14px;}
+.profileTabBtn{border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 14px;border-radius:999px;cursor:pointer;font-weight:700;}
+.profileTabBtn.active{background:linear-gradient(180deg,#fff, #ffe3ed);border-color:var(--soft);color:var(--pink2);box-shadow:0 10px 20px rgba(216,27,96,.12);}
+body[data-theme="black"] .profileTabBtn.active{background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));border-color: rgba(255,255,255,.12);color: var(--text);}
+.profileTabPane{display:none;}
+.profileTabPane.is-active{display:block;}
+.profileAboutGrid{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;margin-top:14px;}
+.profileAboutList{display:grid;gap:10px;}
+.profileAboutItem{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:var(--card);}
+.profileAboutItem .label{color:var(--muted);font-weight:600;}
+.profileBadgeBox{min-height:220px;display:grid;place-items:center;text-align:center;padding:18px;border:1px dashed var(--line);border-radius:20px;color:var(--muted);background:rgba(255,255,255,.45);}
+.profileRanking{margin-top:14px;}
+.profileRankingTop{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.rankCard{padding:16px;border-radius:20px;border:1px solid var(--line);background:var(--card);text-align:center;box-shadow:var(--shadow);}
+.rankCard.big{transform:translateY(-10px);}
+.rankIcon{width:74px;height:74px;margin:0 auto 10px;border-radius:999px;display:grid;place-items:center;font-size:30px;background:linear-gradient(135deg,var(--soft),#fff);border:1px solid var(--line);}
+.rankPts{font-size:1.6rem;font-weight:800;color:var(--pink2);}
+.rankList{margin-top:12px;display:grid;gap:10px;}
+.rankListItem{display:grid;grid-template-columns:70px 1fr auto;gap:12px;align-items:center;padding:12px 14px;border-radius:16px;background:linear-gradient(180deg,#fff,#fff7fa);border:1px solid var(--line);font-weight:700;}
+.profileHeaderActions{display:flex;gap:10px;flex-wrap:wrap;}
+@media (max-width:980px){.profileAboutGrid{grid-template-columns:1fr;}.profileRankingTop{grid-template-columns:1fr;}.rankCard.big{transform:none;}}
 body[data-theme="black"] .appTopbarTitle{color:var(--text);}
 @media (max-width: 640px){.appTopbar{padding:8px 10px;gap:10px;}.menuToggle{width:42px;height:42px;font-size:20px;}.appTopbarLogo{width:36px;height:36px;}.appTopbarTitle{font-size:1rem;}}
 .appShell.sidebar-collapsed{grid-template-columns:0 1fr;}
@@ -851,23 +877,7 @@ body[data-theme="black"] .pageHeader h2{color:var(--text);}
     </div>
 
     <div class="sidebarTabs" id="tabs"></div>
-
-    <div class="sidebarUserBox">
-      <div class="sidebarUserRow">
-        <img id="sidebarAvatar" class="sidebarAvatar" src="assets/logo.png" alt="Avatar usuario">
-        <div style="min-width:0;">
-          <div class="small" id="authStatus">No logueado</div>
-          <div class="small" id="sidebarUserMini">Perfil local</div>
-        </div>
-      </div>
-
-      <div class="row" style="gap:8px;">
-        <button class="btn ghost tiny" id="btnGoUserPage">Mi perfil</button>
-        <button class="btn ghost tiny" id="btnGoEditProfile">Editar</button>
-        <button class="btn ghost tiny" id="btnGoSettings">Ajustes</button>
-        <button class="btn ghost tiny" id="btnSignOutTop" style="display:none;">Cerrar sesión</button>
-      </div>
-    </div>
+    <div class="sidebarFooter">Tu acceso al perfil vive arriba a la derecha. Mucho menos barro.</div>
 
     <div id="globalErrorBox" class="notice" style="display:none;"></div>
   </aside>
@@ -880,6 +890,10 @@ body[data-theme="black"] .pageHeader h2{color:var(--text);}
           <img class="appTopbarLogo" src="assets/logo.png" alt="Logo MTG Manager">
           <div class="appTopbarTitle">MTG Manager</div>
         </div>
+        <div class="appTopbarSpacer"></div>
+        <button class="profileQuickBtn" id="btnTopProfile" aria-label="Ir al perfil">
+          <img id="topbarAvatar" src="assets/logo.png" alt="Perfil">
+        </button>
       </div>
 
     <!-- INTRO -->
@@ -1505,35 +1519,96 @@ body[data-theme="black"] .pageHeader h2{color:var(--text);}
 
     <section class="panel is-hidden" data-page="usuario" style="display:none;">
       <div class="pageHeader">
-        <h2>Mi perfil</h2>
-        <p>Vista pública de tu perfil dentro de la app. Desde aquí solo miras; para tocar cosas ve a editar perfil.</p>
-      </div>
-      <div class="profileHero" id="profileHero"><div class="profileHeroOverlay"></div><div class="profileHeroContent"><img id="profileAvatarLarge" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar"><div class="profileMeta"><h2 id="profileDisplayName">Usuario</h2><div class="profileEmail" id="profileDisplayEmail">correo@ejemplo.com</div><div class="profileMini"><span class="pill">Colección: <b id="profileCardsCount">0</b></span><span class="pill">Mazos: <b id="profileDecksCount">0</b></span><span class="pill">Deseos: <b id="profileWishCount">0</b></span></div></div></div></div>
-      <div class="profileViewGrid">
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Presentación</h3>
-          <div class="profilePreviewRow">
-            <img id="profileAvatarPreview" class="profileSmallAvatar" src="assets/logo.png" alt="Preview avatar">
-            <div>
-              <div><b id="profilePublicName">Usuario</b></div>
-              <div class="hint" id="profilePublicBio">Todavía no has escrito una bio. Un pequeño misterio ambulante.</div>
-            </div>
+        <div class="row" style="align-items:flex-start;gap:12px;">
+          <div>
+            <h2>Mi perfil</h2>
+            <p>Tu rincón público y privado dentro de la app. Aquí miras, editas y gestionas a tu pequeña tribu de cartones.</p>
           </div>
-          <div class="sectionActions">
-            <button class="btn" id="btnGoEditProfile">Editar perfil</button>
-            <button class="btn ghost" onclick="showPage('coleccion')">Ver colección</button>
+          <div class="spacer"></div>
+          <div class="profileHeaderActions">
+            <button class="btn ghost" id="btnProfileGoCollection">Ver colección</button>
+            <button class="btn ghost" id="btnProfileGoStore">Ir a tienda</button>
           </div>
-        </div>
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Resumen</h3>
-          <div class="profileStatGrid"><div class="profileStat"><div class="k">Cartas distintas</div><div class="v" id="profileStatCards">0</div></div><div class="profileStat"><div class="k">Total mazos</div><div class="v" id="profileStatDecks">0</div></div><div class="profileStat"><div class="k">Lista de deseos</div><div class="v" id="profileStatWishes">0</div></div><div class="profileStat"><div class="k">Valor estimado</div><div class="v" id="profileStatValue">0.00€</div></div></div>
         </div>
       </div>
 
-      <div class="profileGrid" style="margin-top:14px;">
+      <div class="profileHero" id="profileHero"><div class="profileHeroOverlay"></div><div class="profileHeroContent"><img id="profileAvatarLarge" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar"><div class="profileMeta"><h2 id="profileDisplayName">Usuario</h2><div class="profileEmail" id="profileDisplayEmail">correo@ejemplo.com</div><div class="profileMini"><span class="pill">Colección: <b id="profileCardsCount">0</b></span><span class="pill">Mazos: <b id="profileDecksCount">0</b></span><span class="pill">Deseos: <b id="profileWishCount">0</b></span></div></div></div></div>
+
+      <div class="profileTabs" id="profileTabs">
+        <button class="profileTabBtn active" data-profile-tab="resumen">Resumen</button>
+        <button class="profileTabBtn" data-profile-tab="amigos">Amigos</button>
+        <button class="profileTabBtn" data-profile-tab="solicitudes">Solicitudes</button>
+        <button class="profileTabBtn" data-profile-tab="editar">Editar perfil</button>
+        <button class="profileTabBtn" data-profile-tab="ajustes">Ajustes</button>
+      </div>
+
+      <div class="profileTabPane is-active" data-profile-pane="resumen">
+        <div class="profileAboutGrid">
+          <div class="panel soft" style="box-shadow:none;">
+            <h3 class="h3">Sobre</h3>
+            <div class="profilePreviewRow" style="margin-bottom:14px;">
+              <img id="profileAvatarPreview" class="profileSmallAvatar" src="assets/logo.png" alt="Preview avatar">
+              <div>
+                <div><b id="profilePublicName">Usuario</b></div>
+                <div class="hint" id="profilePublicBio">Todavía no has escrito una bio. Un pequeño misterio ambulante.</div>
+              </div>
+            </div>
+            <div class="profileAboutList">
+              <div class="profileAboutItem"><span class="label">Nombre visible</span><span id="profileAboutName">Usuario</span></div>
+              <div class="profileAboutItem"><span class="label">Email</span><span id="profileAboutEmail">correo@ejemplo.com</span></div>
+              <div class="profileAboutItem"><span class="label">Cartas distintas</span><span id="profileStatCards">0</span></div>
+              <div class="profileAboutItem"><span class="label">Mazos</span><span id="profileStatDecks">0</span></div>
+              <div class="profileAboutItem"><span class="label">Deseos</span><span id="profileStatWishes">0</span></div>
+              <div class="profileAboutItem"><span class="label">Valor estimado</span><span id="profileStatValue">0.00€</span></div>
+            </div>
+          </div>
+          <div class="panel soft" style="box-shadow:none;">
+            <h3 class="h3">Insignias</h3>
+            <div class="profileBadgeBox">
+              <div>
+                <div style="font-size:42px;line-height:1;">🏵️</div>
+                <div style="font-weight:800;margin-top:10px;">Todavía no has desbloqueado insignias</div>
+                <div class="hint" style="margin-top:6px;">Pero ya tienes un perfil con más personalidad que muchas apps enteras.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel soft profileRanking" style="box-shadow:none;">
+          <h3 class="h3">Ranking de cartones</h3>
+          <div class="profileRankingTop">
+            <div class="rankCard">
+              <div class="rankIcon">🥉</div>
+              <div style="font-weight:800;">Deseos</div>
+              <div class="rankPts" id="rankWishValue">0</div>
+              <div class="hint">Cartas en seguimiento</div>
+            </div>
+            <div class="rankCard big">
+              <div class="rankIcon">🥇</div>
+              <div style="font-weight:800;">Colección</div>
+              <div class="rankPts" id="rankCollectionValue">0</div>
+              <div class="hint">Cartas distintas guardadas</div>
+            </div>
+            <div class="rankCard">
+              <div class="rankIcon">🥈</div>
+              <div style="font-weight:800;">Mazos</div>
+              <div class="rankPts" id="rankDeckValue">0</div>
+              <div class="hint">Construcciones activas</div>
+            </div>
+          </div>
+          <div class="rankList">
+            <div class="rankListItem"><span>#1</span><span>Cartas totales estimadas</span><span id="rankTotalCards">0</span></div>
+            <div class="rankListItem"><span>#2</span><span>Copias en la colección</span><span id="rankTotalCopies">0</span></div>
+            <div class="rankListItem"><span>#3</span><span>Items en la wishlist</span><span id="rankWishlistTotal">0</span></div>
+            <div class="rankListItem"><span>#4</span><span>Ventas activas</span><span id="rankSalesTotal">0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profileTabPane" data-profile-pane="amigos">
         <div class="panel soft" style="box-shadow:none;">
           <h3 class="h3">Amigos</h3>
-          <div class="hint">Busca por nombre de usuario o email local y envía solicitud. Todo queda en este navegador, así que no es Facebook, es su primo artesanal.</div>
+          <div class="hint">Busca por nombre de usuario o email local y envía solicitud. Todo queda en este navegador, así que no es una red social galáctica, pero cumple.</div>
           <div class="row mt12" style="gap:8px; align-items:center;">
             <input id="friendSearchInput" placeholder="Usuario o email">
             <button class="btn" id="btnSendFriendRequest">Añadir amigo</button>
@@ -1545,10 +1620,12 @@ body[data-theme="black"] .pageHeader h2{color:var(--text);}
           </div>
           <div id="friendsList" style="margin-top:12px;"></div>
         </div>
+      </div>
 
+      <div class="profileTabPane" data-profile-pane="solicitudes">
         <div class="panel soft" style="box-shadow:none;">
           <h3 class="h3">Solicitudes pendientes</h3>
-          <div class="hint">Acepta, rechaza o cancela. Pequeña diplomacia de cartones.</div>
+          <div class="hint">Acepta, rechaza o cancela. Diplomacia ligera, cero dragones.</div>
           <h4 class="h3" style="font-size:1rem;margin-top:14px;">Recibidas</h4>
           <div id="friendRequestsReceived" style="margin-top:8px;"></div>
           <hr class="hr">
@@ -1556,110 +1633,59 @@ body[data-theme="black"] .pageHeader h2{color:var(--text);}
           <div id="friendRequestsSent" style="margin-top:8px;"></div>
         </div>
       </div>
-    </section>
 
-    <section class="panel is-hidden" data-page="editar_perfil" style="display:none;">
-      <div class="pageHeader">
-        <h2>Editar perfil</h2>
-        <p>Aquí sí metes mano: foto, banner, nombre y bio.</p>
-      </div>
-      <div class="profileGrid">
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Imagen de perfil</h3>
-          <div class="profilePreviewRow"><img id="profileEditAvatarPreview" class="profileSmallAvatar" src="assets/logo.png" alt="Preview avatar"><div class="row" style="gap:8px;"><label class="btn uploadBtn" for="profileAvatarInput">Subir foto</label><button class="btn ghost" id="btnResetAvatar">Restablecer</button></div></div>
-          <input class="fileInput" id="profileAvatarInput" type="file" accept="image/*"><div class="hint">Se guarda en tu navegador. Nada de portales interdimensionales.</div><hr class="hr"><h3 class="h3">Datos del perfil</h3><label>Nombre visible</label><input id="profileNameInput" placeholder="Tu nombre de perfil"><label class="mt10">Biografía corta</label><input id="profileBioInput" placeholder="Ej: Coleccionista de Commander y cartones brillantes"><div class="row mt12"><button class="btn" id="btnSaveProfileText">Guardar perfil</button><button class="btn ghost" id="btnGoProfileView">Ver perfil</button></div>
-        </div>
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Banner de fondo</h3><div class="row" style="gap:8px; margin-bottom:10px;"><label class="btn uploadBtn" for="profileBannerInput">Subir banner</label><button class="btn ghost" id="btnResetBanner">Restablecer</button></div><input class="fileInput" id="profileBannerInput" type="file" accept="image/*"><div class="hint">Recomendado: imagen horizontal.</div><hr class="hr"><h3 class="h3">Vista previa</h3><div class="profileHero" id="profileHeroEditPreview"><div class="profileHeroOverlay"></div><div class="profileHeroContent"><img id="profileEditAvatarLarge" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar"><div class="profileMeta"><h2 id="profileEditDisplayName">Usuario</h2><div class="profileEmail" id="profileEditDisplayEmail">correo@ejemplo.com</div></div></div></div>
+      <div class="profileTabPane" data-profile-pane="editar">
+        <div class="profileGrid">
+          <div class="panel soft" style="box-shadow:none;">
+            <h3 class="h3">Imagen de perfil</h3>
+            <div class="profilePreviewRow"><img id="profileEditAvatarPreview" class="profileSmallAvatar" src="assets/logo.png" alt="Preview avatar"><div class="row" style="gap:8px;"><label class="btn uploadBtn" for="profileAvatarInput">Subir foto</label><button class="btn ghost" id="btnResetAvatar">Restablecer</button></div></div>
+            <input class="fileInput" id="profileAvatarInput" type="file" accept="image/*"><div class="hint">Se guarda en tu navegador. Nada de portales interdimensionales.</div><hr class="hr"><h3 class="h3">Datos del perfil</h3><label>Nombre visible</label><input id="profileNameInput" placeholder="Tu nombre de perfil"><label class="mt10">Biografía corta</label><input id="profileBioInput" placeholder="Ej: Coleccionista de Commander y cartones brillantes"><div class="row mt12"><button class="btn" id="btnSaveProfileText">Guardar perfil</button></div>
+          </div>
+          <div class="panel soft" style="box-shadow:none;">
+            <h3 class="h3">Banner de fondo</h3><div class="row" style="gap:8px; margin-bottom:10px;"><label class="btn uploadBtn" for="profileBannerInput">Subir banner</label><button class="btn ghost" id="btnResetBanner">Restablecer</button></div><input class="fileInput" id="profileBannerInput" type="file" accept="image/*"><div class="hint">Recomendado: imagen horizontal.</div><hr class="hr"><h3 class="h3">Vista previa</h3><div class="profileHero" id="profileHeroEditPreview"><div class="profileHeroOverlay"></div><div class="profileHeroContent"><img id="profileEditAvatarLarge" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar"><div class="profileMeta"><h2 id="profileEditDisplayName">Usuario</h2><div class="profileEmail" id="profileEditDisplayEmail">correo@ejemplo.com</div></div></div></div>
+          </div>
         </div>
       </div>
-    </section>
 
-    <section class="panel is-hidden" data-page="ajustes" style="display:none;">
-      <div class="row mb10">
-        <h2 class="h2" style="margin:0;">Ajustes</h2>
-        <div class="spacer"></div>
-        <button class="btn ghost" id="btnResetSettings">Reset ajustes</button>
-      </div>
-
-      <div class="settingsGrid">
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Tema</h3>
-          <label>Elige tema</label>
-          <select id="setTheme">
-            <option value="pink">Rosa</option>
-            <option value="red">Rojo</option>
-            <option value="green">Verde</option>
-            <option value="yellow">Amarillo</option>
-            <option value="black">Negro</option>
-            <option value="blue">Azul</option>
-          </select>
-          <div class="hint">Cambia colores de toda la app. “Negro” es modo oscuro.</div>
+      <div class="profileTabPane" data-profile-pane="ajustes">
+        <div class="row mb10">
+          <h2 class="h2" style="margin:0;">Ajustes</h2>
+          <div class="spacer"></div>
+          <button class="btn ghost" id="btnResetSettings">Reset ajustes</button>
         </div>
-
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Tamaño de letra</h3>
-          <label>Tamaño: <span class="mono" id="fontPxLabel">16</span>px</label>
-          <input id="setFontSize" type="range" min="12" max="20" step="1"/>
-          <div class="hint">Recomendado: 15–17 en PC, 16–18 en móvil.</div>
-        </div>
-
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Comodidad</h3>
-
-          <div class="toggleRow" style="margin-top:8px;">
-            <input id="setCompact" type="checkbox" class="chk"/>
-            <div>
-              <b>Modo compacto</b>
-              <div class="hint" style="margin:2px 0 0;">Más “apretado” (mejor con muchas cartas).</div>
-            </div>
+        <div class="settingsGrid">
+          <div class="panel soft" style="box-shadow:none;">
+            <h3 class="h3">Tema</h3>
+            <label>Elige tema</label>
+            <select id="setTheme">
+              <option value="pink">Rosa</option><option value="red">Rojo</option><option value="green">Verde</option><option value="yellow">Amarillo</option><option value="black">Negro</option><option value="blue">Azul</option>
+            </select>
+            <div class="hint">Cambia colores de toda la app. “Negro” es modo oscuro.</div>
           </div>
-
-          <div class="toggleRow" style="margin-top:10px;">
-            <input id="setReducedMotion" type="checkbox" class="chk"/>
-            <div>
-              <b>Reducir animaciones</b>
-              <div class="hint" style="margin:2px 0 0;">Útil si te marea o va lento en móvil.</div>
-            </div>
+          <div class="panel soft" style="box-shadow:none;">
+            <h3 class="h3">Tamaño de letra</h3>
+            <label>Tamaño: <span class="mono" id="fontPxLabel">16</span>px</label>
+            <input id="setFontSize" type="range" min="12" max="20" step="1"/>
+            <div class="hint">Recomendado: 15–17 en PC, 16–18 en móvil.</div>
+          </div>
+          <div class="panel soft" style="box-shadow:none;">
+            <h3 class="h3">Comodidad</h3>
+            <div class="toggleRow" style="margin-top:8px;"><input id="setCompact" type="checkbox" class="chk"/><div><b>Modo compacto</b><div class="hint" style="margin:2px 0 0;">Más apretado.</div></div></div>
+            <div class="toggleRow" style="margin-top:10px;"><input id="setReducedMotion" type="checkbox" class="chk"/><div><b>Reducir animaciones</b><div class="hint" style="margin:2px 0 0;">Útil si te marea o va lento en móvil.</div></div></div>
+          </div>
+          <div class="panel soft" style="box-shadow:none;">
+            <h3 class="h3">Precios</h3>
+            <label>Preferencia de moneda</label>
+            <select id="setCurrency"><option value="EUR">Mostrar € primero</option><option value="USD">Mostrar $ primero</option></select>
+            <div class="hint">Si no hay precio en esa moneda, usa la otra.</div>
           </div>
         </div>
-
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Precios</h3>
-          <label>Preferencia de moneda</label>
-          <select id="setCurrency">
-            <option value="EUR">Mostrar € primero</option>
-            <option value="USD">Mostrar $ primero</option>
-          </select>
-          <div class="hint">Si no hay precio en esa moneda, usa la otra.</div>
-        </div>
-
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Backups</h3>
-
-          <div class="toggleRow" style="margin-top:8px;">
-            <input id="setAutoBackup" type="checkbox" class="chk"/>
-            <div>
-              <b>Backup automático</b>
-              <div class="hint" style="margin:2px 0 0;">Guarda copia local periódica (cartas + mazos + ajustes).</div>
-            </div>
+        <div class="panel soft" style="box-shadow:none;margin-top:14px;">
+          <h3 class="h3">Sesión</h3>
+          <div class="row" style="gap:10px;flex-wrap:wrap;">
+            <button class="btn ghost" id="btnSignOutTop" style="display:none;">Cerrar sesión</button>
+            <button class="btn ghost" id="btnBackFromProfileSettings">Volver al resumen</button>
           </div>
-
-          <label style="margin-top:10px;">Frecuencia</label>
-          <select id="setAutoBackupEvery">
-            <option value="5">Cada 5 min</option>
-            <option value="10">Cada 10 min</option>
-            <option value="30">Cada 30 min</option>
-            <option value="60">Cada 60 min</option>
-          </select>
-
-          <div class="footerbar" style="margin-top:10px;">
-            <button class="btn ghost" id="btnBackupNow">Guardar backup ahora</button>
-            <button class="btn ghost" id="btnBackupDownload">Descargar backup</button>
-            <button class="btn ghost" id="btnBackupRestore">Restaurar último</button>
-          </div>
-
-          <div class="hint" id="backupInfo" style="margin-top:8px;"></div>
         </div>
       </div>
     </section>
@@ -2041,9 +2067,6 @@ const UI_TABS = {
   deseos: "Deseos",
   tienda: "Tienda",
   mis_ventas: "Ventas",
-  usuario: "Perfil",
-  editar_perfil: "Editar perfil",
-  ajustes: "Ajustes",
 };
 
 const pages = [
@@ -2094,8 +2117,7 @@ function showPage(id){
     if (id === "stats") { renderColorStats(); renderTypeStats(); updateInvestmentUI(); }
     if (id === "buscador") { ensureSearchOptions(); loadSearchStateToUI(); renderSearchResults(); }
     if (id === "mazos") renderDecks();
-    if (id === "ajustes") initSettingsUI();
-    if (id === "usuario" || id === "editar_perfil") renderUserProfilePage();
+    if (id === "usuario") { renderUserProfilePage(); initSettingsUI(); }
     if (id === "coleccion") {
       const sel = document.getElementById("colFavFilter");
       if(sel) sel.value = settings.colFavFilter || sel.value || "all";
@@ -4565,7 +4587,24 @@ function getProfileName(){ const sess = getCurrentSessionUser(); return profile.
 function getProfileEmail(){ const sess = getCurrentSessionUser(); return sess?.email || "Sin email"; }
 function getProfileAvatar(){ return profile.avatar || "assets/logo.png"; }
 function getProfileBannerCss(){ return profile.banner ? `url("${profile.banner}")` : "linear-gradient(135deg, #c084fc, #7c3aed, #312e81)"; }
-function renderSidebarProfile(){ const avatar = document.getElementById("sidebarAvatar"); const mini = document.getElementById("sidebarUserMini"); if(avatar) avatar.src = getProfileAvatar(); if(mini) mini.textContent = profile.bio?.trim() || "Perfil local"; }
+function openProfileTab(tab){
+  const wanted = tab || 'resumen';
+  document.querySelectorAll('[data-profile-tab]').forEach(btn=> btn.classList.toggle('active', btn.dataset.profileTab === wanted));
+  document.querySelectorAll('[data-profile-pane]').forEach(pane=> pane.classList.toggle('is-active', pane.dataset.profilePane === wanted));
+  try{ localStorage.setItem('mtg_profile_tab', wanted); }catch{}
+}
+function getSavedProfileTab(){
+  try{ return localStorage.getItem('mtg_profile_tab') || 'resumen'; }catch{ return 'resumen'; }
+}
+function renderSidebarProfile(){
+  const avatar = document.getElementById("sidebarAvatar");
+  const mini = document.getElementById("sidebarUserMini");
+  const topAvatar = document.getElementById('topbarAvatar');
+  const avatarSrc = getProfileAvatar();
+  if(avatar) avatar.src = avatarSrc;
+  if(topAvatar) topAvatar.src = avatarSrc;
+  if(mini) mini.textContent = profile.bio?.trim() || "Perfil local";
+}
 
 function loadSocial(){
   const raw = loadJson(LS_SOCIAL, null);
@@ -4761,6 +4800,8 @@ function renderUserProfilePage(){
   const wishCount = wishlist.length;
   const inv = computeInvestmentTotals();
 
+  const totalCopies = cards.reduce((n, c)=> n + (Number(c.count || c.qty || 1) || 1), 0);
+  const mySales = loadMySales();
   const ids = {
     profileCardsCount: cardsCount,
     profileDecksCount: decksCount,
@@ -4768,7 +4809,16 @@ function renderUserProfilePage(){
     profileStatCards: cardsCount,
     profileStatDecks: decksCount,
     profileStatWishes: wishCount,
-    profileStatValue: `${inv.invAll.toFixed(2)}€`
+    profileStatValue: `${inv.invAll.toFixed(2)}€`,
+    profileAboutName: displayName,
+    profileAboutEmail: getProfileEmail(),
+    rankCollectionValue: cardsCount,
+    rankDeckValue: decksCount,
+    rankWishValue: wishCount,
+    rankTotalCards: cardsCount,
+    rankTotalCopies: totalCopies,
+    rankWishlistTotal: wishlist.length,
+    rankSalesTotal: mySales.length
   };
 
   Object.entries(ids).forEach(([id, value])=>{
@@ -4778,6 +4828,7 @@ function renderUserProfilePage(){
 
   renderFriendsUI();
   renderSidebarProfile();
+  openProfileTab(getSavedProfileTab());
 }
 function initUserProfilePage(){
   const avatarInput = document.getElementById("profileAvatarInput");
@@ -4785,15 +4836,21 @@ function initUserProfilePage(){
   const btnResetAvatar = document.getElementById("btnResetAvatar");
   const btnResetBanner = document.getElementById("btnResetBanner");
   const btnSaveText = document.getElementById("btnSaveProfileText");
-  const btnGoUserPage = document.getElementById("btnGoUserPage");
-  const btnGoEdit = document.getElementById("btnGoEditProfile");
-  const btnGoProfileView = document.getElementById("btnGoProfileView");
+  const btnTopProfile = document.getElementById("btnTopProfile");
   const btnSendFriend = document.getElementById("btnSendFriendRequest");
   const friendSearchInput = document.getElementById("friendSearchInput");
+  const btnProfileGoCollection = document.getElementById('btnProfileGoCollection');
+  const btnProfileGoStore = document.getElementById('btnProfileGoStore');
+  const btnBackFromProfileSettings = document.getElementById('btnBackFromProfileSettings');
 
-  if(btnGoUserPage) btnGoUserPage.onclick = ()=> showPage("usuario");
-  if(btnGoEdit) btnGoEdit.onclick = ()=> showPage("editar_perfil");
-  if(btnGoProfileView) btnGoProfileView.onclick = ()=> showPage("usuario");
+  if(btnTopProfile) btnTopProfile.onclick = ()=> { showPage("usuario"); openProfileTab('resumen'); };
+  if(btnProfileGoCollection) btnProfileGoCollection.onclick = ()=> showPage('coleccion');
+  if(btnProfileGoStore) btnProfileGoStore.onclick = ()=> showPage('tienda');
+  if(btnBackFromProfileSettings) btnBackFromProfileSettings.onclick = ()=> openProfileTab('resumen');
+
+  document.querySelectorAll('[data-profile-tab]').forEach(btn=>{
+    btn.addEventListener('click', ()=> openProfileTab(btn.dataset.profileTab));
+  });
 
   if(avatarInput){
     avatarInput.addEventListener("change", async (e)=>{
@@ -4853,6 +4910,7 @@ function initUserProfilePage(){
       renderUserProfilePage();
       setAuthTop(getCurrentSessionUser());
       renderSalesTable();
+      openProfileTab('resumen');
       alert("Perfil guardado ✅");
     };
   }
@@ -4864,6 +4922,7 @@ function initUserProfilePage(){
         const res = sendFriendRequest(query);
         if(friendSearchInput) friendSearchInput.value = "";
         renderUserProfilePage();
+        openProfileTab('amigos');
         alert(res.autoAccepted ? "Solicitud mutua detectada: ya sois amigos ✅" : "Solicitud enviada ✅");
       }catch(err){
         alert(err?.message || err);
@@ -4886,22 +4945,23 @@ function initUserProfilePage(){
     const cancelBtn = e.target.closest('[data-cancel-friend]');
     const removeBtn = e.target.closest('[data-remove-friend]');
     try{
-      if(acceptBtn){ acceptFriendRequest(acceptBtn.dataset.acceptFriend); renderUserProfilePage(); }
-      if(declineBtn){ declineFriendRequest(declineBtn.dataset.declineFriend); renderUserProfilePage(); }
-      if(cancelBtn){ cancelFriendRequest(cancelBtn.dataset.cancelFriend); renderUserProfilePage(); }
-      if(removeBtn){ removeFriend(removeBtn.dataset.removeFriend); renderUserProfilePage(); }
+      if(acceptBtn){ acceptFriendRequest(acceptBtn.dataset.acceptFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
+      if(declineBtn){ declineFriendRequest(declineBtn.dataset.declineFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
+      if(cancelBtn){ cancelFriendRequest(cancelBtn.dataset.cancelFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
+      if(removeBtn){ removeFriend(removeBtn.dataset.removeFriend); renderUserProfilePage(); openProfileTab('amigos'); }
     }catch(err){
       alert(err?.message || err);
     }
   }, { passive:true }); }
 
+  initSettingsUI();
   renderUserProfilePage();
 }
 
 /************************************************************
  * ARRANQUE
  ************************************************************/
-function closeSidebar(){ const appShell=document.getElementById("appShell"), backdrop=document.getElementById("sidebarBackdrop"); if(window.innerWidth <= 820){ appShell?.classList.remove("sidebar-open"); backdrop?.classList.remove("is-open"); } }
+function closeSidebar(){ const appShell=document.getElementById("appShell"), backdrop=document.getElementById("sidebarBackdrop"); if(!appShell) return; backdrop?.classList.remove("is-open"); appShell.classList.remove("sidebar-open"); appShell.classList.add("sidebar-collapsed"); }
 function syncSidebarMode(){
   const appShell=document.getElementById("appShell"), backdrop=document.getElementById("sidebarBackdrop");
   if(!appShell) return;
@@ -5092,14 +5152,7 @@ function showApp(){
 }
 
 function setAuthTop(user){
-  const status = document.getElementById("authStatus");
   const btnOut = document.getElementById("btnSignOutTop");
-  if(status){
-    if(user){
-      const visibleName = profile.displayName?.trim() || user.username || "Usuario";
-      status.textContent = visibleName;
-    }else status.textContent = "No logueado";
-  }
   if(btnOut) btnOut.style.display = user ? "" : "none";
   renderFriendsUI();
   renderSidebarProfile();
