@@ -310,7 +310,7 @@
     .spacer{flex:1 1 auto}
 
     .hint{
-      font-size:.82rem;
+      font: size 0.1em;
       color:var(--muted);
       margin-top:8px;
       font-family:'Crimson Text',serif;
@@ -1483,7 +1483,6 @@
         <div>
           <label>Color (identidad)</label>
           <select id="searchColors"></select>
-          <div class="hint">Ej: WU = blanco/azul. Incoloro = sin colores WUBRG.</div>
         </div>
 
         <div>
@@ -1526,7 +1525,6 @@
         <span class="pill">Valor (€): <b id="colSumEur">0.00</b></span>
       </div>
 
-      <div class="hint mb10">Todas tus cartas guardadas. Filtra por nombre, set, tipo o texto.</div>
       <div class="row mb10" style="gap:10px; flex-wrap:wrap; align-items:end;">
         <div style="min-width:260px; flex:1 1 320px;">
           <label>Buscar en tu colección</label>
@@ -1627,7 +1625,6 @@
           </div>
 
           <button class="btn" id="btnAddToDeck" style="margin-top:10px;width:100%;">Añadir al mazo</button>
-          <div class="hint">No consulta Scryfall al añadir: guarda la referencia y la cantidad.</div>
 
           <hr class="hr"/>
 
@@ -1666,16 +1663,6 @@
           </div>
 
         </div>
-      </div>
-
-      <div class="hint mt12">
-        Formatos TXT soportados:
-        <div class="mono">Mazo: Nombre</div>
-        <div class="mono">Comandante: Nombre (SET #123)</div>
-        <div class="mono">2x Carta (SET #123)</div>
-        <div class="mono">2 Carta (SET) 123</div>
-        <div class="mono">2x Carta</div>
-        <div class="small">(Puedes usar comentarios con # o //)</div>
       </div>
     </section>
     <!-- TUS VENTAS -->
@@ -1771,7 +1758,6 @@
 
         <div class="panel soft deckDetailsPanel" style="box-shadow:none;">
           <h3 class="h3">Detalles</h3>
-          <div id="deckViewDetails" class="hint">Selecciona una carta para ver sus detalles.</div>
         </div>
       </div><!-- /deckViewGrid -->
     </section>
@@ -1834,7 +1820,7 @@
         </div>
       </div>
 
-      <div class="profileHero" id="profileHero"><div class="profileHeroOverlay"></div><div class="profileHeroContent"><img id="profileAvatarLarge" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar"><div class="profileMeta"><h2 id="profileDisplayName">Usuario</h2><div class="profileEmail" id="profileDisplayEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="89eae6fbfbece6c9ece3ece4f9e5e6a7eae6e4">[email&#160;protected]</a></div><div class="profileMini"><span class="pill">Colección: <b id="profileCardsCount">0</b></span><span class="pill">Mazos: <b id="profileDecksCount">0</b></span><span class="pill">Deseos: <b id="profileWishCount">0</b></span></div></div></div></div>
+      <div class="profileHero" id="profileHero"><div class="profileHeroOverlay"></div><div class="profileHeroContent"><img id="profileAvatarLarge" class="profileAvatarLarge" src="assets/User.jpg" alt="Avatar"><div class="profileMeta"><h2 id="profileDisplayName">Usuario</h2><div class="profileEmail" id="profileDisplayEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="89eae6fbfbece6c9ece3ece4f9e5e6a7eae6e4">[email&#160;protected]</a></div><div class="profileMini"><span class="pill">Colección: <b id="profileCardsCount">0</b></span><span class="pill">Mazos: <b id="profileDecksCount">0</b></span><span class="pill">Deseos: <b id="profileWishCount">0</b></span></div></div></div></div>
 
       <div class="profileTabs" id="profileTabs">
         <button class="profileTabBtn active" data-profile-tab="resumen">Resumen</button>
@@ -1849,7 +1835,7 @@
           <div class="panel soft" style="box-shadow:none;">
             <h3 class="h3">Sobre</h3>
             <div class="profilePreviewRow" style="margin-bottom:14px;">
-              <img id="profileAvatarPreview" class="profileSmallAvatar" src="assets/logo.png" alt="Preview avatar">
+              <img id="profileAvatarPreview" class="profileSmallAvatar" src="assets/User.jpg" alt="Preview avatar">
               <div>
                 <div><b id="profilePublicName">Usuario</b></div>
                 <div class="hint" id="profilePublicBio">Sin bio todavía.</div>
@@ -1925,7 +1911,6 @@
       <div class="profileTabPane" data-profile-pane="solicitudes">
         <div class="panel soft" style="box-shadow:none;">
           <h3 class="h3">Solicitudes pendientes</h3>
-          <div class="hint">Acepta, rechaza o cancela solicitudes pendientes.</div>
           <h4 class="h3" style="font-size:1rem;margin-top:14px;">Recibidas</h4>
           <div id="friendRequestsReceived" style="margin-top:8px;"></div>
           <hr class="hr">
@@ -1938,11 +1923,11 @@
         <div class="profileGrid">
           <div class="panel soft" style="box-shadow:none;">
             <h3 class="h3">Imagen de perfil</h3>
-            <div class="profilePreviewRow"><img id="profileEditAvatarPreview" class="profileSmallAvatar" src="assets/logo.png" alt="Preview avatar"><div class="row" style="gap:8px;"><label class="btn uploadBtn" for="profileAvatarInput">Subir foto</label><button class="btn ghost" id="btnResetAvatar">Restablecer</button></div></div>
-            <input class="fileInput" id="profileAvatarInput" type="file" accept="image/*"><div class="hint">Se guarda localmente en el navegador.</div><hr class="hr"><h3 class="h3">Datos del perfil</h3><label>Nombre visible</label><input id="profileNameInput" placeholder="Nombre visible"><label class="mt10">Biografía corta</label><input id="profileBioInput" placeholder="Descripción breve"><div class="row mt12"><button class="btn" id="btnSaveProfileText">Guardar perfil</button></div>
+            <div class="profilePreviewRow"><img id="profileEditAvatarPreview" class="profileSmallAvatar" src="assets/User.jpg" alt="Preview avatar"><div class="row" style="gap:8px;"><label class="btn uploadBtn" for="profileAvatarInput">Subir foto</label><button class="btn ghost" id="btnResetAvatar">Restablecer</button></div></div>
+            <input class="fileInput" id="profileAvatarInput" type="file" accept="image/*"><hr class="hr"><h3 class="h3">Datos del perfil</h3><label>Nombre visible</label><input id="profileNameInput" placeholder="Nombre visible"><label class="mt10">Biografía corta</label><input id="profileBioInput" placeholder="Descripción breve"><div class="row mt12"><button class="btn" id="btnSaveProfileText">Guardar perfil</button></div>
           </div>
           <div class="panel soft" style="box-shadow:none;">
-            <h3 class="h3">Banner de fondo</h3><div class="row" style="gap:8px; margin-bottom:10px;"><label class="btn uploadBtn" for="profileBannerInput">Subir banner</label><button class="btn ghost" id="btnResetBanner">Restablecer</button></div><input class="fileInput" id="profileBannerInput" type="file" accept="image/*"><div class="hint">Mejor en formato horizontal.</div><hr class="hr"><h3 class="h3">Vista previa</h3><div class="profileHero" id="profileHeroEditPreview"><div class="profileHeroOverlay"></div><div class="profileHeroContent"><img id="profileEditAvatarLarge" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar"><div class="profileMeta"><h2 id="profileEditDisplayName">Usuario</h2><div class="profileEmail" id="profileEditDisplayEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f89b978a8a9d97b89d929d95889497d69b9795">[email&#160;protected]</a></div></div></div></div>
+            <h3 class="h3">Banner de fondo</h3><div class="row" style="gap:8px; margin-bottom:10px;"><label class="btn uploadBtn" for="profileBannerInput">Subir banner</label><button class="btn ghost" id="btnResetBanner">Restablecer</button></div><input class="fileInput" id="profileBannerInput" type="file" accept="image/*"><div class="hint">Mejor en formato horizontal.</div><hr class="hr"><h3 class="h3">Vista previa</h3><div class="profileHero" id="profileHeroEditPreview"><div class="profileHeroOverlay"></div><div class="profileHeroContent"><img id="profileEditAvatarLarge" class="profileAvatarLarge" src="assets/User.jpg" alt="Avatar"><div class="profileMeta"><h2 id="profileEditDisplayName">Usuario</h2><div class="profileEmail" id="profileEditDisplayEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f89b978a8a9d97b89d929d95889497d69b9795">[email&#160;protected]</a></div></div></div></div>
           </div>
         </div>
       </div>
@@ -1960,7 +1945,6 @@
             <select id="setTheme">
               <option value="pink">Prederteminado</option><option value="red">Rojo</option><option value="green">Verde</option><option value="yellow">Amarillo</option><option value="blue">Azul</option><option value="black">Negro</option>
             </select>
-            <div class="hint">Cambia la paleta de colores de la app.</div>
           </div>
           <div class="panel soft" style="box-shadow:none;">
             <h3 class="h3">Tamaño de letra</h3>
@@ -1989,7 +1973,6 @@
             <h3 class="h3">Precios</h3>
             <label>Preferencia de moneda</label>
             <select id="setCurrency"><option value="EUR">Mostrar € primero</option><option value="USD">Mostrar $ primero</option></select>
-            <div class="hint">Si no hay precio en esa divisa, se muestra la otra.</div>
           </div>
         </div>
         <div class="panel soft" style="box-shadow:none;margin-top:14px;">
@@ -2331,7 +2314,7 @@ async function fsLoadMarket(){
         marketId:    d.id,
         sellerId:    data.sellerId,
         sellerName:  data.sellerName || "Usuario",
-        sellerAvatar:data.sellerAvatar || "assets/logo.png",
+        sellerAvatar:data.sellerAvatar || "assets/User.jpg",
         cardId:      data.cardId,
         name:        data.name || "",
         setCode:     data.setCode || "",
@@ -2360,7 +2343,7 @@ function userSave(baseKey, value){ localStorage.setItem(scopedKey(baseKey), JSON
 function loadMarketOffers(){ return loadJson(LS_MARKET, []); }
 function saveMarketOffers(list){ localStorage.setItem(LS_MARKET, JSON.stringify(Array.isArray(list) ? list : [])); }
 function getPublicSellerName(user){ if(!user) return "Usuario"; return user.username || user.email || "Usuario"; }
-function syncCurrentUserSalesToMarket(){ const sess = getSession(); if(!sess) return; const market = loadMarketOffers().filter(x => x.sellerId !== sess.id); const offers = cards.filter(c=>!!c.sale).map(c=>({ marketId:`${sess.id}__${c.id}`, sellerId:sess.id, sellerName: typeof getProfileName === "function" ? getProfileName() : getPublicSellerName(sess), sellerAvatar: typeof getProfileAvatar === "function" ? getProfileAvatar() : "assets/logo.png", cardId:c.id, name:c.name||"", inputName:c.inputName||"", setCode:c.setCode||"", collectorNumber:c.collectorNumber||"", qty:c.qty||1, priceText:c.priceText||"", bestSell:c.bestSell||"", fav:!!c.fav, updatedAt:Date.now() })); saveMarketOffers(market.concat(offers)); }
+function syncCurrentUserSalesToMarket(){ const sess = getSession(); if(!sess) return; const market = loadMarketOffers().filter(x => x.sellerId !== sess.id); const offers = cards.filter(c=>!!c.sale).map(c=>({ marketId:`${sess.id}__${c.id}`, sellerId:sess.id, sellerName: typeof getProfileName === "function" ? getProfileName() : getPublicSellerName(sess), sellerAvatar: typeof getProfileAvatar === "function" ? getProfileAvatar() : "assets/User.jpg", cardId:c.id, name:c.name||"", inputName:c.inputName||"", setCode:c.setCode||"", collectorNumber:c.collectorNumber||"", qty:c.qty||1, priceText:c.priceText||"", bestSell:c.bestSell||"", fav:!!c.fav, updatedAt:Date.now() })); saveMarketOffers(market.concat(offers)); }
 function reloadScopedAppState(){ cards = userLoad(LS_KEY, [], OLD_CARD_KEYS); decks = userLoad(LS_DECKS, [], OLD_DECK_KEYS); wishlist = userLoad(LS_WISHLIST, [], []); settings = (()=>{ const raw = userLoad(LS_SETTINGS, null, []); return raw ? {...DEFAULT_SETTINGS, ...(raw||{})} : {...DEFAULT_SETTINGS}; })(); sortState = (()=>{ const raw = userLoad(LS_SORT, null, []); const base = { key:"added", dir:"desc" }; return raw ? {...base, ...(raw||{})} : base; })(); profile = (()=>{ const raw = userLoad(LS_PROFILE, null, []); return raw ? {...DEFAULT_PROFILE, ...(raw||{})} : {...DEFAULT_PROFILE}; })(); normalizeCards(); normalizeDecks(); applySettings(); }
 
 /************************************************************
@@ -5624,7 +5607,7 @@ function fileToDataUrl(file){ return new Promise((resolve, reject)=>{ const read
 function getCurrentSessionUser(){ return getSession(); }
 function getProfileName(){ const sess = getCurrentSessionUser(); return profile.displayName?.trim() || sess?.username || "Usuario"; }
 function getProfileEmail(){ const sess = getCurrentSessionUser(); return sess?.email || "Sin email"; }
-function getProfileAvatar(){ return profile.avatar || "assets/logo.png"; }
+function getProfileAvatar(){ return profile.avatar || "assets/User.jpg"; }
 function getProfileBannerCss(){ return profile.banner ? `url("${profile.banner}")` : "linear-gradient(135deg, #c084fc, #7c3aed, #312e81)"; }
 function openProfileTab(tab){
   const wanted = tab || 'resumen';
@@ -5670,7 +5653,7 @@ function getPublicProfileByUserId(userId){
     email: "",
     displayName: p?.displayName?.trim() || p?.username?.trim() || "Usuario",
     bio: p?.bio?.trim() || "",
-    avatar: p?.avatar || "assets/logo.png"
+    avatar: p?.avatar || "assets/User.jpg"
   };
 }
 async function fetchAndCachePublicProfile(userId){
@@ -5764,7 +5747,7 @@ async function removeFriend(friendId){
 function friendRowHtml(user, actions){
   return `<div class="saleItem" style="align-items:center;">
     <div style="display:flex;align-items:center;gap:10px;min-width:0;">
-      <img src="${escapeHtml(user.avatar || 'assets/logo.png')}" alt="avatar" class="sidebarAvatar">
+      <img src="${escapeHtml(user.avatar || 'assets/User.jpg')}" alt="avatar" class="sidebarAvatar">
       <div style="min-width:0;">
         <div style="font-weight:700;">${escapeHtml(user.displayName || 'Usuario')}</div>
         <div class="small mono" style="overflow:hidden;text-overflow:ellipsis;">@${escapeHtml(user.username || 'user')}</div>
@@ -6102,7 +6085,7 @@ function initUserProfilePage(){
 
     friendSearchResult.innerHTML = `
       <div class="friendPreviewCard">
-        <img src="${escapeHtml(userData.avatar || 'assets/logo.png')}" alt="avatar">
+        <img src="${escapeHtml(userData.avatar || 'assets/User.jpg')}" alt="avatar">
         <div>
           <div class="fpName">${escapeHtml(userData.displayName || userData.username || 'Usuario')}</div>
           <div class="fpSub">@${escapeHtml(userData.username || '')}${userData.bio ? ' · ' + escapeHtml(userData.bio) : ''}</div>
@@ -6297,7 +6280,7 @@ function _renderOtherSales(otherTbody, otherPill, marketSearch){
   for(const item of market){
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td><div class="row" style="gap:8px;flex-wrap:nowrap;"><img src="${escapeHtml(item.sellerAvatar || 'assets/logo.png')}" alt="avatar" class="sidebarAvatar" style="width:34px;height:34px;"><div><b>${escapeHtml(item.sellerName || "Usuario")}</b><div class="small">Vendedor</div></div></div></td>
+      <td><div class="row" style="gap:8px;flex-wrap:nowrap;"><img src="${escapeHtml(item.sellerAvatar || 'assets/User.jpg')}" alt="avatar" class="sidebarAvatar" style="width:34px;height:34px;"><div><b>${escapeHtml(item.sellerName || "Usuario")}</b><div class="small">Vendedor</div></div></div></td>
       <td><b>${escapeHtml(item.name)}</b></td>
       <td class="mono">${escapeHtml(item.setCode||"")}</td>
       <td class="mono">${escapeHtml(item.collectorNumber||"")}</td>
