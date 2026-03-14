@@ -6,6 +6,11 @@
   <title>✦ MTG Manager — Luna Cosmic</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- Firebase SDK (compat, CDN — sin npm ni build) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -1826,50 +1831,240 @@
   </main>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 
-// ===== Auth local (sin Supabase) =====
-// Nota: esto SOLO gestiona login/registro en este archivo.
-// Los datos de la colección siguen guardándose en el navegador (localStorage), como antes.
+// ===== Firebase Auth =====
+const firebaseConfig = {
+  apiKey: "AIzaSyC2CyBcmqd4dhuNtIX2sjUk_dadwriF0x8",
+  authDomain: "mtg-manager-2005.firebaseapp.com",
+  projectId: "mtg-manager-2005",
+  storageBucket: "mtg-manager-2005.firebasestorage.app",
+  messagingSenderId: "310699881878",
+  appId: "1:310699881878:web:dcb0f21e31434393f719b7",
+  measurementId: "G-T3PQ24KKCF"
+};
+firebase.initializeApp(firebaseConfig);
+const fbAuth = firebase.auth();
+const fbDb   = firebase.firestore();
 
-const USERS_KEY   = "mtg_rosita_users_v1";
-const SESSION_KEY = "mtg_rosita_session_v1";
+// Usuario activo en memoria (se actualiza por onAuthStateChanged)
+let _fbUser = null;
 
-function loadUsers(){
-  try{ return JSON.parse(localStorage.getItem(USERS_KEY) || "[]"); }catch{ return []; }
-}
-function saveUsers(users){
-  try{ localStorage.setItem(USERS_KEY, JSON.stringify(users||[])); }catch{}
-}
-function setSession(user, remember){
-  const payload = { id: user.id, email: user.email, username: user.username };
+function currentUserId(){ return _fbUser?.uid || ""; }
+
+/************************************************************
+ * Firestore — helpers de lectura/escritura
+ ************************************************************/
+
+// Guarda el perfil público del usuario en Firestore (users/{uid})
+async function fsSaveProfile(){
+  const uid = currentUserId();
+  if(!uid) return;
   try{
-    if(remember){
-      localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
-      sessionStorage.removeItem(SESSION_KEY);
-    }else{
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(payload));
-      localStorage.removeItem(SESSION_KEY);
-    }
-  }catch{}
-  return payload;
+    await fbDb.collection("users").doc(uid).set({
+      uid,
+      username:    _fbUser.displayName || "",
+      email:       _fbUser.email || "",
+      displayName: profile.displayName || _fbUser.displayName || "",
+      bio:         profile.bio || "",
+      avatar:      profile.avatar || "",
+      updatedAt:   firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  }catch(e){ console.warn("fssaveProfile:", e); }
 }
-function clearSession(){
-  try{ localStorage.removeItem(SESSION_KEY); }catch{}
-  try{ sessionStorage.removeItem(SESSION_KEY); }catch{}
-}
-function getSession(){
-  try{
-    const a = localStorage.getItem(SESSION_KEY);
-    if(a) return JSON.parse(a);
-  }catch{}
-  try{
-    const b = sessionStorage.getItem(SESSION_KEY);
-    if(b) return JSON.parse(b);
-  }catch{}
+
+// Busca un usuario en Firestore por username o email
+async function fsSearchUser(query){
+  const q = String(query||"").trim().toLowerCase();
+  if(!q) return null;
+  // Buscar por username exacto
+  let snap = await fbDb.collection("users")
+    .where("username", "==", q)
+    .limit(1).get();
+  if(!snap.empty) return snap.docs[0].data();
+  // Buscar por email exacto
+  snap = await fbDb.collection("users")
+    .where("email", "==", q)
+    .limit(1).get();
+  if(!snap.empty) return snap.docs[0].data();
   return null;
 }
-function currentUserId(){ return getSession()?.id || ""; }
+
+// Envía solicitud de amistad real en Firestore
+async function fsSendFriendRequest(toUid){
+  const uid = currentUserId();
+  const reqId = [uid, toUid].sort().join("__");
+  await fbDb.collection("friend_requests").doc(reqId).set({
+    from: uid,
+    to:   toUid,
+    status: "pending",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+}
+
+// Acepta solicitud de amistad en Firestore
+async function fsAcceptFriendRequest(reqId){
+  const uid = currentUserId();
+  const ref  = fbDb.collection("friend_requests").doc(reqId);
+  const snap = await ref.get();
+  if(!snap.exists) return;
+  const { from, to } = snap.data();
+  const batch = fbDb.batch();
+  // Marcar solicitud como aceptada
+  batch.update(ref, { status: "accepted" });
+  // Crear friendship bidireccional
+  const fid = [from, to].sort().join("__");
+  batch.set(fbDb.collection("friendships").doc(fid), {
+    users: [from, to], createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  await batch.commit();
+}
+
+// Rechaza / cancela solicitud
+async function fsDeclineFriendRequest(reqId){
+  await fbDb.collection("friend_requests").doc(reqId).delete();
+}
+
+// Elimina amistad
+async function fsRemoveFriend(friendUid){
+  const uid = currentUserId();
+  const fid = [uid, friendUid].sort().join("__");
+  await fbDb.collection("friendships").doc(fid).delete();
+}
+
+// Carga solicitudes y amigos del usuario actual desde Firestore
+async function fsLoadSocialData(){
+  const uid = currentUserId();
+  if(!uid) return;
+
+  // Solicitudes recibidas pendientes
+  const recvSnap = await fbDb.collection("friend_requests")
+    .where("to", "==", uid).where("status", "==", "pending").get();
+
+  // Solicitudes enviadas pendientes
+  const sentSnap = await fbDb.collection("friend_requests")
+    .where("from", "==", uid).where("status", "==", "pending").get();
+
+  // Amistades
+  const friendSnap = await fbDb.collection("friendships")
+    .where("users", "array-contains", uid).get();
+
+  // Enriquecer con perfiles públicos
+  const allUids = new Set();
+  recvSnap.forEach(d=> allUids.add(d.data().from));
+  sentSnap.forEach(d=> allUids.add(d.data().to));
+  friendSnap.forEach(d=> d.data().users.forEach(u=> allUids.has(u) || allUids.add(u)));
+  allUids.delete(uid);
+
+  const profiles = {};
+  await Promise.all([...allUids].map(async (id)=>{
+    const snap = await fbDb.collection("users").doc(id).get();
+    profiles[id] = snap.exists ? snap.data() : { uid: id, displayName: "Usuario", username: id, avatar: "" };
+  }));
+
+  // Construir estructura compatible con el sistema local de social
+  const requests = [];
+  recvSnap.forEach(d=> requests.push({ id: d.id, from: d.data().from, to: d.data().to, createdAt: d.data().createdAt?.toMillis?.() || 0 }));
+  sentSnap.forEach(d=> requests.push({ id: d.id, from: d.data().from, to: d.data().to, createdAt: d.data().createdAt?.toMillis?.() || 0 }));
+
+  const friendships = [];
+  friendSnap.forEach(d=> friendships.push({ id: d.id, a: d.data().users[0], b: d.data().users[1], createdAt: d.data().createdAt?.toMillis?.() || 0 }));
+
+  // Guardar en localStorage como caché (para que las funciones locales sigan funcionando)
+  saveSocial({ requests, friendships });
+
+  // Guardar perfiles en cache local
+  Object.entries(profiles).forEach(([id, p])=>{
+    const key = scopedKey(LS_PROFILE, id);
+    if(!localStorage.getItem(key)){
+      localStorage.setItem(key, JSON.stringify({ displayName: p.displayName||p.username||"", bio: p.bio||"", avatar: p.avatar||"" }));
+    }
+  });
+}
+
+// Publica una carta en la tienda global (Firestore listings)
+async function fsPublishSaleCard(card){
+  const uid = currentUserId();
+  if(!uid || !card) return;
+  await fbDb.collection("listings").doc(`${uid}__${card.id}`).set({
+    sellerId:    uid,
+    sellerName:  getProfileName(),
+    sellerAvatar:getProfileAvatar(),
+    cardId:      card.id,
+    name:        card.name || "",
+    setCode:     card.setCode || "",
+    collectorNumber: card.collectorNumber || "",
+    qty:         card.qty || 1,
+    priceText:   card.priceText || "",
+    bestSell:    card.bestSell || "",
+    foil:        !!card.foil,
+    lang:        card.lang || "es",
+    imgUrl:      card.imgUrl || "",
+    isActive:    true,
+    updatedAt:   firebase.firestore.FieldValue.serverTimestamp()
+  });
+}
+
+// Elimina una carta de la tienda global
+async function fsRemoveSaleListing(cardId){
+  const uid = currentUserId();
+  if(!uid) return;
+  await fbDb.collection("listings").doc(`${uid}__${cardId}`).delete();
+}
+
+// Sincroniza todas las cartas en venta del usuario a Firestore
+async function fsSyncAllSaleCards(){
+  const uid = currentUserId();
+  if(!uid) return;
+  const forSale = cards.filter(c => !!c.sale);
+  // Publicar o actualizar las activas
+  await Promise.all(forSale.map(c => fsPublishSaleCard(c)));
+  // Eliminar las que ya no están en venta
+  const snap = await fbDb.collection("listings").where("sellerId", "==", uid).get();
+  const activeIds = new Set(forSale.map(c => `${uid}__${c.id}`));
+  const toDelete = snap.docs.filter(d => !activeIds.has(d.id));
+  await Promise.all(toDelete.map(d => d.ref.delete()));
+}
+
+// Carga el mercado global desde Firestore
+async function fsLoadMarket(){
+  const uid = currentUserId();
+  const snap = await fbDb.collection("listings")
+    .where("isActive", "==", true)
+    .orderBy("updatedAt", "desc")
+    .limit(200)
+    .get();
+
+  const offers = [];
+  snap.forEach(d=>{
+    const data = d.data();
+    if(data.sellerId !== uid){
+      offers.push({
+        marketId:    d.id,
+        sellerId:    data.sellerId,
+        sellerName:  data.sellerName || "Usuario",
+        sellerAvatar:data.sellerAvatar || "assets/logo.png",
+        cardId:      data.cardId,
+        name:        data.name || "",
+        setCode:     data.setCode || "",
+        collectorNumber: data.collectorNumber || "",
+        qty:         data.qty || 1,
+        priceText:   data.priceText || "",
+        bestSell:    data.bestSell || "",
+        updatedAt:   data.updatedAt?.toMillis?.() || 0
+      });
+    }
+  });
+
+  saveMarketOffers(offers);
+  return offers;
+}
+function getSession(){
+  if(!_fbUser) return null;
+  return { id: _fbUser.uid, email: _fbUser.email, username: _fbUser.displayName || _fbUser.email?.split("@")[0] || "Usuario" };
+}
+function clearSession(){ /* Firebase gestiona la sesión — se cierra con fbAuth.signOut() */ }
+
 function scopedKey(base, userId = currentUserId()){ return userId ? `${base}__${userId}` : base; }
 function loadJson(key, fallback){ try{ const raw = localStorage.getItem(key); if(raw) return JSON.parse(raw); }catch{} return fallback; }
 function userLoad(baseKey, fallback, oldKeys=[]){ const uid = currentUserId(); if(uid){ const scoped = loadJson(scopedKey(baseKey, uid), undefined); if(typeof scoped !== "undefined") return scoped; } try{ const raw = localStorage.getItem(baseKey); if(raw) return JSON.parse(raw); }catch{} for(const k of oldKeys){ try{ const raw = localStorage.getItem(k); if(raw) return JSON.parse(raw); }catch{} } return fallback; }
@@ -2040,9 +2235,13 @@ normalizeDecks();
 /************************************************************
  * Persist
  ************************************************************/
-function saveCards(){ userSave(LS_KEY, cards); syncCurrentUserSalesToMarket(); try{ renderWishlist(); 
-  try{ cloudSaveAll(); }catch{}
-}catch{} }
+function saveCards(){
+  userSave(LS_KEY, cards);
+  syncCurrentUserSalesToMarket();
+  // Sincronizar cartas en venta con Firestore (async, sin bloquear)
+  if(currentUserId()) fsSyncAllSaleCards().catch(()=>{});
+  try{ renderWishlist(); }catch{}
+}
 function saveDecks(){ userSave(LS_DECKS, decks); 
   try{ cloudSaveAll(); }catch{}
 }
@@ -4733,9 +4932,14 @@ function initTabs(){
  ************************************************************/
 const DEFAULT_PROFILE = { displayName:"", bio:"", avatar:"", banner:"" };
 let profile = (() => { try{ const raw = userLoad(LS_PROFILE, null, []); if(!raw) return {...DEFAULT_PROFILE}; return {...DEFAULT_PROFILE, ...raw}; }catch{ return {...DEFAULT_PROFILE}; } })();
-function saveProfile(){ userSave(LS_PROFILE, profile); syncCurrentUserSalesToMarket(); }
+function saveProfile(){
+  userSave(LS_PROFILE, profile);
+  syncCurrentUserSalesToMarket();
+  // Actualizar perfil público en Firestore
+  if(currentUserId()) fsSaveProfile().catch(()=>{});
+}
 function fileToDataUrl(file){ return new Promise((resolve, reject)=>{ const reader = new FileReader(); reader.onload = ()=> resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }); }
-function getCurrentSessionUser(){ try{ return getSession(); }catch{ return null; } }
+function getCurrentSessionUser(){ return getSession(); }
 function getProfileName(){ const sess = getCurrentSessionUser(); return profile.displayName?.trim() || sess?.username || "Usuario"; }
 function getProfileEmail(){ const sess = getCurrentSessionUser(); return sess?.email || "Sin email"; }
 function getProfileAvatar(){ return profile.avatar || "assets/logo.png"; }
@@ -4776,14 +4980,14 @@ function saveSocial(data){
 }
 function socialPairKey(a,b){ return [String(a||""), String(b||"")].sort().join("__"); }
 function getPublicProfileByUserId(userId){
-  const users = loadUsers();
-  const u = users.find(x => String(x.id) === String(userId));
+  // Con Firebase Auth no tenemos acceso al directorio de usuarios en cliente.
+  // Se usa el perfil guardado en localStorage (scoped) como fuente pública local.
   const p = loadJson(scopedKey(LS_PROFILE, userId), {});
   return {
     id: userId,
-    username: u?.username || "Usuario",
-    email: u?.email || "",
-    displayName: p?.displayName?.trim() || u?.username || u?.email || "Usuario",
+    username: p?.displayName?.trim() || "Usuario",
+    email: "",
+    displayName: p?.displayName?.trim() || "Usuario",
     bio: p?.bio?.trim() || "",
     avatar: p?.avatar || "assets/logo.png"
   };
@@ -4811,68 +5015,54 @@ function getFriendsData(){
 
   return { social, friends, received, sent };
 }
-function sendFriendRequest(query){
+async function sendFriendRequest(query){
   const uid = currentUserId();
-  if(!uid) throw new Error('Debes iniciar sesión.');
-  const q = String(query || '').trim().toLowerCase();
-  if(!q) throw new Error('Escribe un usuario o email.');
+  if(!uid) throw new Error("Debes iniciar sesión.");
+  const q = String(query || "").trim().toLowerCase();
+  if(!q) throw new Error("Escribe un nombre de usuario o email.");
 
-  const users = loadUsers();
-  const target = users.find(u => String(u.username||'').toLowerCase() === q || String(u.email||'').toLowerCase() === q);
-  if(!target) throw new Error('No existe ese usuario en este navegador.');
-  if(String(target.id) === String(uid)) throw new Error('No puedes enviarte amistad a ti mismo. Un poco narcisista sí, pero no tanto.');
+  // Buscar el usuario en Firestore
+  const target = await fsSearchUser(q);
+  if(!target) throw new Error("No se encontró ningún usuario con ese nombre o email.");
+  if(target.uid === uid) throw new Error("No puedes enviarte una solicitud a ti mismo.");
 
+  // Verificar si ya son amigos (caché local)
   const social = loadSocial();
-  const alreadyFriends = social.friendships.some(f => socialPairKey(f.a,f.b) === socialPairKey(uid, target.id));
-  if(alreadyFriends) throw new Error('Ya sois amigos.');
+  const alreadyFriends = social.friendships.some(f => socialPairKey(f.a,f.b) === socialPairKey(uid, target.uid));
+  if(alreadyFriends) throw new Error("Ya sois amigos.");
 
-  const existing = social.requests.find(r => (r.from === uid && r.to === target.id) || (r.from === target.id && r.to === uid));
+  const existing = social.requests.find(r =>
+    (r.from === uid && r.to === target.uid) ||
+    (r.from === target.uid && r.to === uid)
+  );
   if(existing){
-    if(existing.from === target.id && existing.to === uid){
-      acceptFriendRequest(existing.id);
-      return { autoAccepted:true, target:getPublicProfileByUserId(target.id) };
+    if(existing.from === target.uid && existing.to === uid){
+      await fsAcceptFriendRequest(existing.id);
+      await fsLoadSocialData();
+      return { autoAccepted: true, target };
     }
-    throw new Error('Ya hay una solicitud pendiente entre vosotros.');
+    throw new Error("Ya hay una solicitud pendiente.");
   }
 
-  social.requests.push({
-    id: crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()),
-    from: uid,
-    to: target.id,
-    createdAt: Date.now()
-  });
-  saveSocial(social);
-  return { autoAccepted:false, target:getPublicProfileByUserId(target.id) };
+  await fsSendFriendRequest(target.uid);
+  await fsLoadSocialData();
+  return { autoAccepted: false, target };
 }
-function acceptFriendRequest(requestId){
-  const uid = currentUserId();
-  const social = loadSocial();
-  const req = social.requests.find(r => r.id === requestId && r.to === uid);
-  if(!req) throw new Error('Solicitud no encontrada.');
-  const pair = socialPairKey(req.from, req.to);
-  if(!social.friendships.some(f => socialPairKey(f.a,f.b) === pair)){
-    social.friendships.push({ id: pair, a: req.from, b: req.to, createdAt: Date.now() });
-  }
-  social.requests = social.requests.filter(r => r.id !== requestId);
-  saveSocial(social);
+async function acceptFriendRequest(requestId){
+  await fsAcceptFriendRequest(requestId);
+  await fsLoadSocialData();
 }
-function declineFriendRequest(requestId){
-  const uid = currentUserId();
-  const social = loadSocial();
-  social.requests = social.requests.filter(r => !(r.id === requestId && r.to === uid));
-  saveSocial(social);
+async function declineFriendRequest(requestId){
+  await fsDeclineFriendRequest(requestId);
+  await fsLoadSocialData();
 }
-function cancelFriendRequest(requestId){
-  const uid = currentUserId();
-  const social = loadSocial();
-  social.requests = social.requests.filter(r => !(r.id === requestId && r.from === uid));
-  saveSocial(social);
+async function cancelFriendRequest(requestId){
+  await fsDeclineFriendRequest(requestId);
+  await fsLoadSocialData();
 }
-function removeFriend(friendId){
-  const uid = currentUserId();
-  const social = loadSocial();
-  social.friendships = social.friendships.filter(f => socialPairKey(f.a,f.b) !== socialPairKey(uid, friendId));
-  saveSocial(social);
+async function removeFriend(friendId){
+  await fsRemoveFriend(friendId);
+  await fsLoadSocialData();
 }
 function friendRowHtml(user, actions){
   return `<div class="saleItem" style="align-items:center;">
@@ -5077,16 +5267,21 @@ function initUserProfilePage(){
   }
 
   if(btnSendFriend){
-    btnSendFriend.onclick = ()=>{
+    btnSendFriend.onclick = async ()=>{
       try{
+        btnSendFriend.disabled = true;
+        btnSendFriend.textContent = "Buscando…";
         const query = friendSearchInput?.value || "";
-        const res = sendFriendRequest(query);
+        const res = await sendFriendRequest(query);
         if(friendSearchInput) friendSearchInput.value = "";
         renderUserProfilePage();
         openProfileTab('amigos');
         alert(res.autoAccepted ? "Solicitud mutua: ya sois amigos." : "Solicitud enviada.");
       }catch(err){
         alert(err?.message || err);
+      }finally{
+        btnSendFriend.disabled = false;
+        btnSendFriend.textContent = "Añadir amigo";
       }
     };
   }
@@ -5100,20 +5295,20 @@ function initUserProfilePage(){
     });
   }
 
-  if(!window.__friendsDelegated){ window.__friendsDelegated = true; document.addEventListener('click', (e)=>{
+  if(!window.__friendsDelegated){ window.__friendsDelegated = true; document.addEventListener('click', async (e)=>{
     const acceptBtn = e.target.closest('[data-accept-friend]');
     const declineBtn = e.target.closest('[data-decline-friend]');
     const cancelBtn = e.target.closest('[data-cancel-friend]');
     const removeBtn = e.target.closest('[data-remove-friend]');
     try{
-      if(acceptBtn){ acceptFriendRequest(acceptBtn.dataset.acceptFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
-      if(declineBtn){ declineFriendRequest(declineBtn.dataset.declineFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
-      if(cancelBtn){ cancelFriendRequest(cancelBtn.dataset.cancelFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
-      if(removeBtn){ removeFriend(removeBtn.dataset.removeFriend); renderUserProfilePage(); openProfileTab('amigos'); }
+      if(acceptBtn){ await acceptFriendRequest(acceptBtn.dataset.acceptFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
+      if(declineBtn){ await declineFriendRequest(declineBtn.dataset.declineFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
+      if(cancelBtn){ await cancelFriendRequest(cancelBtn.dataset.cancelFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
+      if(removeBtn){ await removeFriend(removeBtn.dataset.removeFriend); renderUserProfilePage(); openProfileTab('amigos'); }
     }catch(err){
       alert(err?.message || err);
     }
-  }, { passive:true }); }
+  }); }
 
   initSettingsUI();
   renderUserProfilePage();
@@ -5139,13 +5334,17 @@ function syncSidebarMode(){
 function toggleSidebar(){ const appShell=document.getElementById("appShell"), backdrop=document.getElementById("sidebarBackdrop"); if(!appShell) return; if(window.innerWidth <= 820){ const willOpen = !appShell.classList.contains("sidebar-open"); appShell.classList.toggle("sidebar-open", willOpen); backdrop?.classList.toggle("is-open", willOpen); }else{ appShell.classList.toggle("sidebar-collapsed"); } }
 function initSidebarUI(){ const toggle=document.getElementById("menuToggle"), backdrop=document.getElementById("sidebarBackdrop"); syncSidebarMode(); if(toggle) toggle.addEventListener("click", toggleSidebar); if(backdrop) backdrop.addEventListener("click", closeSidebar); window.addEventListener("resize", syncSidebarMode); document.querySelectorAll(".sidebar .tabbtn").forEach(btn=> btn.addEventListener("click", closeSidebar)); }
 
-document.addEventListener("DOMContentLoaded", ()=>{
-  applySettings();
-  initTabs();
-  initSidebarUI();
-  initUserProfilePage();
+// ── initAppUI: registra listeners de UI que no dependen del usuario ──
+// Se llama UNA vez al cargar el DOM, antes de que Firebase resuelva la sesión.
+let _appUIInited = false;
+function initAppUI(){
+  if(_appUIInited) return;
+  _appUIInited = true;
 
-  // Colección: filtro por favoritos
+  applySettings();
+  initSidebarUI();
+
+  // Colección: filtro favoritos
   const colFavSel = document.getElementById("colFavFilter");
   if(colFavSel){
     colFavSel.value = settings.colFavFilter || "all";
@@ -5158,11 +5357,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
   // Colección: búsqueda en tiempo real
   const colSearchInput = document.getElementById("colSearchInput");
-  if(colSearchInput){
-    colSearchInput.addEventListener("input", ()=> renderColeccion());
-  }
-
-
+  if(colSearchInput) colSearchInput.addEventListener("input", ()=> renderColeccion());
 
   // Deseos
   const bWishAdd = document.getElementById("btnWishAdd");
@@ -5175,25 +5370,11 @@ document.addEventListener("DOMContentLoaded", ()=>{
   const bDeckToWish = document.getElementById("btnDeckToWish");
   if(bDeckToWish) bDeckToWish.onclick = ()=> addMissingDeckToWishlist(selectedDeck());
 
-  document.getElementById("sortKey").value = sortState.key;
-  document.getElementById("sortDir").value = sortState.dir;
-
-  ensureSearchOptions();
-  loadSearchStateToUI();
-
-  const startPage = getLastTab();
-  showPage(startPage);
-
-  renderCardsTableFull();
-  renderDecks();
-  updateInvestmentUI();
-  renderSalesTable();
-
   const marketSearch = document.getElementById("marketSearch");
   if(marketSearch) marketSearch.addEventListener("input", ()=> renderSalesTable());
 
   loadIntroSets();
-});
+}
 function renderSalesTable(){
   const tbody = document.querySelector("#tblSales tbody");
   const pill = document.getElementById("salesCountPill");
@@ -5223,29 +5404,48 @@ function renderSalesTable(){
     }
   }
   if(otherTbody){
-    const sess = getSession();
-    const q = (marketSearch?.value || "").trim().toLowerCase();
-    let market = loadMarketOffers().filter(x => x.sellerId && x.qty > 0);
-    if(sess?.id) market = market.filter(x => x.sellerId !== sess.id);
-    if(q){
-      market = market.filter(x => String(x.name||"").toLowerCase().includes(q) || String(x.sellerName||"").toLowerCase().includes(q) || String(x.setCode||"").toLowerCase().includes(q));
+    // Mostrar caché local mientras carga Firestore
+    _renderOtherSales(otherTbody, otherPill, marketSearch);
+    // Actualizar desde Firestore en segundo plano
+    if(currentUserId()){
+      fsLoadMarket().then(()=>{
+        _renderOtherSales(otherTbody, otherPill, marketSearch);
+      }).catch(()=>{});
     }
-    if(otherPill) otherPill.textContent = "Otros usuarios: " + market.reduce((a,c)=>a+(c.qty||1),0);
-    otherTbody.innerHTML = "";
-    for(const item of market){
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td><div class="row" style="gap:8px;flex-wrap:nowrap;"><img src="${escapeHtml(item.sellerAvatar || 'assets/logo.png')}" alt="avatar" class="sidebarAvatar" style="width:34px;height:34px;"><div><b>${escapeHtml(item.sellerName || "Usuario")}</b><div class="small">Oferta local</div></div></div></td>
-        <td><b>${escapeHtml(item.name)}</b><div class="small">${escapeHtml(item.inputName||"")}</div></td>
-        <td class="mono">${escapeHtml(item.setCode||"")}</td>
-        <td class="mono">${escapeHtml(item.collectorNumber||"")}</td>
-        <td class="right mono">${escapeHtml(item.qty||1)}</td>
-        <td class="right mono">${escapeHtml(item.priceText||"")}</td>
-        <td class="right mono">${escapeHtml(item.bestSell||"")}</td>
-        <td><span class="pill">Disponible</span></td>`;
-      otherTbody.appendChild(tr);
-    }
-    if(!market.length){ const tr = document.createElement("tr"); tr.innerHTML = `<td colspan="8"><div class="marketEmpty">No hay ventas públicas de otros usuarios en este navegador.</div></td>`; otherTbody.appendChild(tr); }
+  }
+}
+
+function _renderOtherSales(otherTbody, otherPill, marketSearch){
+  const sess = getSession();
+  const q = (marketSearch?.value || "").trim().toLowerCase();
+  let market = loadMarketOffers().filter(x => x.sellerId && x.qty > 0);
+  if(sess?.id) market = market.filter(x => x.sellerId !== sess.id);
+  if(q){
+    market = market.filter(x =>
+      String(x.name||"").toLowerCase().includes(q) ||
+      String(x.sellerName||"").toLowerCase().includes(q) ||
+      String(x.setCode||"").toLowerCase().includes(q)
+    );
+  }
+  if(otherPill) otherPill.textContent = "Otros usuarios: " + market.reduce((a,c)=>a+(c.qty||1),0);
+  otherTbody.innerHTML = "";
+  for(const item of market){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><div class="row" style="gap:8px;flex-wrap:nowrap;"><img src="${escapeHtml(item.sellerAvatar || 'assets/logo.png')}" alt="avatar" class="sidebarAvatar" style="width:34px;height:34px;"><div><b>${escapeHtml(item.sellerName || "Usuario")}</b><div class="small">Vendedor</div></div></div></td>
+      <td><b>${escapeHtml(item.name)}</b></td>
+      <td class="mono">${escapeHtml(item.setCode||"")}</td>
+      <td class="mono">${escapeHtml(item.collectorNumber||"")}</td>
+      <td class="right mono">${escapeHtml(item.qty||1)}</td>
+      <td class="right mono">${escapeHtml(item.priceText||"")}</td>
+      <td class="right mono">${escapeHtml(item.bestSell||"")}</td>
+      <td><span class="pill">Disponible</span></td>`;
+    otherTbody.appendChild(tr);
+  }
+  if(!market.length){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td colspan="8"><div class="marketEmpty">Sin anuncios activos de otros usuarios.</div></td>`;
+    otherTbody.appendChild(tr);
   }
 }
 
@@ -5289,14 +5489,12 @@ async function cloudLoadAll(){
 
 
 /************************************************************
- * Auth local: login/registro + recordar
+ * Firebase Auth — login / registro / logout
  ************************************************************/
-const REMEMBER_KEY = "mtg_rosita_remember_v1";
 
 function showLogin(){
   document.body.classList.add("not-authenticated");
   document.body.classList.remove("app-enter");
-
   const scr = document.getElementById("authScreen");
   if(scr){
     scr.style.display = "flex";
@@ -5328,14 +5526,14 @@ function setAuthTop(user){
 function setMsg(text, ok=false){
   const msg = document.getElementById("authMsg");
   if(!msg) return;
-  msg.style.color = ok ? "#16a34a" : "#ef4444";
+  msg.style.color = ok ? "#4ade80" : "#f87171";
   msg.textContent = text || "";
 }
 
 function setMsg2(text, ok=false){
   const msg = document.getElementById("authMsg2");
   if(!msg) return;
-  msg.style.color = ok ? "#16a34a" : "#ef4444";
+  msg.style.color = ok ? "#4ade80" : "#f87171";
   msg.textContent = text || "";
 }
 
@@ -5354,61 +5552,80 @@ function showAuthView(which){
   try{ setMsg2(""); }catch{}
 }
 
+function signOutAndReturnToLogin(){
+  fbAuth.signOut().then(()=>{
+    _fbUser = null;
+    setAuthTop(null);
+    showLogin();
+  });
+}
+
 function isValidEmail(email){
-  const e = String(email||"").trim();
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(email||"").trim());
 }
 
 function isStrongPassword(pw){
   const p = String(pw||"");
-  if(p.length < 8) return false;
-  if(!/[A-Za-z]/.test(p)) return false;
-  if(!/\d/.test(p)) return false;
-  return true;
+  return p.length >= 6; // Firebase requiere mínimo 6 caracteres
 }
 
-function getRememberPref(){
-  try{
-    const v = localStorage.getItem(REMEMBER_KEY);
-    return v !== "0";
-  }catch{ return true; }
-}
-function setRememberPref(v){
-  try{ localStorage.setItem(REMEMBER_KEY, v ? "1" : "0"); }catch{}
-}
+function _onFirebaseLogin(firebaseUser){
+  _fbUser = firebaseUser;
+  reloadScopedAppState();
+  setAuthTop(getSession());
 
-function signOutAndReturnToLogin(){
-  clearSession();
-  setAuthTop(null);
-  showLogin();
+  // Inicializa listeners de UI estáticos (solo la primera vez)
+  initAppUI();
+
+  // Tabs y perfil (dependen del usuario)
+  initTabs();
+  initUserProfilePage();
+
+  // Restaurar estado de ordenación
+  const skEl = document.getElementById("sortKey");
+  const sdEl = document.getElementById("sortDir");
+  if(skEl) skEl.value = sortState.key;
+  if(sdEl) sdEl.value = sortState.dir;
+
+  ensureSearchOptions();
+  loadSearchStateToUI();
+
+  // Renderizar con datos locales primero (respuesta inmediata)
+  showPage(getLastTab());
+  renderCardsTableFull();
+  renderDecks();
+  updateInvestmentUI();
+  renderSalesTable();
+  showApp();
+
+  // Sincronizar con Firestore en segundo plano
+  fsSaveProfile().catch(()=>{});
+  fsLoadSocialData().then(()=> renderUserProfilePage()).catch(()=>{});
+  fsSyncAllSaleCards().catch(()=>{});
 }
 
 async function initAuth(){
-  const emailEl = document.getElementById("authEmail");
-  const passEl  = document.getElementById("authPass");
-  const chkRem  = document.getElementById("authRemember");
-  const btnUp   = document.getElementById("btnSignUp");
-  const btnIn   = document.getElementById("btnSignIn");
-  const btnOutTop = document.getElementById("btnSignOutTop");
+  const emailEl    = document.getElementById("authEmail");
+  const passEl     = document.getElementById("authPass");
+  const btnUp      = document.getElementById("btnSignUp");
+  const btnIn      = document.getElementById("btnSignIn");
+  const btnOutTop  = document.getElementById("btnSignOutTop");
 
-  // Registro (segunda pantalla)
-  const suUserEl = document.getElementById("suUsername");
-  const suEmailEl = document.getElementById("suEmail");
+  const suUserEl   = document.getElementById("suUsername");
+  const suEmailEl  = document.getElementById("suEmail");
   const suEmail2El = document.getElementById("suEmail2");
-  const suPassEl = document.getElementById("suPass");
-  const suPass2El = document.getElementById("suPass2");
-  const btnCreate = document.getElementById("btnCreateAccount");
-  const btnBack = document.getElementById("btnBackToLogin");
+  const suPassEl   = document.getElementById("suPass");
+  const suPass2El  = document.getElementById("suPass2");
+  const btnCreate  = document.getElementById("btnCreateAccount");
+  const btnBack    = document.getElementById("btnBackToLogin");
 
-  // Estado inicial
+  // Estado inicial — espera a onAuthStateChanged antes de mostrar nada
   showLogin();
   showAuthView("login");
 
-  if(chkRem) chkRem.checked = getRememberPref();
-
-  // ✅ Botón: Crear cuenta -> pantalla de registro
+  // ── Botón: ir a pantalla de registro ──
   if(btnUp){
-    btnUp.onclick = () => {
+    btnUp.onclick = ()=>{
       setMsg("");
       showAuthView("signup");
       try{
@@ -5418,101 +5635,119 @@ async function initAuth(){
     };
   }
 
-  // ✅ Botón: volver
+  // ── Botón: volver al login ──
   if(btnBack){
-    btnBack.onclick = () => showAuthView("login");
+    btnBack.onclick = ()=> showAuthView("login");
   }
 
-  // Cerrar sesión
+  // ── Cerrar sesión ──
   if(btnOutTop){
-    btnOutTop.onclick = () => {
-      setRememberPref(false);
-      signOutAndReturnToLogin();
-    };
+    btnOutTop.onclick = ()=> signOutAndReturnToLogin();
   }
 
-  // Crear cuenta
+  // ── Crear cuenta con Firebase Auth ──
   if(btnCreate){
-    btnCreate.onclick = () => {
+    btnCreate.onclick = async ()=>{
       setMsg2("");
 
       const username = (suUserEl?.value || "").trim();
-      const email1 = (suEmailEl?.value || "").trim();
-      const email2 = (suEmail2El?.value || "").trim();
-      const pass1 = suPassEl?.value || "";
-      const pass2 = suPass2El?.value || "";
+      const email1   = (suEmailEl?.value || "").trim();
+      const email2   = (suEmail2El?.value || "").trim();
+      const pass1    = suPassEl?.value || "";
+      const pass2    = suPass2El?.value || "";
 
-      if(!username) return setMsg2("Escribe un nombre de usuario.");
-      if(!email1 || !email2) return setMsg2("Completa y confirma el email.");
+      if(!username)                                    return setMsg2("Escribe un nombre de usuario.");
+      if(!email1 || !email2)                           return setMsg2("Completa y confirma el email.");
       if(email1.toLowerCase() !== email2.toLowerCase()) return setMsg2("Los emails no coinciden.");
-      if(!isValidEmail(email1)) return setMsg2("El email no es correcto.");
+      if(!isValidEmail(email1))                        return setMsg2("El email no es válido.");
+      if(!pass1 || !pass2)                             return setMsg2("Completa y repite la contraseña.");
+      if(pass1 !== pass2)                              return setMsg2("Las contraseñas no coinciden.");
+      if(!isStrongPassword(pass1))                     return setMsg2("Contraseña demasiado corta (mínimo 6 caracteres).");
 
-      if(!pass1 || !pass2) return setMsg2("Completa y repite la contraseña.");
-      if(pass1 !== pass2) return setMsg2("Las contraseñas no coinciden.");
-      if(!isStrongPassword(pass1)) return setMsg2("Contraseña débil: mínimo 8 caracteres e incluir letras y números.");
+      btnCreate.disabled = true;
+      btnCreate.textContent = "Creando cuenta…";
 
-      const users = loadUsers();
-      const emailLower = email1.toLowerCase();
-      if(users.some(u => String(u.email||"").toLowerCase() === emailLower)){
-        return setMsg2("Ya existe una cuenta con ese email.");
+      try{
+        const cred = await fbAuth.createUserWithEmailAndPassword(email1, pass1);
+        // Guardar el displayName en Firebase
+        await cred.user.updateProfile({ displayName: username });
+        // onAuthStateChanged se dispara automáticamente — _onFirebaseLogin lo gestiona
+        setMsg("Cuenta creada. Bienvenido.", true);
+      }catch(err){
+        setMsg2(_fbErrorMsg(err));
+      }finally{
+        btnCreate.disabled = false;
+        btnCreate.textContent = "Crear cuenta";
       }
-      if(users.some(u => String(u.username||"").toLowerCase() === username.toLowerCase())){
-        return setMsg2("Ese nombre de usuario ya existe.");
-      }
-
-      const user = {
-        id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now())),
-        username,
-        email: email1,
-        // Aviso: guardar contraseñas así NO es seguro. Es solo para modo local/offline.
-        password: pass1,
-        createdAt: Date.now(),
-      };
-      users.push(user);
-      saveUsers(users);
-
-      // Volver al login
-      showAuthView("login");
-      if(emailEl) emailEl.value = email1;
-      if(passEl) passEl.value = "";
-      setMsg("Cuenta creada ✅ Ya puedes iniciar sesión.", true);
     };
   }
 
-  // Iniciar sesión
+  // ── Iniciar sesión con Firebase Auth ──
   if(btnIn){
-    btnIn.onclick = async () => {
+    btnIn.onclick = async ()=>{
       setMsg("");
-      const email = (emailEl?.value || "").trim();
+      const email    = (emailEl?.value || "").trim();
       const password = passEl?.value || "";
-      const remember = !!(chkRem && chkRem.checked);
 
       if(!email || !password) return setMsg("Completa email y contraseña.");
-      if(!isValidEmail(email)) return setMsg("El email no es correcto.");
+      if(!isValidEmail(email)) return setMsg("El email no es válido.");
 
-      const users = loadUsers();
-      const u = users.find(x => String(x.email||"").toLowerCase() === email.toLowerCase());
-      if(!u) return setMsg("Usuario no existe");
-      if(String(u.password||"") !== String(password)) return setMsg("Error al iniciar sesión");
+      btnIn.disabled = true;
+      btnIn.textContent = "Entrando…";
 
-      setRememberPref(remember);
-      const sessionUser = setSession(u, remember);
-      reloadScopedAppState();
-      setAuthTop(sessionUser);
-
-      try{ await cloudLoadAll(); }catch{}
-
-      initTabs();
-      initUserProfilePage();
-      showPage(getLastTab());
-      renderCardsTableFull();
-      renderDecks();
-      updateInvestmentUI();
-      renderSalesTable();
-      showApp();
+      try{
+        await fbAuth.signInWithEmailAndPassword(email, password);
+        // onAuthStateChanged lo gestiona
+      }catch(err){
+        setMsg(_fbErrorMsg(err));
+      }finally{
+        btnIn.disabled = false;
+        btnIn.textContent = "Iniciar sesión";
+      }
     };
   }
 
-  // Auto-login si hay sesión guardada
-  const sess = getSession();
-  if(sess) relo
+  // ── Enter en inputs de login ──
+  [emailEl, passEl].forEach(el=>{
+    el?.addEventListener("keydown", e=>{ if(e.key==="Enter") btnIn?.click(); });
+  });
+}
+
+// Traduce códigos de error de Firebase a español
+function _fbErrorMsg(err){
+  const code = err?.code || "";
+  const map = {
+    "auth/user-not-found":        "No existe una cuenta con ese email.",
+    "auth/wrong-password":        "Contraseña incorrecta.",
+    "auth/invalid-credential":    "Email o contraseña incorrectos.",
+    "auth/email-already-in-use":  "Ya existe una cuenta con ese email.",
+    "auth/weak-password":         "Contraseña demasiado débil (mínimo 6 caracteres).",
+    "auth/invalid-email":         "El email no es válido.",
+    "auth/too-many-requests":     "Demasiados intentos. Espera un momento.",
+    "auth/network-request-failed":"Sin conexión. Revisa tu red.",
+  };
+  return map[code] || (err?.message || "Error desconocido.");
+}
+
+// ── Punto de entrada: DOMContentLoaded ──
+// 1. Inicializa la UI estática inmediatamente
+// 2. Espera a Firebase para saber si hay sesión
+window.addEventListener("DOMContentLoaded", ()=>{
+  initAppUI(); // listeners de UI que no dependen de auth
+
+  fbAuth.onAuthStateChanged(async (firebaseUser)=>{
+    if(firebaseUser){
+      _onFirebaseLogin(firebaseUser);
+    }else{
+      _fbUser = null;
+      setAuthTop(null);
+      await initAuth();
+      showLogin();
+    }
+  });
+});
+
+</script>
+
+</body>
+</html>
