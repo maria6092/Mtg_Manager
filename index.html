@@ -1111,6 +1111,13 @@
     details > summary::-webkit-details-marker{ display:none; }
     details[open] .detailsArrow{ transform:rotate(90deg); }
 
+    /* Fila de mazo activo (seleccionado para edición) */
+    .selected-deck-row{
+      background: rgba(var(--accent-rgb),.1) !important;
+      border-color: rgba(var(--accent-rgb),.45) !important;
+    }
+    .selected-deck-row b{ color: var(--gold2); }
+
 
     /* ── Card hover preview ── */
     .cCardPreview{
@@ -1685,124 +1692,136 @@
 
     <!-- MAZOS -->
     <section class="panel is-hidden" data-page="mazos" style="display:none;">
+
+      <!-- Cabecera con acciones globales -->
       <div class="row mb10">
         <h2 class="h2" style="margin:0;">Mazos</h2>
+        <span class="pill" style="margin-left:4px;">Total: <b id="deckCount">0</b></span>
         <div class="spacer"></div>
-        <button class="btn ghost" id="btnDeckExport">Exportar mazos</button>
-        <button class="btn ghost" id="btnDeckImport">Importar mazos (JSON/TXT)</button>
+        <button class="btn ghost" id="btnDeckImport">⬆ Importar</button>
+        <button class="btn ghost" id="btnDeckExport">⬇ Exportar todos</button>
       </div>
 
       <div class="two">
-        <div class="panel soft" style="box-shadow:none;">
+
+        <!-- ── Panel izquierdo: crear + gestionar mazo seleccionado ── -->
+        <div class="panel soft" style="box-shadow:none; display:flex; flex-direction:column; gap:0;">
+
+          <!-- Crear nuevo mazo -->
           <h3 class="h3">Crear mazo</h3>
-          <label>Nombre del mazo</label>
-          <input id="deckName" placeholder="Mi mazo Commander"/>
-          <div class="row mt12">
-            <button class="btn" id="btnCreateDeck">Crear</button>
-            <div class="spacer"></div>
-            <span class="pill">Mazos: <b id="deckCount">0</b></span>
+          <div class="row" style="gap:8px;">
+            <input id="deckName" placeholder="Nombre del mazo…" style="flex:1;"/>
+            <button class="btn" id="btnCreateDeck" style="flex:0 0 auto;">Crear</button>
           </div>
 
           <hr class="hr"/>
 
-          <h3 class="h3">Seleccionar mazo</h3>
-          <label>Mazo</label>
-          <select id="deckSelect"></select>
-
-          <div class="row mt10">
-            <button class="btn ghost tiny" id="btnDeckRename">Renombrar</button>
-            <button class="btn ghost tiny" id="btnDeckDuplicate">Duplicar</button>
-            <button class="btn danger tiny" id="btnDeckDelete">Eliminar</button>
-          </div>
-          <div class="hint">Estas acciones afectan al mazo seleccionado en el desplegable.</div>
-
-          <hr class="hr"/>
-
-          <h3 class="h3">Comandante (apartado propio)</h3>
-          <div class="grid" style="grid-template-columns:2fr 1fr 1fr; margin-top:10px;">
-            <div>
-              <label>Nombre</label>
-              <input id="deckCmdName" placeholder="Atraxa, Praetors' Voice"/>
-            </div>
-            <div>
-              <label>SetCode (opcional)</label>
-              <input id="deckCmdSet" class="mono" placeholder="cmm"/>
-            </div>
-            <div>
-              <label>Nº (opcional)</label>
-              <input id="deckCmdCn" class="mono" placeholder="380"/>
-            </div>
+          <!-- Estado vacío: sin mazos todavía -->
+          <div id="deckEmptyState" style="display:none; padding:24px 0; text-align:center;">
+            <div style="font-size:2rem; margin-bottom:8px;">🃏</div>
+            <div class="hint" style="margin:0;">Todavía no tienes mazos.<br>Crea uno arriba o importa un archivo.</div>
           </div>
 
-          <div class="row mt10">
-            <button class="btn" id="btnSetCommander">Guardar comandante</button>
-            <button class="btn ghost" id="btnClearCommander">Quitar comandante</button>
-            <div class="spacer"></div>
-            <span class="pill">Actual: <b id="deckCommanderLabel">—</b></span>
-          </div>
-          <div class="hint">Con solo el nombre es suficiente. Set+nº garantiza la impresión exacta al exportar.</div>
+          <!-- Panel de edición del mazo seleccionado (oculto si no hay mazos) -->
+          <div id="deckEditPanel">
 
-          <hr class="hr"/>
-
-          <h3 class="h3">Añadir carta al mazo</h3>
-          <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr; margin-top:10px;">
-            <div>
-              <label>Nombre</label>
-              <input id="deckCardName" placeholder="Sol Ring"/>
+            <!-- Selector de mazo activo -->
+            <h3 class="h3">Mazo activo</h3>
+            <select id="deckSelect" style="margin-bottom:8px;"></select>
+            <div class="row" style="gap:6px; flex-wrap:wrap;">
+              <button class="btn ghost tiny" id="btnDeckRename">✏ Renombrar</button>
+              <button class="btn ghost tiny" id="btnDeckDuplicate">⊕ Duplicar</button>
+              <button class="btn ghost tiny" id="btnDeckExportOneTxt">TXT</button>
+              <button class="btn ghost tiny" id="btnDeckExportOneJson">JSON</button>
+              <button class="btn ghost tiny" id="btnDeckCopyTxt">Copiar</button>
+              <div class="spacer"></div>
+              <button class="btn danger tiny" id="btnDeckDelete">Eliminar</button>
             </div>
-            <div>
-              <label>SetCode</label>
-              <input id="deckCardSet" class="mono" placeholder="cmm"/>
-            </div>
-            <div>
-              <label>Nº</label>
-              <input id="deckCardCn" class="mono" placeholder="380"/>
-            </div>
-            <div>
-              <label>Cantidad</label>
-              <input id="deckCardQty" type="number" min="1" value="1"/>
-            </div>
-          </div>
 
-          <button class="btn" id="btnAddToDeck" style="margin-top:10px;width:100%;">Añadir al mazo</button>
+            <hr class="hr"/>
 
-          <hr class="hr"/>
+            <!-- Comandante -->
+            <div class="row" style="margin-bottom:8px; align-items:center;">
+              <h3 class="h3" style="margin:0;">Comandante</h3>
+              <div class="spacer"></div>
+              <span class="pill" id="deckCommanderLabel" style="font-size:.7rem;">Sin comandante</span>
+            </div>
+            <div class="row" style="gap:8px; align-items:flex-end;">
+              <div style="flex:2;">
+                <label>Nombre</label>
+                <input id="deckCmdName" placeholder="Atraxa, Praetors' Voice"/>
+              </div>
+              <div style="flex:1;">
+                <label>Set</label>
+                <input id="deckCmdSet" class="mono" placeholder="cmm"/>
+              </div>
+              <div style="flex:1;">
+                <label>Nº</label>
+                <input id="deckCmdCn" class="mono" placeholder="380"/>
+              </div>
+            </div>
+            <div class="row mt10" style="gap:8px;">
+              <button class="btn" id="btnSetCommander">Guardar</button>
+              <button class="btn ghost" id="btnClearCommander">Quitar</button>
+            </div>
+            <div class="hint">Solo el nombre es obligatorio. Set + Nº fijan la impresión exacta al exportar.</div>
 
-          <h3 class="h3">Acciones rápidas</h3>
-          <div class="row">
-            <button class="btn ghost" id="btnDeckExportOneTxt">Exportar mazo (TXT)</button>
-            <button class="btn ghost" id="btnDeckExportOneJson">Exportar mazo (JSON)</button>
-            <button class="btn ghost" id="btnDeckCopyTxt">Copiar TXT</button>
-          </div>
-          <div class="hint">Exporta o copia el mazo actual.</div>
+            <hr class="hr"/>
+
+            <!-- Añadir carta al mazo -->
+            <h3 class="h3">Añadir carta</h3>
+            <div class="row" style="gap:8px; align-items:flex-end; flex-wrap:wrap;">
+              <div style="flex:3; min-width:160px;">
+                <label>Nombre</label>
+                <div class="row" style="gap:6px;">
+                  <input id="deckCardName" placeholder="Sol Ring" style="flex:1;"/>
+                  <button class="btn ghost tiny" id="btnDeckCardSearch" style="flex:0 0 auto; white-space:nowrap;">🔍</button>
+                </div>
+              </div>
+              <div style="flex:1; min-width:70px;">
+                <label>Cantidad</label>
+                <input id="deckCardQty" type="number" min="1" value="1"/>
+              </div>
+            </div>
+            <!-- SetCode y Nº opcionales colapsados -->
+            <details style="margin-top:8px;">
+              <summary style="cursor:pointer; font-size:.72rem; color:var(--muted); font-family:'Cinzel',serif; letter-spacing:.05em; text-transform:uppercase; user-select:none; list-style:none; display:flex; align-items:center; gap:5px;">
+                <span class="detailsArrow">▸</span> Set + Nº (para impresión exacta)
+              </summary>
+              <div class="row mt10" style="gap:8px;">
+                <div style="flex:1;">
+                  <label>SetCode</label>
+                  <input id="deckCardSet" class="mono" placeholder="cmm"/>
+                </div>
+                <div style="flex:1;">
+                  <label>Nº colección</label>
+                  <input id="deckCardCn" class="mono" placeholder="380"/>
+                </div>
+              </div>
+            </details>
+            <button class="btn" id="btnAddToDeck" style="margin-top:12px; width:100%;">+ Añadir al mazo</button>
+
+          </div><!-- /deckEditPanel -->
         </div>
 
+        <!-- ── Panel derecho: lista de mazos ── -->
         <div class="panel soft" style="box-shadow:none;">
-          <div class="row" style="margin-bottom:8px;">
+          <div class="row mb10">
             <h3 class="h3" style="margin:0;">Mis mazos</h3>
-            <div class="spacer"></div>
           </div>
-
-          <div class="grid" style="grid-template-columns:2fr 1fr; gap:10px; margin-bottom:10px;">
-            <div>
-              <label>Buscar mazo</label>
-              <input id="deckListQ" placeholder="Escribe parte del nombre..." />
-            </div>
-            <div>
-              <label>Orden</label>
-              <select id="deckListSort">
-                <option value="recent">Recientes</option>
-                <option value="az">A–Z</option>
-                <option value="za">Z–A</option>
-              </select>
-            </div>
+          <div class="row" style="gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+            <input id="deckListQ" placeholder="Buscar mazo…" style="flex:1; min-width:140px;"/>
+            <select id="deckListSort" style="flex:0 0 auto; width:auto;">
+              <option value="recent">Recientes</option>
+              <option value="az">A–Z</option>
+              <option value="za">Z–A</option>
+            </select>
           </div>
-
           <div class="deckListScrollFix">
             <div id="deckList" class="list"></div>
           </div>
-
         </div>
+
       </div>
     </section>
     <!-- TUS VENTAS -->
@@ -4052,6 +4071,52 @@ function initPrintingModal(){
   });
 }
 
+// Abre el modal de impresiones en modo mazo: al confirmar añade al mazo activo en lugar de a la colección
+let _printingForDeck = false;
+async function openPrintingModalForDeck(cardName){
+  _printingForDeck = true;
+  await openPrintingModal(cardName, "es");
+  // Sobrescribir el botón confirmar para que use la lógica de mazo
+  const confirmBtn = document.getElementById("printingModalConfirm");
+  if(confirmBtn){
+    // Clonar el botón para eliminar el listener anterior
+    const clone = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(clone, confirmBtn);
+    clone.addEventListener("click", confirmPrintingForDeck);
+  }
+}
+
+// Confirma la selección en el modal cuando estamos en modo mazo
+async function confirmPrintingForDeck(){
+  if(!_printingSelected) return;
+  const c = _printingSelected;
+  _printingForDeck = false;
+  closePrintingModal();
+
+  const d = selectedDeck();
+  if(!d) return;
+
+  const name = c.name || "";
+  const set  = String(c.set || "").toUpperCase();
+  const cn   = String(c.collector_number || "");
+  const qty  = Math.max(1, parseInt(document.getElementById("deckCardQty")?.value || "1", 10));
+  const key  = (set && cn) ? `${set}#${cn}` : name.toLowerCase();
+
+  const existing = d.items.find(it=> (set && cn) ? it.key===key : it.name.toLowerCase()===name.toLowerCase());
+  if(existing) existing.qty += qty;
+  else d.items.push({ key, name, set, cn, qty });
+
+  touchDeck(d);
+  saveDecks();
+
+  // Rellenar el campo nombre con la carta seleccionada
+  const nameEl = document.getElementById("deckCardName");
+  if(nameEl) nameEl.value = "";
+  document.getElementById("deckCardQty").value = "1";
+
+  renderDecks();
+}
+
 // — initAppUI: registra listeners de UI que no dependen del usuario
 // Se llama UNA vez al cargar el DOM, antes de que Firebase resuelva la sesión.
 let _appUIInited = false;
@@ -4569,13 +4634,9 @@ function selectedDeck(){
   return decks.find(x=>x.id===deckId) || null;
 }
 
+// Actualiza el label del comandante (delegado a updateCommanderBadge)
 function setCommanderLabelForSelectedDeck(){
-  const label = document.getElementById("deckCommanderLabel");
-  if(!label) return;
-  const d = selectedDeck();
-  if(!d || !d.commander){ label.textContent = "—"; return; }
-  const c = d.commander;
-  label.textContent = c.set && c.cn ? `${c.name} (${c.set} #${c.cn})` : c.name;
+  updateCommanderBadge(selectedDeck());
 }
 
 function updateDeckSelectOptions(keepId=null){
@@ -4591,65 +4652,122 @@ function updateDeckSelectOptions(keepId=null){
   if(keepId && decks.some(d=>d.id===keepId)) sel.value = keepId;
 }
 
+// Muestra/oculta el panel de edición según si hay mazos creados
+function updateDeckEmptyState(){
+  const hasDecks = decks.length > 0;
+  const emptyEl  = document.getElementById("deckEmptyState");
+  const editEl   = document.getElementById("deckEditPanel");
+  if(emptyEl) emptyEl.style.display = hasDecks ? "none" : "";
+  if(editEl)  editEl.style.display  = hasDecks ? "" : "none";
+}
+
+// Actualiza el badge del comandante del mazo activo
+function updateCommanderBadge(d){
+  const label = document.getElementById("deckCommanderLabel");
+  if(!label) return;
+  if(!d || !d.commander?.name){
+    label.textContent = "Sin comandante";
+    label.style.opacity = ".5";
+  } else {
+    const txt = d.commander.set && d.commander.cn
+      ? `${d.commander.name} (${d.commander.set} #${d.commander.cn})`
+      : d.commander.name;
+    label.textContent = txt;
+    label.style.opacity = "1";
+  }
+}
+
 function renderDecks(){
   const list = document.getElementById("deckList");
-  const sel = document.getElementById("deckSelect");
+  const sel  = document.getElementById("deckSelect");
   if(!list || !sel) return;
 
-  const q = (document.getElementById("deckListQ")?.value || "").trim().toLowerCase();
+  const q    = (document.getElementById("deckListQ")?.value || "").trim().toLowerCase();
   const sort = document.getElementById("deckListSort")?.value || "recent";
 
-  list.innerHTML = "";
+  // — Actualizar estado vacío y panel de edición
+  updateDeckEmptyState();
   updateDeckSelectOptions(sel.value || null);
 
-  let view = decks.slice();
+  // — Rellenar inputs del comandante con el mazo seleccionado
+  const active = selectedDeck();
+  document.getElementById("deckCmdName").value = active?.commander?.name || "";
+  document.getElementById("deckCmdSet").value  = active?.commander?.set  || "";
+  document.getElementById("deckCmdCn").value   = active?.commander?.cn   || "";
+  updateCommanderBadge(active);
 
-  if(q){
-    view = view.filter(d => String(d.name||"").toLowerCase().includes(q));
-  }
+  // — Construir vista filtrada y ordenada
+  let view = decks.slice();
+  if(q) view = view.filter(d => String(d.name||"").toLowerCase().includes(q));
 
   if(sort === "az"){
     view.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"es",{sensitivity:"base"}));
   }else if(sort === "za"){
     view.sort((a,b)=>String(b.name||"").localeCompare(String(a.name||""),"es",{sensitivity:"base"}));
   }else{
-    // recientes
     view.sort((a,b)=>(b._updatedAt||b._createdAt||0) - (a._updatedAt||a._createdAt||0));
   }
 
+  // — Renderizar filas
+  list.innerHTML = "";
+
+  if(!view.length && !q){
+    // Sin mazos y sin filtro activo: el deckEmptyState ya lo cubre
+  } else if(!view.length && q){
+    list.innerHTML = `<div class="hint" style="padding:12px 0; text-align:center;">Sin resultados para "<b>${escapeHtml(q)}</b>"</div>`;
+  }
+
   for(const d of view){
-    const cmd = d.commander?.name ? ` · CMD: ${d.commander.name}` : "";
+    const totalCards = (d.items||[]).reduce((n,it)=>n+(it.qty||1),0);
+    const cmdBadge   = d.commander?.name
+      ? `<span class="ownBadge ok" title="Comandante: ${escapeHtml(d.commander.name)}" style="font-size:.65rem;">CMD</span>`
+      : "";
+
     const row = document.createElement("div");
-    row.className = "cardrow";
+    row.className = "cardrow" + (active && active.id === d.id ? " selected-deck-row" : "");
+    row.dataset.deckId = d.id;
     row.innerHTML = `
-      <div>
-        <b>${escapeHtml(d.name)}</b>
-        <div class="small mono">${d.items?.length || 0} entradas${escapeHtml(cmd)}</div>
+      <div style="min-width:0; flex:1;">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <b>${escapeHtml(d.name)}</b>
+          ${cmdBadge}
+        </div>
+        <div class="small mono" style="margin-top:2px;">${totalCards} carta${totalCards!==1?"s":""} · ${d.items?.length||0} entr.</div>
       </div>
-      <div class="row" style="gap:6px; justify-content:flex-end;">
+      <div class="row" style="gap:5px; flex:0 0 auto;">
         <button class="btn ghost tiny" data-act="open">Abrir</button>
-        <button class="btn ghost tiny" data-act="rename">Renombrar</button>
-        <button class="btn ghost tiny" data-act="dup">Duplicar</button>
-        <button class="btn danger tiny" data-act="del">Eliminar</button>
+        <button class="btn ghost tiny" data-act="select">Editar</button>
+        <button class="btn danger tiny" data-act="del">✕</button>
       </div>
     `;
 
-    row.querySelector('[data-act="open"]').onclick = (e)=>{ e.stopPropagation(); openDeckView(d.id); };
-    row.querySelector('[data-act="rename"]').onclick = (e)=>{ e.stopPropagation(); renameDeck(d.id); };
-    row.querySelector('[data-act="dup"]').onclick = (e)=>{ e.stopPropagation(); duplicateDeck(d.id); };
-    row.querySelector('[data-act="del"]').onclick = (e)=>{ e.stopPropagation(); deleteDeck(d.id); };
-
-    // click en toda la fila = abrir
+    row.querySelector('[data-act="open"]').onclick   = (e)=>{ e.stopPropagation(); openDeckView(d.id); };
+    row.querySelector('[data-act="select"]').onclick = (e)=>{ e.stopPropagation(); selectDeckById(d.id); };
+    row.querySelector('[data-act="del"]').onclick    = (e)=>{ e.stopPropagation(); deleteDeck(d.id); };
     row.onclick = ()=> openDeckView(d.id);
     list.appendChild(row);
   }
 
   document.getElementById("deckCount").textContent = decks.length;
 
-  // si no hay nada seleccionado, selecciona el primero
+  // Seleccionar el primero si no hay ninguno activo
   if(decks.length && !sel.value) sel.value = decks[0].id;
+}
 
-  setCommanderLabelForSelectedDeck();
+// Selecciona un mazo por ID y actualiza la UI del panel izquierdo sin abrir la vista
+function selectDeckById(deckId){
+  const sel = document.getElementById("deckSelect");
+  if(sel) sel.value = deckId;
+  const d = decks.find(x=>x.id===deckId);
+  if(!d) return;
+  document.getElementById("deckCmdName").value = d.commander?.name || "";
+  document.getElementById("deckCmdSet").value  = d.commander?.set  || "";
+  document.getElementById("deckCmdCn").value   = d.commander?.cn   || "";
+  updateCommanderBadge(d);
+  // Resaltar visualmente la fila seleccionada
+  document.querySelectorAll(".selected-deck-row").forEach(el=>el.classList.remove("selected-deck-row"));
+  const row = document.querySelector(`[data-deck-id="${deckId}"]`);
+  if(row) row.classList.add("selected-deck-row");
 }
 
 function renameDeck(deckId){
@@ -4742,94 +4860,90 @@ function parseDecksJson(text){
 
 // — Parser universal: soporta Archideck, MTG Arena, MTGO, estándar TXT, ManaBox TXT
 function parseDecksTxt(text){
-  const raw = String(text||"").replace(/\r\n|\r/g,"");
+  const raw = String(text||"").replace(/\r\n|\r/g,"\n");
 
-  // — Detectar formato Archideck JSON dentro de TXT
+  // — Si parece JSON, intentar parsearlo directamente
   if(raw.trimStart().startsWith("{") || raw.trimStart().startsWith("[")) {
     try{ return parseDecksJson(raw); }catch{}
   }
 
   const lines = raw.split("\n");
-  const out = [];
+  const out   = [];
   let current = null;
   let currentSection = "main"; // main | side | commander | companion
 
-  const flush = ()=>{
+  // — Helpers internos
+  const mkKey       = (set, cn) => (set && cn) ? `${String(set).toUpperCase()}#${String(cn).trim()}` : "";
+  const ensureDeck  = () => {
+    if(!current) current = { name:"Mazo importado", items:[], commander:null, _cmdCandidates:[], _createdAt:Date.now(), _updatedAt:Date.now() };
+  };
+
+  const flush = () => {
     if(current){
-      // Auto-detectar comandante si no se detectó explícitamente:
-      // Una carta con qty=1 que esté marcada como legendaria en su nombre
-      // o si el mazo tiene exactamente 1 carta con qty=1 que pueda ser comandante
-      if(!current.commander && current.items.length > 0){
-        // Buscar línea marcada como CMDR / comandante por sección
-        const cmdCandidate = current._cmdCandidates || [];
-        if(cmdCandidate.length === 1){
-          current.commander = { ...cmdCandidate[0] };
-          current.items = current.items.filter(it=> it.key !== cmdCandidate[0].key || it.name !== cmdCandidate[0].name);
-        }
+      // Auto-promover el único candidato a comandante si no se detectó uno explícito
+      if(!current.commander && (current._cmdCandidates||[]).length === 1){
+        const cand = current._cmdCandidates[0];
+        current.commander = { ...cand };
+        current.items = current.items.filter(it => it.key !== cand.key || it.name !== cand.name);
       }
       delete current._cmdCandidates;
-      if(current.name && (current.items.length || current.commander)){
-        out.push(current);
-      }
+      if(current.name && (current.items.length || current.commander)) out.push(current);
     }
     current = null;
     currentSection = "main";
   };
 
-  const ensureDeck = ()=>{
-    if(!current) current = { name: "Mazo importado", items: [], commander: null, _cmdCandidates: [], _createdAt: Date.now(), _updatedAt: Date.now() };
-  };
-
-  const mkKey = (set, cn)=> (set && cn) ? `${String(set).toUpperCase()}#${String(cn).trim()}` : "";
-
-  const setCommander = (name, set, cn)=>{
+  const setCommander = (name, set, cn) => {
     ensureDeck();
-    const S = String(set||"").toUpperCase();
-    const N = String(cn||"").trim();
-    current.commander = { name: String(name||"").trim(), set: S, cn: N, key: mkKey(S, N) || String(name||"").trim() };
-    // Quitar de items si estaba duplicado
-    const key = mkKey(S, N);
-    current.items = current.items.filter(it=> it.name.toLowerCase() !== String(name||"").trim().toLowerCase() || (key && it.key !== key));
-    current._updatedAt = Date.now();
-  };
-
-  const addItem = (qty, name, set, cn, isCmd=false)=>{
-    ensureDeck();
-    qty = Math.max(1, parseInt(qty||"1",10));
     const S = String(set||"").toUpperCase();
     const N = String(cn||"").trim();
     const nm = String(name||"").trim();
-    const key = mkKey(S, N);
-
-    if(isCmd){
-      setCommander(nm, S, N);
-      return;
-    }
-
-    const existing = current.items.find(it=>{
-      const sameRef = (key && it.key===key);
-      const sameName = it.name.toLowerCase()===nm.toLowerCase();
-      return (sameRef && sameName) || (!key && !it.key && sameName);
-    });
-
-    if(existing) existing.qty += qty;
-    else current.items.push({ key: key || nm, name: nm, set: S, cn: N, qty });
+    current.commander = { name: nm, set: S, cn: N, key: mkKey(S, N) || nm };
+    // Quitar de items si ya estaba añadida como carta normal
+    current.items = current.items.filter(it =>
+      it.name.toLowerCase() !== nm.toLowerCase() || (mkKey(S,N) && it.key !== mkKey(S,N))
+    );
     current._updatedAt = Date.now();
   };
 
-  for(let raw of lines){
-    let line = raw.trim();
+  const addItem = (qty, name, set, cn, isCmd=false, extraFlags={}) => {
+    ensureDeck();
+    qty = Math.max(1, parseInt(qty||"1", 10));
+    const S  = String(set||"").toUpperCase();
+    const N  = String(cn||"").trim();
+    const nm = String(name||"").trim();
+    const key = mkKey(S, N);
+
+    if(isCmd){ setCommander(nm, S, N); return; }
+
+    const existing = current.items.find(it =>
+      (key && it.key===key) || (!key && it.name.toLowerCase()===nm.toLowerCase())
+    );
+    if(existing){
+      existing.qty += qty;
+    } else {
+      current.items.push({ key: key||nm, name: nm, set: S, cn: N, qty, ...extraFlags });
+    }
+    current._updatedAt = Date.now();
+  };
+
+  // ─────────────────────────────────────────────
+  // BUCLE PRINCIPAL
+  // ─────────────────────────────────────────────
+  for(const rawLine of lines){
+    const line = rawLine.trim();
     if(!line) continue;
 
-    // Comentarios
-    if(line.startsWith("//") && !line.match(/^\/\/\s*Commander/i)) continue;
+    // — Comentarios y separadores
     if(/^[-=]{3,}$/.test(line)) continue;
+    if(line.startsWith("//") && !line.match(/^\/\/\s*Commander/i)) continue;
+    if(line.startsWith("#") && !line.match(/^#\s*Commander/i)) continue;
 
-    // — Secciones de Arena / MTGO
-    // Arena: "Deck", "Sideboard", "Commander", "Companion"
-    const sectionMatch = line.match(/^(Deck|Sideboard|Commander|Companion|Comandante|Mazo|Side|Sidedeck)\s*:?\s*$/i);
-    if(sectionMatch){
-      const sec = sectionMatch[1].toLowerCase();
+    // — Encabezados de sección (Arena / MTGO / nuestro formato)
+    //   "Deck", "Sideboard", "Commander", "Companion", "Mazo", ...
+    const mSection = line.match(/^(Deck|Sideboard|Commander|Companion|Comandante|Mazo|Side|Sidedeck)\s*:?\s*$/i);
+    if(mSection){
+      const sec = mSection[1].toLowerCase();
       if(sec === "deck" || sec === "mazo"){
         ensureDeck(); currentSection = "main";
       } else if(sec === "sideboard" || sec === "side" || sec === "sidedeck"){
@@ -4842,71 +4956,122 @@ function parseDecksTxt(text){
       continue;
     }
 
-    // — Nombre del mazo
-    const mDeck = line.match(/^(mazo|deck|name):\s*(.+)$/i);
-    if(mDeck){
+    // — Línea de nombre de mazo: "Mazo: Nombre" / "Deck: Nombre" / "Name: Nombre"
+    const mDeckName = line.match(/^(mazo|deck|name)\s*:\s*(.+)$/i);
+    if(mDeckName){
       flush();
-      current = { name: mDeck[2].trim() || "Mazo", items: [], commander: null, _cmdCandidates: [], _createdAt: Date.now(), _updatedAt: Date.now() };
+      current = { name: mDeckName[2].trim() || "Mazo", items:[], commander:null, _cmdCandidates:[], _createdAt:Date.now(), _updatedAt:Date.now() };
       continue;
     }
 
-    // — Línea de comandante explícita
-    // Formatos: "Commander: Atraxa (CMM #384)", "Comandante: Atraxa CMM 384"
-    // También: "// Commander: Atraxa"  (algunos exportadores de Arena)
+    // — Línea de comandante explícita:
+    //   "Commander: Atraxa (CMM) 384", "// Commander: Atraxa", "Comandante: ..."
     const rawCmdLine = line.replace(/^\/\/\s*/, "");
     const mCmd = rawCmdLine.match(/^(comandante|commander)\s*:\s*(.+)$/i);
     if(mCmd){
       ensureDeck();
       const rest = mCmd[2].trim();
-      let m = rest.match(/^(.+?)\s*\(\s*([A-Za-z0-9]{2,10})\s*#?\s*([A-Za-z0-9]+)\s*\)\s*$/i);
-      if(m){ setCommander(m[1], m[2], m[3]); continue; }
-      m = rest.match(/^(.+?)\s*\(\s*([A-Za-z0-9]{2,10})\s*\)\s*([A-Za-z0-9]+)\s*$/i);
-      if(m){ setCommander(m[1], m[2], m[3]); continue; }
-      m = rest.match(/^(.+?)\s+([A-Z]{2,6})\s+(\d+[a-zA-Z]?)\s*$/);
-      if(m){ setCommander(m[1], m[2], m[3]); continue; }
+      let mc;
+      mc = rest.match(/^(.+?)\s*\(\s*([A-Za-z0-9-]{2,12})\s*#?\s*([\w-]+)\s*\)\s*$/i);
+      if(mc){ setCommander(mc[1], mc[2], mc[3]); continue; }
+      mc = rest.match(/^(.+?)\s*\(\s*([A-Za-z0-9-]{2,12})\s*\)\s*([\w-]+)\s*$/i);
+      if(mc){ setCommander(mc[1], mc[2], mc[3]); continue; }
+      mc = rest.match(/^(.+?)\s+([A-Z]{2,8})\s+([\w-]+)\s*$/);
+      if(mc){ setCommander(mc[1], mc[2], mc[3]); continue; }
       setCommander(rest, "", "");
       continue;
     }
 
     ensureDeck();
 
-    // — Parsear línea de carta
-    // Archideck: "1 Atraxa, Praetors' Voice (CMM) 384" (sin x, sin #)
-    // Arena:     "1 Atraxa, Praetors' Voice (CMM) 384"
-    // MTGO:      "1 Atraxa, Praetors' Voice"
-    // Estándar:  "1x Atraxa (CMM#384)" o "1x Atraxa (CMM) 384"
-    // ManaBox:   "1 Atraxa (CMM) 384"
+    // ──────────────────────────────────────────────────────────────
+    // PATRONES DE CARTA — del más específico al más genérico
+    // ──────────────────────────────────────────────────────────────
 
-    let m;
+    let mc;
 
-    // "QTY Name (SET) CN"  ← Arena / Archideck / ManaBox
-    m = line.match(/^(\d+)\s+(.+?)\s+\(([A-Za-z0-9]{2,10})\)\s+([A-Za-z0-9]+)\s*$/i);
-    if(m){ addItem(m[1], m[2], m[3], m[4], currentSection==="commander"); continue; }
+    // P1 — ARCHIDEKT completo:
+    //   QTYx Name (SET) CN [*F*|*E*|*S*] [Categoría]
+    //   CN puede tener guiones: OTC-282
+    //   Categoría puede contener {noDeck}, {top}, etc.
+    //   Ejemplo: 1x Sol Ring (sld) 1905 *F* [Ramp]
+    //   Ejemplo: 1x Tegwyll, Duke of Splendor (woc) 58 *E* [Commander{top}]
+    //   Ejemplo: 13x Island (dsk) 273 [Land]
+    mc = line.match(/^(\d+)\s*x?\s+(.+?)\s+\(([^)]+)\)\s+([\w-]+)\s*(?:\*(F|E|S)\*)?\s*\[([^\]]*)\]\s*$/i);
+    if(mc){
+      const qty   = mc[1];
+      let   name  = mc[2].trim();
+      const set_  = mc[3].trim();
+      const cn    = mc[4].trim();
+      const spec  = mc[5] || "";
+      const cat   = mc[6];
 
-    // "QTYx Name (SET #CN)"
-    m = line.match(/^(\d+)\s*x\s*(.+?)\s*\(\s*([A-Za-z0-9]{2,10})\s*#?\s*([A-Za-z0-9]+)\s*\)\s*$/i);
-    if(m){ addItem(m[1], m[2], m[3], m[4], currentSection==="commander"); continue; }
+      // Saltar tokens y extras que no van al mazo
+      if(/noDeck/i.test(cat) || /Tokens\s*&\s*Extras/i.test(cat)) continue;
 
-    // "QTY Name (SET#CN)"  con almohadilla sin espacio
-    m = line.match(/^(\d+)\s*x?\s*(.+?)\s*\(([A-Za-z0-9]{2,10})#([A-Za-z0-9]+)\)\s*$/i);
-    if(m){ addItem(m[1], m[2], m[3], m[4], currentSection==="commander"); continue; }
+      // Cartas doble cara: quedarse solo con la cara delantera
+      if(name.includes("//")) name = name.split("//")[0].trim();
 
-    // "QTY Name (SET) CN"  variante con x
-    m = line.match(/^(\d+)\s*x?\s*(.+?)\s*\(\s*([A-Za-z0-9]{2,10})\s*\)\s*([A-Za-z0-9]+)\s*$/i);
-    if(m){ addItem(m[1], m[2], m[3], m[4], currentSection==="commander"); continue; }
+      // Detectar comandante por categoría
+      const isCmd = currentSection === "commander" || /Commander/i.test(cat);
 
-    // "QTY Name" solo nombre (MTGO, Arena sin set)
-    m = line.match(/^(\d+)\s*x?\s*(.+?)\s*$/i);
-    if(m){ addItem(m[1], m[2], "", "", currentSection==="commander"); continue; }
+      const flags = {};
+      if(spec === "F") flags.foil = true;
+      if(spec === "E") flags.etched = true;
+
+      addItem(qty, name, set_, cn, isCmd, flags);
+      continue;
+    }
+
+    // P2 — QTYx Name (SET) CN  sin categoría (Arena / Archidekt sin tags)
+    //   Ejemplo: 1x Atraxa, Praetors' Voice (cmm) 384
+    //   CN puede ser alfanumérico con guiones
+    mc = line.match(/^(\d+)\s*x?\s+(.+?)\s+\(([A-Za-z0-9-]{2,12})\)\s+([\w-]+)\s*$/i);
+    if(mc){
+      let name = mc[2].trim();
+      if(name.includes("//")) name = name.split("//")[0].trim();
+      const isCmd = currentSection === "commander";
+      addItem(mc[1], name, mc[3], mc[4], isCmd);
+      continue;
+    }
+
+    // P3 — QTYx Name (SET#CN)  con almohadilla dentro del paréntesis
+    //   Ejemplo: 1x Sol Ring (SLD#1905)
+    mc = line.match(/^(\d+)\s*x?\s*(.+?)\s*\(([A-Za-z0-9-]{2,12})#([\w-]+)\)\s*$/i);
+    if(mc){
+      let name = mc[2].trim();
+      if(name.includes("//")) name = name.split("//")[0].trim();
+      addItem(mc[1], name, mc[3], mc[4], currentSection==="commander");
+      continue;
+    }
+
+    // P4 — QTYx Name (SET #CN)  con espacio y # dentro
+    mc = line.match(/^(\d+)\s*x?\s*(.+?)\s*\(\s*([A-Za-z0-9-]{2,12})\s*#\s*([\w-]+)\s*\)\s*$/i);
+    if(mc){
+      let name = mc[2].trim();
+      if(name.includes("//")) name = name.split("//")[0].trim();
+      addItem(mc[1], name, mc[3], mc[4], currentSection==="commander");
+      continue;
+    }
+
+    // P5 — Solo nombre: QTYx Name  (MTGO, Arena sin colección)
+    mc = line.match(/^(\d+)\s*x?\s+(.+?)\s*$/i);
+    if(mc){
+      let name = mc[2].trim();
+      if(name.includes("//")) name = name.split("//")[0].trim();
+      addItem(mc[1], name, "", "", currentSection==="commander");
+      continue;
+    }
+
+    // Línea no reconocida: ignorar silenciosamente
   }
 
   flush();
 
-  // Si no se encontraron mazos, crear uno con todo como principal
+  // Si no se detectó ningún mazo pero hay contenido, devolver fallback vacío
   if(!out.length) return [{ name:"Mazo importado", items:[], commander:null, _createdAt:Date.now(), _updatedAt:Date.now() }];
   return out;
 }
-
 // — Parser CSV para mazos (Archideck, ManaBox deck export)
 function parseDecksCsv(text){
   const rows = parseCsv(text);  // reutiliza el CSV parser existente
@@ -6620,73 +6785,120 @@ document.getElementById("btnRecalcColors").onclick = renderColorStats;
 document.getElementById("btnRecalcTypes").onclick = renderTypeStats;
 document.getElementById("btnRecalcMoney").onclick = updateInvestmentUI;
 
-/* Mazos */
+// — Mazos: crear, seleccionar, comandante, añadir carta
+
 document.getElementById("btnCreateDeck").onclick = ()=>{
-  const name = document.getElementById("deckName").value.trim();
-  if(!name){ alert("Pon un nombre de mazo."); return; }
+  const nameEl = document.getElementById("deckName");
+  const name = nameEl.value.trim();
+  if(!name){ nameEl.focus(); nameEl.style.borderColor = "rgba(239,68,68,.7)"; setTimeout(()=>nameEl.style.borderColor="",1500); return; }
   const finalName = uniqueDeckName(name);
   decks.push({ id: crypto.randomUUID(), name: finalName, commander: null, items: [], _createdAt: Date.now(), _updatedAt: Date.now() });
   saveDecks();
-  document.getElementById("deckName").value="";
+  nameEl.value = "";
+  // Seleccionar automáticamente el mazo recién creado
+  const sel = document.getElementById("deckSelect");
   renderDecks();
+  if(sel) sel.value = decks[decks.length-1]?.id || "";
+  selectDeckById(decks[decks.length-1]?.id || "");
 };
 
+// Crear también con Enter en el input de nombre
+document.getElementById("deckName")?.addEventListener("keydown", e=>{
+  if(e.key === "Enter"){ e.preventDefault(); document.getElementById("btnCreateDeck")?.click(); }
+});
+
 document.getElementById("deckSelect").onchange = ()=>{
-  setCommanderLabelForSelectedDeck();
   const d = selectedDeck();
   document.getElementById("deckCmdName").value = d?.commander?.name || "";
-  document.getElementById("deckCmdSet").value  = d?.commander?.set || "";
-  document.getElementById("deckCmdCn").value   = d?.commander?.cn  || "";
+  document.getElementById("deckCmdSet").value  = d?.commander?.set  || "";
+  document.getElementById("deckCmdCn").value   = d?.commander?.cn   || "";
+  updateCommanderBadge(d);
 };
 
 document.getElementById("btnSetCommander").onclick = ()=>{
   const d = selectedDeck();
-  if(!d){ alert("Selecciona un mazo."); return; }
-
+  if(!d) return;
   const name = document.getElementById("deckCmdName").value.trim();
   const set  = document.getElementById("deckCmdSet").value.trim().toUpperCase();
   const cn   = document.getElementById("deckCmdCn").value.trim();
-  if(!name){ alert("Pon al menos el nombre del comandante."); return; }
-
+  if(!name){
+    const el = document.getElementById("deckCmdName");
+    el.focus(); el.style.borderColor="rgba(239,68,68,.7)"; setTimeout(()=>el.style.borderColor="",1500);
+    return;
+  }
   d.commander = { name, set, cn, key: (set && cn) ? `${set}#${cn}` : "" };
   touchDeck(d);
   saveDecks();
+  updateCommanderBadge(d);
   renderDecks();
-  alert("Comandante guardado.");
+  // Feedback visual sin alert
+  const btn = document.getElementById("btnSetCommander");
+  const prev = btn.textContent;
+  btn.textContent = "✓ Guardado";
+  btn.disabled = true;
+  setTimeout(()=>{ btn.textContent = prev; btn.disabled = false; }, 1600);
 };
 
 document.getElementById("btnClearCommander").onclick = ()=>{
   const d = selectedDeck();
-  if(!d){ alert("Selecciona un mazo."); return; }
+  if(!d || !d.commander) return;
   d.commander = null;
   touchDeck(d);
   saveDecks();
-  document.getElementById("deckCmdName").value="";
-  document.getElementById("deckCmdSet").value="";
-  document.getElementById("deckCmdCn").value="";
+  document.getElementById("deckCmdName").value = "";
+  document.getElementById("deckCmdSet").value  = "";
+  document.getElementById("deckCmdCn").value   = "";
+  updateCommanderBadge(d);
   renderDecks();
 };
 
 document.getElementById("btnAddToDeck").onclick = ()=>{
   const d = selectedDeck();
-  if(!d){ alert("Selecciona un mazo."); return; }
+  if(!d) return;
 
-  const name = document.getElementById("deckCardName").value.trim();
-  const set = document.getElementById("deckCardSet").value.trim().toUpperCase();
-  const cn = document.getElementById("deckCardCn").value.trim();
-  const qty = Math.max(1, parseInt(document.getElementById("deckCardQty").value||"1",10));
+  const nameEl = document.getElementById("deckCardName");
+  const name = nameEl.value.trim();
+  const set  = document.getElementById("deckCardSet").value.trim().toUpperCase();
+  const cn   = document.getElementById("deckCardCn").value.trim();
+  const qty  = Math.max(1, parseInt(document.getElementById("deckCardQty").value||"1",10));
 
-  if(!name || !set || !cn){ alert("Nombre, SetCode y número son obligatorios."); return; }
+  if(!name){
+    nameEl.focus(); nameEl.style.borderColor="rgba(239,68,68,.7)"; setTimeout(()=>nameEl.style.borderColor="",1500);
+    return;
+  }
 
-  const key = `${set}#${cn}`;
-  const existing = d.items.find(it=> (it.key===key && it.name.toLowerCase()===name.toLowerCase()));
+  // Clave de identificación: set+nº si se proporcionan, nombre si no
+  const key = (set && cn) ? `${set}#${cn}` : name.toLowerCase();
+  const existing = d.items.find(it=>
+    (set && cn) ? it.key===key : it.name.toLowerCase()===name.toLowerCase()
+  );
   if(existing) existing.qty += qty;
   else d.items.push({ key, name, set, cn, qty });
 
   touchDeck(d);
   saveDecks();
+
+  // Limpiar nombre y qty, mantener set/nº por si el usuario añade más cartas del mismo set
+  nameEl.value = "";
+  document.getElementById("deckCardQty").value = "1";
+  nameEl.focus();
+
+  // Feedback: actualizar conteo en la fila de lista
   renderDecks();
 };
+
+// Botón de búsqueda de carta para el mazo (abre el modal de impresiones)
+document.getElementById("btnDeckCardSearch")?.addEventListener("click", ()=>{
+  const name = document.getElementById("deckCardName")?.value?.trim();
+  if(!name){ document.getElementById("deckCardName")?.focus(); return; }
+  // Reutilizar el modal de impresiones con callback especial para mazos
+  openPrintingModalForDeck(name);
+});
+
+// Enter en el nombre de carta del mazo añade directamente
+document.getElementById("deckCardName")?.addEventListener("keydown", e=>{
+  if(e.key === "Enter"){ e.preventDefault(); document.getElementById("btnAddToDeck")?.click(); }
+});
 
 document.getElementById("btnDeckExport").onclick = ()=>{
   const blob = new Blob([JSON.stringify(decks,null,2)], {type:"application/json"});
