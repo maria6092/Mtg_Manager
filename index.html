@@ -1118,6 +1118,164 @@
     }
     .selected-deck-row b{ color: var(--gold2); }
 
+    /* ── Mazos: layout principal ── */
+    .mazosHeader{
+      margin-bottom:14px;
+      padding-bottom:14px;
+      border-bottom:1px solid rgba(var(--accent-rgb),.15);
+    }
+    .mazosGrid{
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap:14px;
+      align-items:start;
+    }
+    @media(max-width:900px){ .mazosGrid{ grid-template-columns:1fr; } }
+
+    .mazosLeft{
+      display:flex; flex-direction:column; gap:0;
+      position:sticky; top:80px; max-height:calc(100vh - 120px); overflow-y:auto;
+    }
+    @media(max-width:900px){ .mazosLeft{ position:static; max-height:none; } }
+
+    .mazosRight{ min-height:400px; }
+
+    /* Bloque visual dentro del panel izquierdo */
+    .mazoBlock{
+      background:rgba(var(--soft-rgb),.3);
+      border:1px solid rgba(var(--accent-rgb),.14);
+      border-radius:10px;
+      padding:14px 16px;
+    }
+    .mazoBlock + .mazoBlock{ margin-top:10px; }
+
+    .mazoBlockTitle{
+      font-family:'Cinzel',serif;
+      font-size:.72rem;
+      font-weight:700;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--gold);
+      margin-bottom:10px;
+    }
+
+    /* Badge de comandante activo */
+    .deckCmdBadge{
+      font-family:'Cinzel',serif;
+      font-size:.68rem;
+      letter-spacing:.04em;
+      padding:3px 10px;
+      border-radius:10px;
+      border:1px solid rgba(var(--accent-rgb),.25);
+      color:var(--muted);
+      background:rgba(var(--card-rgb),.6);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:180px;
+    }
+    .deckCmdBadge.has-commander{
+      border-color:rgba(var(--accent-rgb),.5);
+      color:var(--gold2);
+      background:rgba(var(--accent-rgb),.08);
+    }
+
+    /* Filas de la lista de mazos */
+    .deckListRow{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:10px 12px;
+      border:1px solid rgba(var(--accent-rgb),.15);
+      border-radius:8px;
+      background:rgba(var(--card-rgb),.5);
+      cursor:pointer;
+      transition: border-color .15s, background .15s;
+      margin-bottom:6px;
+    }
+    .deckListRow:hover{
+      border-color:rgba(var(--accent-rgb),.35);
+      background:rgba(var(--accent-rgb),.06);
+    }
+    .deckListRow.selected-deck-row{
+      border-color:rgba(var(--accent-rgb),.5) !important;
+      background:rgba(var(--accent-rgb),.1) !important;
+    }
+    .deckListRowMain{ min-width:0; flex:1; }
+    .deckListRowName{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .deckListName{
+      font-weight:700; color:var(--gold2);
+      font-family:'Crimson Text',serif; font-size:.95rem;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;
+    }
+    .deckListRowMeta{
+      font-size:.72rem; color:var(--muted); margin-top:3px;
+      font-family:'Cinzel',serif; letter-spacing:.03em;
+    }
+    .deckListRowActions{ display:flex; gap:5px; flex:0 0 auto; }
+
+    /* ── Deck View rediseñada ── */
+    .deckViewHeader{
+      display:flex; align-items:center; gap:12px;
+      padding-bottom:14px;
+      border-bottom:1px solid rgba(var(--accent-rgb),.15);
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+    .deckViewControls{
+      display:flex; gap:8px; align-items:center;
+      padding-bottom:10px;
+      border-bottom:1px solid rgba(var(--accent-rgb),.1);
+      margin-bottom:8px;
+      flex-wrap:wrap;
+    }
+    .deckViewMeta{
+      font-size:.78rem; color:var(--muted);
+      font-family:'Crimson Text',serif; font-style:italic;
+      padding:0 0 8px; min-height:20px;
+    }
+    /* Ajuste del grid: dar más espacio a la lista */
+    .deckViewGrid{
+      display:grid;
+      grid-template-columns: 1.4fr .6fr;
+      gap:12px;
+      height: calc(100vh - 240px);
+    }
+    @media (max-width:900px){ .deckViewGrid{ grid-template-columns:1fr; height:auto; } }
+    .deckDetailsPanel{ display:flex; flex-direction:column; }
+
+    /* Mejorar las filas de tipo en deck view */
+    .deckTypeHeader{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:5px 10px; margin:10px 0 3px;
+      border-left:3px solid var(--gold);
+      background:rgba(var(--soft-rgb),.35);
+      border-radius:0 5px 5px 0;
+    }
+    .deckTypeHeader .typeName{
+      font-family:'Cinzel',serif; font-size:.68rem; font-weight:700;
+      letter-spacing:.08em; text-transform:uppercase; color:var(--gold2);
+    }
+    .deckTypeHeader .typeCount{
+      font-family:'Cinzel',serif; font-size:.68rem;
+      color:var(--muted); letter-spacing:.04em;
+      background:rgba(var(--accent-rgb),.12);
+      padding:1px 7px; border-radius:10px;
+    }
+    .deckCmdHeader{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:5px 10px; margin:0 0 3px;
+      border-left:3px solid var(--gold2);
+      background:linear-gradient(90deg,rgba(var(--accent-rgb),.15),rgba(var(--card-rgb),0));
+      border-radius:0 5px 5px 0;
+    }
+    .deckCmdHeader .typeName{
+      font-family:'Cinzel',serif; font-size:.68rem; font-weight:700;
+      letter-spacing:.08em; text-transform:uppercase; color:var(--gold2);
+    }
+    .deckCmdHeader .typeCount{
+      font-family:'Cinzel',serif; font-size:.68rem; color:var(--gold);
+      letter-spacing:.04em;
+    }
+
 
     /* ── Card hover preview ── */
     .cCardPreview{
@@ -1693,136 +1851,135 @@
     <!-- MAZOS -->
     <section class="panel is-hidden" data-page="mazos" style="display:none;">
 
-      <!-- Cabecera con acciones globales -->
-      <div class="row mb10">
-        <h2 class="h2" style="margin:0;">Mazos</h2>
-        <span class="pill" style="margin-left:4px;">Total: <b id="deckCount">0</b></span>
-        <div class="spacer"></div>
-        <button class="btn ghost" id="btnDeckImport">⬆ Importar</button>
-        <button class="btn ghost" id="btnDeckExport">⬇ Exportar todos</button>
+      <!-- ── Cabecera global ── -->
+      <div class="mazosHeader">
+        <div class="row" style="align-items:center; gap:10px; flex-wrap:wrap;">
+          <h2 class="h2" style="margin:0;">Mazos</h2>
+          <span class="pill">Total: <b id="deckCount">0</b></span>
+          <div class="spacer"></div>
+          <button class="btn ghost" id="btnDeckImport">⬆ Importar</button>
+          <button class="btn ghost" id="btnDeckExport">⬇ Exportar todos</button>
+        </div>
       </div>
 
-      <div class="two">
+      <div class="mazosGrid">
 
-        <!-- ── Panel izquierdo: crear + gestionar mazo seleccionado ── -->
-        <div class="panel soft" style="box-shadow:none; display:flex; flex-direction:column; gap:0;">
+        <!-- ── Panel izquierdo: gestión del mazo activo ── -->
+        <div class="mazosLeft">
 
           <!-- Crear nuevo mazo -->
-          <h3 class="h3">Crear mazo</h3>
-          <div class="row" style="gap:8px;">
-            <input id="deckName" placeholder="Nombre del mazo…" style="flex:1;"/>
-            <button class="btn" id="btnCreateDeck" style="flex:0 0 auto;">Crear</button>
+          <div class="mazoBlock">
+            <div class="mazoBlockTitle">Nuevo mazo</div>
+            <div class="row" style="gap:8px;">
+              <input id="deckName" placeholder="Nombre del mazo…" style="flex:1;"/>
+              <button class="btn" id="btnCreateDeck" style="flex:0 0 auto; white-space:nowrap;">Crear</button>
+            </div>
           </div>
 
-          <hr class="hr"/>
-
-          <!-- Estado vacío: sin mazos todavía -->
-          <div id="deckEmptyState" style="display:none; padding:24px 0; text-align:center;">
-            <div style="font-size:2rem; margin-bottom:8px;">🃏</div>
-            <div class="hint" style="margin:0;">Todavía no tienes mazos.<br>Crea uno arriba o importa un archivo.</div>
+          <!-- Estado vacío -->
+          <div id="deckEmptyState" style="display:none; padding:32px 16px; text-align:center; border:1px dashed rgba(var(--accent-rgb),.2); border-radius:10px; margin-top:10px;">
+            <div style="font-size:2.2rem; margin-bottom:10px; opacity:.6;">🃏</div>
+            <div class="hint" style="margin:0; font-size:.9rem;">Sin mazos todavía.<br>Crea uno arriba o importa un archivo.</div>
           </div>
 
-          <!-- Panel de edición del mazo seleccionado (oculto si no hay mazos) -->
+          <!-- Panel de edición (visible solo cuando hay mazos) -->
           <div id="deckEditPanel">
 
-            <!-- Selector de mazo activo -->
-            <h3 class="h3">Mazo activo</h3>
-            <select id="deckSelect" style="margin-bottom:8px;"></select>
-            <div class="row" style="gap:6px; flex-wrap:wrap;">
-              <button class="btn ghost tiny" id="btnDeckRename">✏ Renombrar</button>
-              <button class="btn ghost tiny" id="btnDeckDuplicate">⊕ Duplicar</button>
-              <button class="btn ghost tiny" id="btnDeckExportOneTxt">TXT</button>
-              <button class="btn ghost tiny" id="btnDeckExportOneJson">JSON</button>
-              <button class="btn ghost tiny" id="btnDeckCopyTxt">Copiar</button>
-              <div class="spacer"></div>
-              <button class="btn danger tiny" id="btnDeckDelete">Eliminar</button>
+            <!-- Selector + acciones del mazo activo -->
+            <div class="mazoBlock" style="margin-top:10px;">
+              <div class="mazoBlockTitle">Mazo activo</div>
+              <select id="deckSelect" style="margin-bottom:10px;"></select>
+              <div class="row" style="gap:6px; flex-wrap:wrap;">
+                <button class="btn ghost tiny" id="btnDeckRename">✏ Renombrar</button>
+                <button class="btn ghost tiny" id="btnDeckDuplicate">⊕ Duplicar</button>
+                <button class="btn ghost tiny" id="btnDeckExportOneTxt">TXT</button>
+                <button class="btn ghost tiny" id="btnDeckExportOneJson">JSON</button>
+                <button class="btn ghost tiny" id="btnDeckCopyTxt">Copiar</button>
+                <div class="spacer"></div>
+                <button class="btn danger tiny" id="btnDeckDelete">✕ Eliminar</button>
+              </div>
             </div>
-
-            <hr class="hr"/>
 
             <!-- Comandante -->
-            <div class="row" style="margin-bottom:8px; align-items:center;">
-              <h3 class="h3" style="margin:0;">Comandante</h3>
-              <div class="spacer"></div>
-              <span class="pill" id="deckCommanderLabel" style="font-size:.7rem;">Sin comandante</span>
-            </div>
-            <div class="row" style="gap:8px; align-items:flex-end;">
-              <div style="flex:2;">
-                <label>Nombre</label>
-                <input id="deckCmdName" placeholder="Atraxa, Praetors' Voice"/>
+            <div class="mazoBlock" style="margin-top:10px;">
+              <div class="row" style="align-items:center; margin-bottom:10px;">
+                <div class="mazoBlockTitle" style="margin:0;">Comandante</div>
+                <div class="spacer"></div>
+                <span class="deckCmdBadge" id="deckCommanderLabel">Sin comandante</span>
               </div>
-              <div style="flex:1;">
-                <label>Set</label>
-                <input id="deckCmdSet" class="mono" placeholder="cmm"/>
-              </div>
-              <div style="flex:1;">
-                <label>Nº</label>
-                <input id="deckCmdCn" class="mono" placeholder="380"/>
-              </div>
-            </div>
-            <div class="row mt10" style="gap:8px;">
-              <button class="btn" id="btnSetCommander">Guardar</button>
-              <button class="btn ghost" id="btnClearCommander">Quitar</button>
-            </div>
-            <div class="hint">Solo el nombre es obligatorio. Set + Nº fijan la impresión exacta al exportar.</div>
-
-            <hr class="hr"/>
-
-            <!-- Añadir carta al mazo -->
-            <h3 class="h3">Añadir carta</h3>
-            <div class="row" style="gap:8px; align-items:flex-end; flex-wrap:wrap;">
-              <div style="flex:3; min-width:160px;">
-                <label>Nombre</label>
-                <div class="row" style="gap:6px;">
-                  <input id="deckCardName" placeholder="Sol Ring" style="flex:1;"/>
-                  <button class="btn ghost tiny" id="btnDeckCardSearch" style="flex:0 0 auto; white-space:nowrap;">🔍</button>
+              <div class="row" style="gap:8px; align-items:flex-end; flex-wrap:wrap;">
+                <div style="flex:2; min-width:130px;">
+                  <label>Nombre</label>
+                  <input id="deckCmdName" placeholder="Nombre del comandante"/>
+                </div>
+                <div style="flex:1; min-width:70px;">
+                  <label>Set</label>
+                  <input id="deckCmdSet" class="mono" placeholder="cmm"/>
+                </div>
+                <div style="flex:1; min-width:60px;">
+                  <label>Nº</label>
+                  <input id="deckCmdCn" class="mono" placeholder="380"/>
                 </div>
               </div>
-              <div style="flex:1; min-width:70px;">
-                <label>Cantidad</label>
-                <input id="deckCardQty" type="number" min="1" value="1"/>
-              </div>
-            </div>
-            <!-- SetCode y Nº opcionales colapsados -->
-            <details style="margin-top:8px;">
-              <summary style="cursor:pointer; font-size:.72rem; color:var(--muted); font-family:'Cinzel',serif; letter-spacing:.05em; text-transform:uppercase; user-select:none; list-style:none; display:flex; align-items:center; gap:5px;">
-                <span class="detailsArrow">▸</span> Set + Nº (para impresión exacta)
-              </summary>
               <div class="row mt10" style="gap:8px;">
-                <div style="flex:1;">
-                  <label>SetCode</label>
-                  <input id="deckCardSet" class="mono" placeholder="cmm"/>
+                <button class="btn" id="btnSetCommander">Guardar</button>
+                <button class="btn ghost" id="btnClearCommander">Quitar</button>
+              </div>
+              <div class="hint" style="margin-top:6px;">Set + Nº fijan la impresión exacta al exportar.</div>
+            </div>
+
+            <!-- Añadir carta -->
+            <div class="mazoBlock" style="margin-top:10px;">
+              <div class="mazoBlockTitle">Añadir carta</div>
+              <div class="row" style="gap:8px; align-items:flex-end; flex-wrap:wrap;">
+                <div style="flex:3; min-width:140px;">
+                  <label>Nombre</label>
+                  <div class="row" style="gap:6px;">
+                    <input id="deckCardName" placeholder="Sol Ring" style="flex:1;"/>
+                    <button class="btn ghost tiny" id="btnDeckCardSearch" title="Buscar impresiones">🔍</button>
+                  </div>
                 </div>
-                <div style="flex:1;">
-                  <label>Nº colección</label>
-                  <input id="deckCardCn" class="mono" placeholder="380"/>
+                <div style="flex:1; min-width:65px;">
+                  <label>Cant.</label>
+                  <input id="deckCardQty" type="number" min="1" value="1"/>
                 </div>
               </div>
-            </details>
-            <button class="btn" id="btnAddToDeck" style="margin-top:12px; width:100%;">+ Añadir al mazo</button>
+              <details style="margin-top:8px;">
+                <summary style="cursor:pointer; font-size:.72rem; color:var(--muted); font-family:'Cinzel',serif; letter-spacing:.05em; text-transform:uppercase; list-style:none; display:flex; align-items:center; gap:5px; user-select:none;">
+                  <span class="detailsArrow">▸</span> Set + Nº (impresión exacta)
+                </summary>
+                <div class="row mt10" style="gap:8px;">
+                  <div style="flex:1;"><label>SetCode</label><input id="deckCardSet" class="mono" placeholder="cmm"/></div>
+                  <div style="flex:1;"><label>Nº</label><input id="deckCardCn" class="mono" placeholder="380"/></div>
+                </div>
+              </details>
+              <button class="btn" id="btnAddToDeck" style="margin-top:12px; width:100%;">+ Añadir al mazo</button>
+            </div>
 
           </div><!-- /deckEditPanel -->
         </div>
 
         <!-- ── Panel derecho: lista de mazos ── -->
-        <div class="panel soft" style="box-shadow:none;">
-          <div class="row mb10">
-            <h3 class="h3" style="margin:0;">Mis mazos</h3>
-          </div>
-          <div class="row" style="gap:8px; margin-bottom:10px; flex-wrap:wrap;">
-            <input id="deckListQ" placeholder="Buscar mazo…" style="flex:1; min-width:140px;"/>
-            <select id="deckListSort" style="flex:0 0 auto; width:auto;">
-              <option value="recent">Recientes</option>
-              <option value="az">A–Z</option>
-              <option value="za">Z–A</option>
-            </select>
-          </div>
-          <div class="deckListScrollFix">
-            <div id="deckList" class="list"></div>
+        <div class="mazosRight">
+          <div class="mazoBlock" style="height:100%; display:flex; flex-direction:column;">
+            <div class="row" style="align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+              <div class="mazoBlockTitle" style="margin:0;">Mis mazos</div>
+            </div>
+            <div class="row" style="gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+              <input id="deckListQ" placeholder="Buscar…" style="flex:1; min-width:120px;"/>
+              <select id="deckListSort" style="flex:0 0 auto; width:auto;">
+                <option value="recent">Recientes</option>
+                <option value="az">A–Z</option>
+                <option value="za">Z–A</option>
+              </select>
+            </div>
+            <div class="deckListScrollFix" style="flex:1;">
+              <div id="deckList" class="list"></div>
+            </div>
           </div>
         </div>
 
-      </div>
+      </div><!-- /mazosGrid -->
     </section>
     <!-- TUS VENTAS -->
     <section class="panel is-hidden" data-page="mis_ventas" style="display:none;">
@@ -1884,40 +2041,50 @@
 
 <!-- DECK VIEW -->
     <section class="panel is-hidden" data-page="deck_view" style="display:none;">
-      <div class="row mb10">
-        <button class="btn ghost" id="btnDeckBack">← Volver</button>
-        <h2 class="h2" style="margin:0;" id="deckViewTitle">Mazo</h2>
-        <div class="spacer"></div>
-        <button class="btn ghost" id="btnDeckViewExportTxt">Exportar TXT</button>
-        <button class="btn ghost" id="btnDeckToWish">Faltan → Deseos</button>
-        <button class="btn danger" id="btnDeckViewDelete">Eliminar mazo</button>
+
+      <!-- Cabecera del mazo -->
+      <div class="deckViewHeader">
+        <button class="btn ghost" id="btnDeckBack" style="flex:0 0 auto;">← Volver</button>
+        <h2 class="h2" style="margin:0; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" id="deckViewTitle">Mazo</h2>
+        <div class="row" style="gap:8px; flex:0 0 auto; flex-wrap:wrap;">
+          <button class="btn ghost" id="btnDeckViewExportTxt">TXT</button>
+          <button class="btn ghost" id="btnDeckToWish">Faltan → Deseos</button>
+          <button class="btn danger" id="btnDeckViewDelete">Eliminar</button>
+        </div>
       </div>
 
-      <div class="panel soft" id="deckCmdWarnings" style="margin:10px 0; display:none; box-shadow:none;"></div>
+      <!-- Validación de comandante (se muestra solo si hay avisos) -->
+      <div class="panel soft" id="deckCmdWarnings" style="margin:0 0 12px; display:none; box-shadow:none;"></div>
 
+      <!-- Grid principal: lista + detalle -->
       <div class="deckViewGrid">
+
+        <!-- Panel izquierdo: lista de cartas -->
         <div class="panel soft deckListPanel" style="box-shadow:none;">
-          <div class="grid" style="grid-template-columns:2fr 1fr;gap:12px;">
-            <div>
-              <label>Buscar</label>
-              <input id="deckViewQ" placeholder="Nombre..." />
-            </div>
-            <div>
-              <label>Agrupar</label>
-              <select id="deckViewGroup">
-                <option value="type">Por tipo</option>
-                <option value="none">Sin agrupar</option>
-              </select>
+          <!-- Barra de búsqueda y agrupación -->
+          <div class="deckViewControls">
+            <input id="deckViewQ" placeholder="Buscar carta…" style="flex:1; min-width:120px;"/>
+            <select id="deckViewGroup" style="flex:0 0 auto; width:auto;">
+              <option value="type">Por tipo</option>
+              <option value="none">Sin agrupar</option>
+            </select>
+          </div>
+          <!-- Meta: conteo de cartas -->
+          <div class="deckViewMeta" id="deckViewMeta"></div>
+          <!-- Lista scrolleable -->
+          <div class="deckListScroll" id="deckViewList"></div>
+        </div>
+
+        <!-- Panel derecho: detalle de carta seleccionada -->
+        <div class="panel soft deckDetailsPanel" style="box-shadow:none;">
+          <div class="h3" style="margin-bottom:12px;">Detalles</div>
+          <div id="deckViewDetails" style="flex:1; overflow:auto; min-height:0;">
+            <div class="hint" style="text-align:center; padding:32px 12px; opacity:.6;">
+              Haz clic en una carta para ver sus detalles
             </div>
           </div>
-          <div id="deckViewCommanderBox" class="hint" style="display:none;"></div>
-          <div class="hint mt10" id="deckViewMeta"></div>
-          <div class="deckListScroll mt10" id="deckViewList"></div>
         </div>
 
-        <div class="panel soft deckDetailsPanel" style="box-shadow:none;">
-          <h3 class="h3">Detalles</h3>
-        </div>
       </div><!-- /deckViewGrid -->
     </section>
 
@@ -4667,13 +4834,13 @@ function updateCommanderBadge(d){
   if(!label) return;
   if(!d || !d.commander?.name){
     label.textContent = "Sin comandante";
-    label.style.opacity = ".5";
+    label.classList.remove("has-commander");
+    label.title = "";
   } else {
-    const txt = d.commander.set && d.commander.cn
-      ? `${d.commander.name} (${d.commander.set} #${d.commander.cn})`
-      : d.commander.name;
-    label.textContent = txt;
-    label.style.opacity = "1";
+    const c = d.commander;
+    label.textContent = c.name;
+    label.title = c.set && c.cn ? `${c.name} · ${c.set.toUpperCase()} #${c.cn}` : c.name;
+    label.classList.add("has-commander");
   }
 }
 
@@ -4719,25 +4886,27 @@ function renderDecks(){
 
   for(const d of view){
     const totalCards = (d.items||[]).reduce((n,it)=>n+(it.qty||1),0);
-    const cmdBadge   = d.commander?.name
-      ? `<span class="ownBadge ok" title="Comandante: ${escapeHtml(d.commander.name)}" style="font-size:.65rem;">CMD</span>`
+    const hasCMD = !!d.commander?.name;
+    const cmdBadge = hasCMD
+      ? `<span class="ownBadge ok" title="CMD: ${escapeHtml(d.commander.name)}" style="font-size:.62rem; padding:1px 6px;">CMD</span>`
       : "";
 
+    const isActive = active && active.id === d.id;
     const row = document.createElement("div");
-    row.className = "cardrow" + (active && active.id === d.id ? " selected-deck-row" : "");
+    row.className = "deckListRow" + (isActive ? " selected-deck-row" : "");
     row.dataset.deckId = d.id;
     row.innerHTML = `
-      <div style="min-width:0; flex:1;">
-        <div style="display:flex; align-items:center; gap:6px;">
-          <b>${escapeHtml(d.name)}</b>
+      <div class="deckListRowMain">
+        <div class="deckListRowName">
+          <span class="deckListName">${escapeHtml(d.name)}</span>
           ${cmdBadge}
         </div>
-        <div class="small mono" style="margin-top:2px;">${totalCards} carta${totalCards!==1?"s":""} · ${d.items?.length||0} entr.</div>
+        <div class="deckListRowMeta">${totalCards} carta${totalCards!==1?"s":""} · ${d.items?.length||0} entr.</div>
       </div>
-      <div class="row" style="gap:5px; flex:0 0 auto;">
+      <div class="deckListRowActions">
         <button class="btn ghost tiny" data-act="open">Abrir</button>
-        <button class="btn ghost tiny" data-act="select">Editar</button>
-        <button class="btn danger tiny" data-act="del">✕</button>
+        <button class="btn ghost tiny" data-act="select" title="Seleccionar para editar">Editar</button>
+        <button class="btn danger tiny" data-act="del" title="Eliminar mazo">✕</button>
       </div>
     `;
 
@@ -5342,11 +5511,16 @@ function openDeckView(deckId){
   if(q) q.value = "";
   if(g) g.value = deckViewState.group;
 
-  renderDeckView(true);
+  // Render inmediato con datos locales (sin esperar Scryfall)
+  renderDeckView(false);
   showPage("deck_view");
-  // validar comandante (async)
-  const dNow = decks.find(x => x.id === deckId) || null;
-  validateCommanderForDeck(dNow).then(renderCommanderWarnings);
+
+  // Prefetch de tipos en background → re-render cuando termina
+  const items = Array.isArray(d?.items) ? d.items : [];
+  prefetchDeckTypes(items).then(() => renderDeckView(false)).catch(() => {});
+
+  // Validación de comandante también en background
+  validateCommanderForDeck(d || null).then(renderCommanderWarnings).catch(() => {});
 }
 
 function renderDeckRow(listEl, detailsEl, it, labelPrefix=""){
@@ -5403,7 +5577,9 @@ function renderDeckRow(listEl, detailsEl, it, labelPrefix=""){
   listEl.appendChild(row);
 }
 
-async function renderDeckView(doPrefetch=false){
+// renderDeckView es síncrona: siempre renderiza con los datos disponibles en cache.
+// El prefetch se hace externamente (en openDeckView) y llama a esta función al terminar.
+function renderDeckView(doPrefetch=false){
   const d = decks.find(x=>x.id===deckViewState.deckId);
   const listEl = document.getElementById("deckViewList");
   const metaEl = document.getElementById("deckViewMeta");
@@ -5413,41 +5589,36 @@ async function renderDeckView(doPrefetch=false){
   const q = deckViewState.q.trim().toLowerCase();
   let items = Array.isArray(d.items) ? d.items.slice() : [];
 
-  if(q){
-    items = items.filter(it => String(it.name||"").toLowerCase().includes(q));
-  }
-
-  // Prefetch (mejora agrupación por tipos)
-  if(doPrefetch){
-    await prefetchDeckTypes(items);
-  }
+  if(q) items = items.filter(it => String(it.name||"").toLowerCase().includes(q));
 
   const totalCards = items.reduce((a,it)=> a + (it.qty||1), 0);
-  metaEl.textContent = `Entradas: ${items.length} · Total cartas: ${totalCards}`;
+  const cmdCount   = d.commander ? 1 : 0;
+  metaEl.textContent = `${items.length} entr. · ${totalCards + cmdCount} cartas totales`;
 
   listEl.innerHTML = "";
 
+  // — Comandante primero
   if(d.commander){
     const cmd = d.commander;
     const cmdHeader = document.createElement("div");
     cmdHeader.className = "deckCmdHeader";
-    cmdHeader.innerHTML = `<span class="typeName">Comandante</span><span class="typeCount">1 carta</span>`;
+    cmdHeader.innerHTML = `<span class="typeName">Comandante</span><span class="typeCount">1</span>`;
     listEl.appendChild(cmdHeader);
-
     renderDeckRow(listEl, detailsEl, { ...cmd, qty: 1 }, "");
   }
 
+  // — Resto agrupado o plano
   const groups = (deckViewState.group === "none")
     ? [["Cartas", items]]
     : groupDeckItemsByMainType(items);
 
   for(const [gname, arr] of groups){
+    if(!arr.length) continue;
     const count = arr.reduce((a,it)=>a+(it.qty||1),0);
     const h = document.createElement("div");
     h.className = "deckTypeHeader";
     h.innerHTML = `<span class="typeName">${escapeHtml(gname)}</span><span class="typeCount">${count}</span>`;
     listEl.appendChild(h);
-
     arr.forEach(it=> renderDeckRow(listEl, detailsEl, it));
   }
 }
@@ -6978,8 +7149,19 @@ document.getElementById("deckListSort").addEventListener("change", ()=> renderDe
 
 /* Deck view UI */
 document.getElementById("btnDeckBack").onclick = ()=> showPage("mazos");
-document.getElementById("deckViewQ").oninput = async (e)=>{ deckViewState.q = e.target.value; await renderDeckView(true); };
-document.getElementById("deckViewGroup").onchange = async (e)=>{ deckViewState.group = e.target.value; await renderDeckView(true); };
+document.getElementById("deckViewQ").oninput = (e)=>{
+  deckViewState.q = e.target.value;
+  renderDeckView(false);
+  // Si hay items sin tipificar, prefetch y re-render
+  const d = decks.find(x=>x.id===deckViewState.deckId);
+  const items = Array.isArray(d?.items) ? d.items : [];
+  const needsFetch = items.some(it=>!deckTypeCache.has(it.key||String(it.name||"").toLowerCase()));
+  if(needsFetch) prefetchDeckTypes(items).then(()=>renderDeckView(false)).catch(()=>{});
+};
+document.getElementById("deckViewGroup").onchange = (e)=>{
+  deckViewState.group = e.target.value;
+  renderDeckView(false);
+};
 
 document.getElementById("btnDeckViewExportTxt").onclick = ()=>{
   const d = decks.find(x=>x.id===deckViewState.deckId);
