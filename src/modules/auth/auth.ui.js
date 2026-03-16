@@ -1,7 +1,7 @@
 /**
  * auth.ui.js
- * Maneja toda la UI de la pantalla de autenticación.
- * Solo toca el DOM — llama a auth.js para la lógica.
+ * UI de la pantalla de autenticación: login, registro, recuperación.
+ * Solo toca el DOM — llama a auth.js para la lógica de Firebase.
  */
 
 import { signIn, signUp, signOut, sendPasswordReset } from "./auth.js";
@@ -15,7 +15,7 @@ export function showLoginScreen() {
   if (!scr) return;
   scr.style.display = "flex";
   scr.classList.remove("is-exit");
-  void scr.offsetWidth; // force reflow para la animación
+  void scr.offsetWidth; // reflow para la animación
   scr.classList.add("is-enter");
 }
 
@@ -42,57 +42,64 @@ export function showAuthView(which) {
     signup.style.display = "none";
     login.style.display  = "grid";
   }
-  setMsg("");
-  setMsg2("");
+  _setMsg("");
+  _setMsg2("");
 }
 
-// ─── Mensajes de error / éxito ────────────────────────────────────────────────
+/** Actualiza visibilidad del botón de cerrar sesión en el topbar */
+export function syncAuthTopbar(user) {
+  const btnOut        = document.getElementById("btnSignOutTop");
+  const btnOutSidebar = document.getElementById("btnSignOutSidebar");
+  if (btnOut)        btnOut.style.display        = user ? "" : "none";
+  if (btnOutSidebar) btnOutSidebar.style.display  = user ? "" : "none";
+}
 
-function setMsg(text, ok = false) {
+// ─── Mensajes internos ───────────────────────────────────────────────────────
+
+function _setMsg(text, ok = false) {
   const msg = document.getElementById("authMsg");
   if (!msg) return;
   msg.style.color = ok ? "#4ade80" : "#f87171";
   msg.textContent = text || "";
 }
 
-function setMsg2(text, ok = false) {
+function _setMsg2(text, ok = false) {
   const msg = document.getElementById("authMsg2");
   if (!msg) return;
   msg.style.color = ok ? "#4ade80" : "#f87171";
   msg.textContent = text || "";
 }
 
-// ─── Inicializar listeners de la UI de auth ───────────────────────────────────
+// ─── Inicializar listeners ────────────────────────────────────────────────────
 
 /**
- * @param {object} callbacks
- * @param {() => void} callbacks.onLoginSuccess - Se llama tras login exitoso
- * @param {() => void} callbacks.onSignOutSuccess - Se llama tras cerrar sesión
+ * Registra todos los listeners de la pantalla de auth.
+ * Llamar UNA vez cuando no hay sesión activa.
  */
-export function initAuthUI({ onLoginSuccess, onSignOutSuccess } = {}) {
-  const emailEl   = document.getElementById("authEmail");
-  const passEl    = document.getElementById("authPass");
-  const btnIn     = document.getElementById("btnSignIn");
-  const btnUp     = document.getElementById("btnSignUp");
-  const btnForgot = document.getElementById("btnForgotPass");
-  const btnOutTop = document.getElementById("btnSignOutTop");
+export function initAuthUI({ onSignOutSuccess } = {}) {
+  const emailEl    = document.getElementById("authEmail");
+  const passEl     = document.getElementById("authPass");
+  const btnIn      = document.getElementById("btnSignIn");
+  const btnUp      = document.getElementById("btnSignUp");
+  const btnForgot  = document.getElementById("btnForgotPass");
+  const btnOutTop  = document.getElementById("btnSignOutTop");
+  const btnOutSide = document.getElementById("btnSignOutSidebar");
 
-  const suUserEl  = document.getElementById("suUsername");
-  const suEmailEl = document.getElementById("suEmail");
-  const suEmail2El= document.getElementById("suEmail2");
-  const suPassEl  = document.getElementById("suPass");
-  const suPass2El = document.getElementById("suPass2");
-  const btnCreate = document.getElementById("btnCreateAccount");
-  const btnBack   = document.getElementById("btnBackToLogin");
+  const suUserEl   = document.getElementById("suUsername");
+  const suEmailEl  = document.getElementById("suEmail");
+  const suEmail2El = document.getElementById("suEmail2");
+  const suPassEl   = document.getElementById("suPass");
+  const suPass2El  = document.getElementById("suPass2");
+  const btnCreate  = document.getElementById("btnCreateAccount");
+  const btnBack    = document.getElementById("btnBackToLogin");
 
-  // Estado inicial — esperamos onAuthStateChanged antes de mostrar nada
   showLoginScreen();
   showAuthView("login");
 
   // ── Ir a registro ──
   if (btnUp) {
     btnUp.onclick = () => {
-      setMsg("");
+      _setMsg("");
       showAuthView("signup");
       const e = (emailEl?.value || "").trim();
       if (e && suEmailEl) suEmailEl.value = e;
@@ -112,9 +119,9 @@ export function initAuthUI({ onLoginSuccess, onSignOutSuccess } = {}) {
       btnForgot.textContent = "Enviando…";
       try {
         await sendPasswordReset(email);
-        setMsg(`Email de recuperación enviado a ${email}. Revisa tu bandeja.`, true);
+        _setMsg(`Email enviado a ${email}. Revisa tu bandeja.`, true);
       } catch (err) {
-        setMsg(typeof err === "string" ? err : err.message);
+        _setMsg(typeof err === "string" ? err : (err?.message || "Error desconocido."));
       } finally {
         btnForgot.disabled = false;
         btnForgot.textContent = "¿Olvidaste tu contraseña?";
@@ -125,7 +132,7 @@ export function initAuthUI({ onLoginSuccess, onSignOutSuccess } = {}) {
   // ── Iniciar sesión ──
   if (btnIn) {
     btnIn.onclick = async () => {
-      setMsg("");
+      _setMsg("");
       btnIn.disabled = true;
       btnIn.textContent = "Entrando…";
       try {
@@ -133,9 +140,9 @@ export function initAuthUI({ onLoginSuccess, onSignOutSuccess } = {}) {
           (emailEl?.value || "").trim(),
           passEl?.value || ""
         );
-        // onAuthStateChanged lo gestiona — no llamamos onLoginSuccess aquí
+        // onAuthStateChanged en main.js lo gestiona
       } catch (err) {
-        setMsg(typeof err === "string" ? err : err.message);
+        _setMsg(typeof err === "string" ? err : (err?.message || "Error desconocido."));
       } finally {
         btnIn.disabled = false;
         btnIn.textContent = "Iniciar sesión";
@@ -146,20 +153,20 @@ export function initAuthUI({ onLoginSuccess, onSignOutSuccess } = {}) {
   // ── Crear cuenta ──
   if (btnCreate) {
     btnCreate.onclick = async () => {
-      setMsg2("");
+      _setMsg2("");
       btnCreate.disabled = true;
       btnCreate.textContent = "Creando cuenta…";
       try {
         await signUp({
-          username: suUserEl?.value || "",
+          username: suUserEl?.value  || "",
           email:    suEmailEl?.value || "",
-          email2:   suEmail2El?.value || "",
-          pass:     suPassEl?.value || "",
+          email2:   suEmail2El?.value|| "",
+          pass:     suPassEl?.value  || "",
           pass2:    suPass2El?.value || "",
         });
-        setMsg2("Cuenta creada. Bienvenido.", true);
+        _setMsg2("Cuenta creada. Bienvenido.", true);
       } catch (err) {
-        setMsg2(typeof err === "string" ? err : err.message);
+        _setMsg2(typeof err === "string" ? err : (err?.message || "Error desconocido."));
       } finally {
         btnCreate.disabled = false;
         btnCreate.textContent = "Crear cuenta";
@@ -167,24 +174,18 @@ export function initAuthUI({ onLoginSuccess, onSignOutSuccess } = {}) {
     };
   }
 
-  // ── Cerrar sesión ──
-  if (btnOutTop) {
-    btnOutTop.onclick = async () => {
-      await signOut();
-      showLoginScreen();
-      showAuthView("login");
-      onSignOutSuccess?.();
-    };
-  }
+  // ── Cerrar sesión (topbar y sidebar) ──
+  const doSignOut = async () => {
+    await signOut();
+    showLoginScreen();
+    showAuthView("login");
+    onSignOutSuccess?.();
+  };
+  if (btnOutTop)  btnOutTop.onclick  = doSignOut;
+  if (btnOutSide) btnOutSide.onclick = doSignOut;
 
   // ── Enter en inputs de login ──
   [emailEl, passEl].forEach(el => {
     el?.addEventListener("keydown", e => { if (e.key === "Enter") btnIn?.click(); });
   });
-}
-
-/** Actualiza visibilidad del botón de cerrar sesión en el topbar */
-export function syncAuthTopbar(user) {
-  const btnOut = document.getElementById("btnSignOutTop");
-  if (btnOut) btnOut.style.display = user ? "" : "none";
 }

@@ -2334,6 +2334,78 @@
     </div>
   </main>
 </div>
+<!-- ── Modal de selección de impresión ── -->
+<div id="printingModal" class="printingModal" role="dialog" aria-modal="true">
+  <div class="printingModalInner">
+    <div class="printingModalHeader">
+      <div>
+        <div class="printingModalTitle" id="printingModalCardName">Impresiones disponibles</div>
+        <div class="printingModalSubtitle" id="printingModalCardSubtitle">Selecciona la versión exacta de tu carta</div>
+      </div>
+      <button class="printingModalClose" id="printingModalClose" aria-label="Cerrar">&#x2715;</button>
+    </div>
+    <div class="printingModalFilters">
+      <input id="printingFilterQ" placeholder="Filtrar por set, año..." />
+      <select id="printingFilterLang">
+        <option value="">Todos los idiomas</option>
+        <option value="es">Español</option>
+        <option value="en">Inglés</option>
+        <option value="fr">Francés</option>
+        <option value="de">Alemán</option>
+        <option value="it">Italiano</option>
+        <option value="pt">Portugués</option>
+        <option value="ja">Japonés</option>
+        <option value="ko">Coreano</option>
+        <option value="zhs">Chino Simpl.</option>
+        <option value="zht">Chino Trad.</option>
+      </select>
+      <select id="printingFilterRarity">
+        <option value="">Cualquier rareza</option>
+        <option value="common">Común</option>
+        <option value="uncommon">Poco común</option>
+        <option value="rare">Rara</option>
+        <option value="mythic">Mítica</option>
+        <option value="special">Especial</option>
+      </select>
+      <span class="pill" id="printingCount">0 versiones</span>
+    </div>
+    <div class="printingModalBody" id="printingModalBody">
+      <div class="printingLoader">
+        <div class="printingLoaderSpinner"></div>
+        Buscando impresiones…
+      </div>
+    </div>
+    <div class="printingModalFooter">
+      <span class="hint" id="printingSelectedInfo" style="font-style:italic;">Haz clic para seleccionar · Doble clic para añadir directamente</span>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="printingModalCancel">Cancelar</button>
+      <button class="btn" id="printingModalConfirm" disabled>&#x2713; Añadir seleccionada</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Hover preview flotante ── -->
+<div id="cardHoverPreview" class="cCardPreview">
+  <img id="chpImg" src="" alt="">
+  <div id="chpOracle" class="previewOracle" style="display:none;"></div>
+</div>
+
+<!-- ── Modal detalle de carta ── -->
+<div id="cardDetailModal" class="cardModal" role="dialog" aria-modal="true">
+  <div class="cardModalInner">
+    <button class="cardModalClose" id="cardModalClose" aria-label="Cerrar">✕</button>
+    <div class="cardModalImg">
+      <img id="cmdImg" src="" alt="">
+    </div>
+    <div class="cardModalBody">
+      <div class="cardModalName" id="cmdName"></div>
+      <div class="cardModalMeta" id="cmdMeta"></div>
+      <div id="cmdOracle" class="cardModalOracle" style="display:none;"></div>
+      <div id="cmdFlavor" class="cardModalFlavor" style="display:none;"></div>
+      <div class="cardModalGrid" id="cmdGrid"></div>
+    </div>
+  </div>
+</div>
 
 <script>
 
@@ -2347,7 +2419,9 @@ const firebaseConfig = {
   appId: "1:310699881878:web:dcb0f21e31434393f719b7",
   measurementId: "G-T3PQ24KKCF"
 };
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
 const fbAuth    = firebase.auth();
 const fbDb      = firebase.firestore();
 const fbStorage = firebase.storage();
@@ -7189,34 +7263,7 @@ function getAppPayload(){
 }
 
 
-// ╔══════════════════════════════════════════════════════════════╗
-// ║  AUTH — Login, registro, recuperación de contraseña y sesión   ║
-// ╚══════════════════════════════════════════════════════════════╝
 
-function showLogin(){
-  document.body.classList.add("not-authenticated");
-  document.body.classList.remove("app-enter");
-  const scr = document.getElementById("authScreen");
-  if(scr){
-    scr.style.display = "flex";
-    scr.classList.remove("is-exit");
-    void scr.offsetWidth;
-    scr.classList.add("is-enter");
-  }
-}
-
-// Oculta la pantalla de login y muestra la app principal con animación
-function showApp(){
-  const scr = document.getElementById("authScreen");
-  if(scr){
-    scr.classList.remove("is-enter");
-    scr.classList.add("is-exit");
-    setTimeout(()=>{ scr.style.display = "none"; }, 380);
-  }
-  document.body.classList.remove("not-authenticated");
-  document.body.classList.add("app-enter");
-  setTimeout(()=> document.body.classList.remove("app-enter"), 450);
-}
 
 function setAuthTop(user){
   const btnOut = document.getElementById("btnSignOutTop");
@@ -7230,55 +7277,7 @@ function setAuthTop(user){
   renderSidebarProfile();
 }
 
-function setMsg(text, ok=false){
-  const msg = document.getElementById("authMsg");
-  if(!msg) return;
-  msg.style.color = ok ? "#4ade80" : "#f87171";
-  msg.textContent = text || "";
-}
 
-function setMsg2(text, ok=false){
-  const msg = document.getElementById("authMsg2");
-  if(!msg) return;
-  msg.style.color = ok ? "#4ade80" : "#f87171";
-  msg.textContent = text || "";
-}
-
-function showAuthView(which){
-  const login = document.getElementById("authLoginView");
-  const signup = document.getElementById("authSignupView");
-  if(!login || !signup) return;
-  if(which === "signup"){
-    login.style.display = "none";
-    signup.style.display = "grid";
-  }else{
-    signup.style.display = "none";
-    login.style.display = "grid";
-  }
-  try{ setMsg(""); }catch{}
-  try{ setMsg2(""); }catch{}
-}
-
-// Cierra la sesión de Firebase y vuelve a la pantalla de login
-function signOutAndReturnToLogin(){
-  fbAuth.signOut().then(()=>{
-    _fbUser = null;
-    window._authInited = false;
-    setAuthTop(null);
-    showLogin();
-  });
-}
-
-// Valida que un string sea un email con formato correcto
-function isValidEmail(email){
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(email||"").trim());
-}
-
-// Valida que una contraseña tenga al menos 6 caracteres (mínimo Firebase)
-function isStrongPassword(pw){
-  const p = String(pw||"");
-  return p.length >= 6; // Firebase requiere mínimo 6 caracteres
-}
 
 function _onFirebaseLogin(firebaseUser){
   _fbUser = firebaseUser;
@@ -7316,257 +7315,21 @@ function _onFirebaseLogin(firebaseUser){
   fsLoadWishlist().then(()=> renderWishlist()).catch(()=>{});
 }
 
-async function initAuth(){
-  // Evitar registrar handlers duplicados si initAuth se llama más de una vez
-  if(window._authInited){
-    showLogin();
-    showAuthView("login");
-    return;
-  }
-  window._authInited = true;
-
-  const emailEl    = document.getElementById("authEmail");
-  const passEl     = document.getElementById("authPass");
-  const btnUp      = document.getElementById("btnSignUp");
-  const btnIn      = document.getElementById("btnSignIn");
-  const btnForgot  = document.getElementById("btnForgotPass");
-  const btnOutTop  = document.getElementById("btnSignOutTop");
-
-  const suUserEl   = document.getElementById("suUsername");
-  const suEmailEl  = document.getElementById("suEmail");
-  const suEmail2El = document.getElementById("suEmail2");
-  const suPassEl   = document.getElementById("suPass");
-  const suPass2El  = document.getElementById("suPass2");
-  const btnCreate  = document.getElementById("btnCreateAccount");
-  const btnBack    = document.getElementById("btnBackToLogin");
-
-  // Estado inicial — espera a onAuthStateChanged antes de mostrar nada
-  showLogin();
-  showAuthView("login");
-
-  // — Botón: ir a pantalla de registro
-  if(btnUp){
-    btnUp.onclick = ()=>{
-      setMsg("");
-      showAuthView("signup");
-      try{
-        const e = (emailEl?.value||"").trim();
-        if(e && suEmailEl) suEmailEl.value = e;
-      }catch{}
-    };
-  }
-
-  // — Botón: volver al login
-  if(btnBack){
-    btnBack.onclick = ()=> showAuthView("login");
-  }
-
-  // — Recuperar contraseña
-  if(btnForgot){
-    btnForgot.onclick = async ()=>{
-      const email = (emailEl?.value || "").trim();
-      if(!email || !isValidEmail(email)){
-        setMsg("Escribe tu email arriba y pulsa este botón.");
-        return;
-      }
-      btnForgot.disabled = true;
-      btnForgot.textContent = "Enviando…";
-      try{
-        await fbAuth.sendPasswordResetEmail(email);
-        setMsg(`Email de recuperación enviado a ${email}. Revisa tu bandeja.`, true);
-      }catch(err){
-        setMsg(_fbErrorMsg(err));
-      }finally{
-        btnForgot.disabled = false;
-        btnForgot.textContent = "¿Olvidaste tu contraseña?";
-      }
-    };
-  }
-
-  // — Cerrar sesión
-  if(btnOutTop){
-    btnOutTop.onclick = ()=> signOutAndReturnToLogin();
-  }
-
-  // — Crear cuenta con Firebase Auth
-  if(btnCreate){
-    btnCreate.onclick = async ()=>{
-      setMsg2("");
-
-      const username = (suUserEl?.value || "").trim();
-      const email1   = (suEmailEl?.value || "").trim();
-      const email2   = (suEmail2El?.value || "").trim();
-      const pass1    = suPassEl?.value || "";
-      const pass2    = suPass2El?.value || "";
-
-      if(!username)                                    return setMsg2("Escribe un nombre de usuario.");
-      if(!email1 || !email2)                           return setMsg2("Completa y confirma el email.");
-      if(email1.toLowerCase() !== email2.toLowerCase()) return setMsg2("Los emails no coinciden.");
-      if(!isValidEmail(email1))                        return setMsg2("El email no es válido.");
-      if(!pass1 || !pass2)                             return setMsg2("Completa y repite la contraseña.");
-      if(pass1 !== pass2)                              return setMsg2("Las contraseñas no coinciden.");
-      if(!isStrongPassword(pass1))                     return setMsg2("Contraseña demasiado corta (mínimo 6 caracteres).");
-
-      btnCreate.disabled = true;
-      btnCreate.textContent = "Creando cuenta…";
-
-      try{
-        const cred = await fbAuth.createUserWithEmailAndPassword(email1, pass1);
-        // Guardar el displayName en Firebase
-        await cred.user.updateProfile({ displayName: username });
-        // onAuthStateChanged se dispara automáticamente — _onFirebaseLogin lo gestiona
-        setMsg("Cuenta creada. Bienvenido.", true);
-      }catch(err){
-        setMsg2(_fbErrorMsg(err));
-      }finally{
-        btnCreate.disabled = false;
-        btnCreate.textContent = "Crear cuenta";
-      }
-    };
-  }
-
-  // — Iniciar sesión con Firebase Auth
-  if(btnIn){
-    btnIn.onclick = async ()=>{
-      setMsg("");
-      const email    = (emailEl?.value || "").trim();
-      const password = passEl?.value || "";
-
-      if(!email || !password) return setMsg("Completa email y contraseña.");
-      if(!isValidEmail(email)) return setMsg("El email no es válido.");
-
-      btnIn.disabled = true;
-      btnIn.textContent = "Entrando…";
-
-      try{
-        await fbAuth.signInWithEmailAndPassword(email, password);
-        // onAuthStateChanged lo gestiona
-      }catch(err){
-        setMsg(_fbErrorMsg(err));
-      }finally{
-        btnIn.disabled = false;
-        btnIn.textContent = "Iniciar sesión";
-      }
-    };
-  }
-
-  // — Enter en inputs de login
-  [emailEl, passEl].forEach(el=>{
-    el?.addEventListener("keydown", e=>{ if(e.key==="Enter") btnIn?.click(); });
-  });
-}
-
-// Traduce códigos de error de Firebase a español
-// Traduce los códigos de error de Firebase Auth al español
-function _fbErrorMsg(err){
-  const code = err?.code || "";
-  const map = {
-    "auth/user-not-found":        "No existe una cuenta con ese email.",
-    "auth/wrong-password":        "Contraseña incorrecta.",
-    "auth/invalid-credential":    "Email o contraseña incorrectos.",
-    "auth/email-already-in-use":  "Ya existe una cuenta con ese email.",
-    "auth/weak-password":         "Contraseña demasiado débil (mínimo 6 caracteres).",
-    "auth/invalid-email":         "El email no es válido.",
-    "auth/too-many-requests":     "Demasiados intentos. Espera un momento.",
-    "auth/network-request-failed":"Sin conexión. Revisa tu red.",
-  };
-  return map[code] || (err?.message || "Error desconocido.");
-}
-
-// — Punto de entrada: DOMContentLoaded
-// 1. Inicializa la UI estática inmediatamente
-// 2. Espera a Firebase para saber si hay sesión
+// El arranque y la autenticación los gestiona src/main.js
+// Este listener solo inicializa la UI de contenido (no de auth)
 window.addEventListener("DOMContentLoaded", ()=>{
-  // initAppUI se llama desde _onFirebaseLogin (con guard) o cuando no hay sesión
-  fbAuth.onAuthStateChanged(async (firebaseUser)=>{
-    if(firebaseUser){
-      _onFirebaseLogin(firebaseUser);
-    }else{
-      _fbUser = null;
-      if(!window._appUIInited){ initAppUI(); window._appUIInited = true; }
-      setAuthTop(null);
-      await initAuth();
-      showLogin();
-    }
-  });
+initAppUI();
 });
+// _onFirebaseLogin se llama desde main.js cuando hay sesión activa
+// Exponer para que main.js pueda invocarlo
+window._onFirebaseLogin = _onFirebaseLogin;
 
 
 </script>
+<script type="module" src="src/main.js"></script>
 
 
-<!-- ── Modal de selección de impresión ── -->
-<div id="printingModal" class="printingModal" role="dialog" aria-modal="true">
-  <div class="printingModalInner">
-    <div class="printingModalHeader">
-      <div>
-        <div class="printingModalTitle" id="printingModalCardName">Impresiones disponibles</div>
-        <div class="printingModalSubtitle" id="printingModalCardSubtitle">Selecciona la versión exacta de tu carta</div>
-      </div>
-      <button class="printingModalClose" id="printingModalClose" aria-label="Cerrar">&#x2715;</button>
-    </div>
-    <div class="printingModalFilters">
-      <input id="printingFilterQ" placeholder="Filtrar por set, año..." />
-      <select id="printingFilterLang">
-        <option value="">Todos los idiomas</option>
-        <option value="es">Español</option>
-        <option value="en">Inglés</option>
-        <option value="fr">Francés</option>
-        <option value="de">Alemán</option>
-        <option value="it">Italiano</option>
-        <option value="pt">Portugués</option>
-        <option value="ja">Japonés</option>
-        <option value="ko">Coreano</option>
-        <option value="zhs">Chino Simpl.</option>
-        <option value="zht">Chino Trad.</option>
-      </select>
-      <select id="printingFilterRarity">
-        <option value="">Cualquier rareza</option>
-        <option value="common">Común</option>
-        <option value="uncommon">Poco común</option>
-        <option value="rare">Rara</option>
-        <option value="mythic">Mítica</option>
-        <option value="special">Especial</option>
-      </select>
-      <span class="pill" id="printingCount">0 versiones</span>
-    </div>
-    <div class="printingModalBody" id="printingModalBody">
-      <div class="printingLoader">
-        <div class="printingLoaderSpinner"></div>
-        Buscando impresiones…
-      </div>
-    </div>
-    <div class="printingModalFooter">
-      <span class="hint" id="printingSelectedInfo" style="font-style:italic;">Haz clic para seleccionar · Doble clic para añadir directamente</span>
-      <div class="spacer"></div>
-      <button class="btn ghost" id="printingModalCancel">Cancelar</button>
-      <button class="btn" id="printingModalConfirm" disabled>&#x2713; Añadir seleccionada</button>
-    </div>
-  </div>
-</div>
 
-<!-- ── Hover preview flotante ── -->
-<div id="cardHoverPreview" class="cCardPreview">
-  <img id="chpImg" src="" alt="">
-  <div id="chpOracle" class="previewOracle" style="display:none;"></div>
-</div>
-
-<!-- ── Modal detalle de carta ── -->
-<div id="cardDetailModal" class="cardModal" role="dialog" aria-modal="true">
-  <div class="cardModalInner">
-    <button class="cardModalClose" id="cardModalClose" aria-label="Cerrar">✕</button>
-    <div class="cardModalImg">
-      <img id="cmdImg" src="" alt="">
-    </div>
-    <div class="cardModalBody">
-      <div class="cardModalName" id="cmdName"></div>
-      <div class="cardModalMeta" id="cmdMeta"></div>
-      <div id="cmdOracle" class="cardModalOracle" style="display:none;"></div>
-      <div id="cmdFlavor" class="cardModalFlavor" style="display:none;"></div>
-      <div class="cardModalGrid" id="cmdGrid"></div>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
