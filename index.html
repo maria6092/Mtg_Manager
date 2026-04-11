@@ -7315,15 +7315,17 @@ function _onFirebaseLogin(firebaseUser){
   fsLoadWishlist().then(()=> renderWishlist()).catch(()=>{});
 }
 
-// El arranque y la autenticación los gestiona src/main.js
-// Este listener solo inicializa la UI de contenido (no de auth)
 window.addEventListener("DOMContentLoaded", ()=>{
-initAppUI();
+  initAppUI();
 });
-// _onFirebaseLogin se llama desde main.js cuando hay sesión activa
-// Exponer para que main.js pueda invocarlo
+
 window._onFirebaseLogin = _onFirebaseLogin;
 
+window.addEventListener("DOMContentLoaded", ()=>{
+  initAppUI();
+});
+
+window._onFirebaseLogin = _onFirebaseLogin;
 
 </script>
 <script type="module" src="src/main.js"></script>
