@@ -1,0 +1,329 @@
+/* =============================================
+   COMPONENTS.CSS — Botones, tabs, cards, badges,
+   colección, mazos, ventas, charts
+   ============================================= */
+
+/* ── Buttons ── */
+.btn {
+  border: none;
+  background: var(--pink);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: .15s;
+  font-weight: 600;
+  touch-action: manipulation;
+}
+.btn:hover { background: var(--pink2); }
+
+.btn.ghost {
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-weight: 600;
+}
+.btn.ghost:hover { border-color: var(--soft); color: var(--pink2); }
+
+.btn.tiny {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: .78rem;
+}
+.btn.danger { background: #ef4444; }
+.btn.danger:hover { background: #b91c1c; }
+
+/* ── Tabs ── */
+.tabbtn {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: .15s;
+  box-shadow: 0 6px 14px rgba(240,98,146,.08);
+  user-select: none;
+  touch-action: manipulation;
+  white-space: nowrap;
+}
+.tabbtn:hover { transform: translateY(-1px); }
+.tabbtn.active {
+  background: linear-gradient(180deg, var(--card), var(--soft));
+  border-color: var(--soft);
+  color: var(--pink2);
+  box-shadow: var(--shadow);
+}
+
+/* ── Pill ── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: .78rem;
+  font-weight: 600;
+  background: var(--soft);
+  color: var(--pink2);
+  border: 1px solid var(--line);
+}
+
+/* ── Tag / rareza ── */
+.tag {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+  font-size: .7rem;
+  white-space: nowrap;
+}
+.tag.r-common   { background: rgba(255,255,255,.06); border-color: rgba(200,200,200,.4); color: #888; }
+.tag.r-uncommon { background: rgba(140,200,140,.08); border-color: rgba(109,109,109,.3); color: #555; }
+.tag.r-rare     { background: rgba(80,120,220,.1);  border-color: rgba(240,140,60,.35); color: #fdba74; }
+.tag.r-mythic   { background: rgba(220,100,30,.1);  border-color: rgba(241,119,19,.35); color: #f97316; }
+.tag.r-special  { background: rgba(150,70,180,.1);  border-color: rgba(150,70,180,.35); color: #c084fc; }
+
+/* ── Own badge (estado en colección) ── */
+.ownBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px; height: 20px;
+  padding: 0 7px;
+  border-radius: 3px;
+  font-weight: 700;
+  font-size: 11px;
+  border: 1px solid var(--line);
+  background: rgba(240,98,146,.06);
+}
+.ownBadge.ok   { background: rgba(34,197,94,.15);  border-color: rgba(34,197,94,.45);  color: #4ade80; }
+.ownBadge.warn { background: rgba(245,158,11,.15); border-color: rgba(245,158,11,.45); color: #fbbf24; }
+.ownBadge.alt  { background: rgba(139,92,246,.15); border-color: rgba(139,92,246,.45); color: #a78bfa; }
+.ownBadge.no   { opacity: .55; }
+.ownBadge.bad  { background: rgba(239,68,68,.15);  border-color: rgba(239,68,68,.4);   color: #f87171; }
+
+/* ── Star button ── */
+.starBtn {
+  border: 0; background: transparent; cursor: pointer;
+  font-size: 16px; line-height: 1; padding: 2px 5px;
+  color: var(--pink);
+  transition: transform .15s, color .15s;
+}
+.starBtn:hover { transform: scale(1.2); color: var(--pink2); }
+
+/* ── Cardrow (buscador / wishlist / decks list) ── */
+.cardrow {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+  background: var(--card);
+  box-shadow: 0 4px 12px rgba(240,98,146,.06);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  cursor: pointer;
+  transition: border-color .18s, box-shadow .18s;
+}
+.cardrow:hover {
+  border-color: var(--pink);
+  box-shadow: 0 0 12px rgba(240,98,146,.12);
+}
+.cardrow b { color: var(--pink2); }
+
+.mini { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; color: var(--muted); font-size: .75rem; }
+
+/* ── Colección visual (card view) ── */
+.collectionGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 980px) { .collectionGrid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .collectionGrid { grid-template-columns: 1fr; } }
+
+.cCard {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: border-color .2s, box-shadow .2s, transform .15s;
+  cursor: pointer;
+}
+.cCard:hover {
+  border-color: var(--pink);
+  box-shadow: 0 0 20px rgba(240,98,146,.14), var(--shadow);
+  transform: translateY(-2px);
+}
+.cTop {
+  padding: 10px 12px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.cName  { font-weight: 600; color: var(--pink2); line-height: 1.15; font-size: .9rem; }
+.cSub   { font-size: .75rem; color: var(--muted); margin-top: 4px; }
+.cBadges { display: flex; gap: 5px; flex-wrap: wrap; padding: 0 12px 8px; }
+.cBody {
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+}
+.cField .k { font-size: .66rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.cField .v { font-size: .85rem; }
+.cIcon { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--line); background: rgba(255,255,255,.90); padding: 3px; flex: 0 0 auto; }
+.cRight { display: flex; align-items: center; gap: 8px; }
+
+.collectionVisual { display: grid; grid-template-columns: 100px 1fr; gap: 12px; align-items: start; }
+.collectionThumb {
+  width: 100px; height: 140px; border-radius: 8px; object-fit: cover;
+  border: 1px solid var(--line);
+  background: rgba(240,98,146,.08);
+  box-shadow: 0 8px 20px rgba(0,0,0,.2);
+}
+.collectionThumb.placeholder {
+  display: grid; place-items: center; font-size: 10px;
+  color: var(--muted); padding: 6px; text-align: center;
+}
+@media (max-width: 640px) {
+  .collectionVisual { grid-template-columns: 1fr; }
+  .collectionThumb { width: 100%; max-width: 200px; height: auto; aspect-ratio: 63/88; }
+}
+
+/* ── Deck card ── */
+.deckListRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  margin-bottom: 6px;
+}
+.deckListRow:hover { border-color: var(--pink); background: rgba(240,98,146,.04); }
+.deckListRow.selected-deck-row { border-color: var(--pink) !important; background: rgba(240,98,146,.08) !important; }
+.deckListRowMain { min-width: 0; flex: 1; }
+.deckListName { font-weight: 700; color: var(--pink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+.deckListRowMeta { font-size: .72rem; color: var(--muted); margin-top: 3px; }
+.deckListRowActions { display: flex; gap: 5px; flex: 0 0 auto; }
+
+.deckCmdBadge {
+  font-size: .68rem;
+  padding: 3px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--card);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+.deckCmdBadge.has-commander { border-color: var(--pink); color: var(--pink2); background: rgba(240,98,146,.06); }
+
+/* ── Deck view ── */
+.deckViewGrid {
+  display: grid;
+  grid-template-columns: 1.4fr .6fr;
+  gap: 12px;
+  height: calc(100vh - 240px);
+}
+@media (max-width: 900px) { .deckViewGrid { grid-template-columns: 1fr; height: auto; } }
+
+.deckListPanel, .deckDetailsPanel { display: flex; flex-direction: column; overflow: hidden; }
+.deckListScroll { flex: 1; overflow-y: auto; padding-right: 4px; }
+#deckViewDetails { flex: 1; overflow: auto; padding-right: 4px; min-height: 0; }
+#deckViewDetails img { display: block; max-height: 70vh; object-fit: contain; }
+
+.deckTypeHeader {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 10px; margin: 10px 0 3px;
+  border-left: 3px solid var(--pink2);
+  background: rgba(240,98,146,.06);
+  border-radius: 0 5px 5px 0;
+}
+.deckTypeHeader .typeName { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--pink2); }
+.deckTypeHeader .typeCount { font-size: .7rem; color: var(--muted); background: rgba(240,98,146,.1); padding: 1px 7px; border-radius: 10px; }
+
+.deckCmdHeader {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 10px; margin: 0 0 3px;
+  border-left: 3px solid var(--pink);
+  background: linear-gradient(90deg, rgba(240,98,146,.12), transparent);
+  border-radius: 0 5px 5px 0;
+}
+.deckCmdHeader .typeName { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--pink2); }
+.deckCmdHeader .typeCount { font-size: .7rem; color: var(--pink); }
+
+/* ── Charts ── */
+.chart-panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+/* ── Sale item ── */
+.saleItem {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Set icon ── */
+.setIcon { width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--line); background: rgba(255,255,255,.90); padding: 3px; }
+
+/* ── Commander validation ── */
+#deckCmdWarnings {
+  margin: 0 0 12px;
+  box-shadow: none;
+}
+
+/* ── Section transitions ── */
+section[data-page] {
+  transition: opacity .2s ease, transform .2s ease;
+  opacity: 1;
+  transform: translateY(0);
+}
+section[data-page].is-hidden {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+/* ── Tablewrap ── */
+.tablewrap { margin-top: 12px; overflow: auto; }
+
+/* ── Rarity cell ── */
+td.rarity-cell { background: transparent !important; background-image: none !important; }
+
+/* ── List helper ── */
+.list { display: flex; flex-direction: column; gap: 8px; padding: 4px; }
+
+/* ── Money grid (stats) ── */
+.moneyGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 700px) { .moneyGrid { grid-template-columns: 1fr; } }
+.moneyCard { padding: 22px 24px; min-height: 110px; }
+.moneyValue { font-size: 1.7rem; font-weight: 700; color: var(--pink2); margin: 10px 0 4px; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(240,98,146,.04); }
+::-webkit-scrollbar-thumb { background: rgba(240,98,146,.25); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(240,98,146,.45); }

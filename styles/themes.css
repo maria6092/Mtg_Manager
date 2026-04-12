@@ -1,0 +1,113 @@
+/* =============================================
+   THEMES.CSS — Temas de color y accesibilidad
+   ============================================= */
+
+/* ── Tema negro ── */
+body[data-theme="black"] {
+  --bg: #0b0b10;
+  --card: #111827;
+  --pink: #a78bfa;
+  --pink2: #7c3aed;
+  --soft: #1f2937;
+  --line: #374151;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --input-bg: #0f172a;
+  --input-text: #e5e7eb;
+  --table-bg: #0f172a;
+  --shadow: 0 10px 40px rgba(0,0,0,.6);
+  background: linear-gradient(180deg, #0b0b10, #111827);
+}
+body[data-theme="black"] header { background: rgba(17,24,39,.82); }
+body[data-theme="black"] .tabbtn.active {
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  border-color: rgba(255,255,255,.12);
+  color: var(--text);
+}
+body[data-theme="black"] .btn.ghost:hover { color: var(--text); }
+body[data-theme="black"] .panel { background: rgba(31,41,55,.85); }
+body[data-theme="black"] .panel.soft { background: linear-gradient(160deg, rgba(31,41,55,.9), rgba(17,24,39,.95)); }
+body[data-theme="black"] input,
+body[data-theme="black"] select { background: rgba(15,23,42,.9); border-color: rgba(75,85,99,.4); color: #e5e7eb; }
+body[data-theme="black"] thead { background: linear-gradient(180deg, rgba(31,41,55,.95), rgba(17,24,39,.95)); }
+body[data-theme="black"] #authScreen { background: linear-gradient(135deg, #0b0b10, #1f2937); }
+body[data-theme="black"] .auth-card { background: rgba(31,41,55,.96); border-color: rgba(75,85,99,.35); }
+body[data-theme="black"] label { color: #9ca3af; }
+body[data-theme="black"] .sidebar { background: rgba(11,11,16,.98); }
+body[data-theme="black"] .sidebarBrand { background: rgba(255,255,255,.04); }
+body[data-theme="black"] .appTopbar { background: rgba(11,11,16,.92); }
+
+/* ── Tema rojo (Montañas) ── */
+body[data-theme="red"] {
+  --bg: #200a0a;
+  --card: #2d1010;
+  --pink: #e05555;
+  --pink2: #f87171;
+  --soft: #4a1515;
+  --line: #6b2222;
+  --text: #f0d0d0;
+  --muted: #c28080;
+  --input-bg: #180808;
+  --input-text: #f0d0d0;
+  --table-bg: #1a0808;
+  --shadow: 0 10px 40px rgba(0,0,0,.6), 0 2px 8px rgba(224,85,85,.08);
+  background: linear-gradient(180deg, #200a0a, #2d1010);
+}
+
+/* ── Tema verde (Bosques) ── */
+body[data-theme="green"] {
+  --bg: #0a1a0f;
+  --card: #102415;
+  --pink: #3abf70;
+  --pink2: #5de08a;
+  --soft: #1a4028;
+  --line: #2a6040;
+  --text: #d0f0d8;
+  --muted: #70c290;
+  --input-bg: #081408;
+  --input-text: #d0f0d8;
+  --table-bg: #081408;
+  --shadow: 0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(58,191,112,.08);
+  background: linear-gradient(180deg, #0a1a0f, #102415);
+}
+
+/* ── Tema amarillo/oro (Multicolor) ── */
+body[data-theme="yellow"],
+body[data-theme="gold"] {
+  --bg: #1a1400;
+  --card: #251c00;
+  --pink: #d4a500;
+  --pink2: #f0c000;
+  --soft: #3d3000;
+  --line: #5a4800;
+  --text: #f5e8b0;
+  --muted: #b89a40;
+  --input-bg: #140f00;
+  --input-text: #f5e8b0;
+  --table-bg: #141000;
+  --shadow: 0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(212,165,0,.08);
+  background: linear-gradient(180deg, #1a1400, #251c00);
+}
+
+/* ── Tema azul (Islas) ── */
+body[data-theme="blue"] {
+  --bg: #080e1e;
+  --card: #0e1628;
+  --pink: #4f8ef0;
+  --pink2: #7cb0ff;
+  --soft: #162040;
+  --line: #1e3060;
+  --text: #c8d8f8;
+  --muted: #6888c0;
+  --input-bg: #060c18;
+  --input-text: #c8d8f8;
+  --table-bg: #080e1e;
+  --shadow: 0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(79,142,240,.08);
+  background: linear-gradient(180deg, #080e1e, #0e1628);
+}
+
+/* ── Modo daltónico ── */
+html[data-colorblind="protanopia"]    { filter: url(#cb-protanopia);   }
+html[data-colorblind="deuteranopia"] { filter: url(#cb-deuteranopia); }
+html[data-colorblind="tritanopia"]   { filter: url(#cb-tritanopia);   }
+html[data-colorblind="achromatopsia"]{ filter: url(#cb-achroma);      }
