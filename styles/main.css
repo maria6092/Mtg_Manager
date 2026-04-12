@@ -26,9 +26,15 @@ html { font-size: var(--base-font); }
 
 body {
   margin: 0;
-  font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  font-family: "Raleway", "Segoe UI", system-ui, sans-serif;
   background: linear-gradient(180deg, var(--bg), var(--card) 70%);
   color: var(--text);
+}
+h1, h2, h3, .h2, .h3,
+.auth-title, .sidebarTitle, .appTopbarTitle,
+.mazoBlockTitle, .pageHeader h2 {
+  font-family: "Cinzel Decorative", serif;
+  letter-spacing: 0.05em;
 }
 
 /* ── Density ── */
