@@ -3,66 +3,31 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>✦ MTG Manager ✦</title>
+  <title>💗 MTG Manager</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- Firebase SDK (compat, CDN — sin npm ni build) -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg: #1a0f2e;
-      --card: #21143d;
-      --pink: #c9963a;
-      --pink2: #e8b84b;
-      --soft: #3d2060;
-      --line: #4a2d6f;
-      --text: #e8d5b0;
-      --muted: #9e86c2;
-      --shadow: 0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(201,150,58,.08);
-      --radius: 14px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --input-bg: #180e2a;
-      --input-text: #e8d5b0;
-      --table-bg: #1e1236;
-      --base-font: 16px;
-      --gold: #c9963a;
-      --gold2: #e8b84b;
-      --plum: #2d1854;
-      --deep: #120a22;
-      --glow: 0 0 18px rgba(201,150,58,.22);
-    }
+      --bg:#fff0f6;
+      --card:#ffffff;
 
-    @keyframes starFloat {
-      0%,100%{ opacity:.3; transform:translateY(0) scale(1); }
-      50%{ opacity:.9; transform:translateY(-4px) scale(1.1); }
-    }
-    @keyframes cosmicPulse {
-      0%,100%{ box-shadow: 0 0 0 0 rgba(201,150,58,.0), var(--shadow); }
-      50%{ box-shadow: 0 0 20px 4px rgba(201,150,58,.15), var(--shadow); }
-    }
-    @keyframes orbRotate {
-      from{ transform: rotate(0deg); }
-      to{ transform: rotate(360deg); }
-    }
-    @keyframes fadeInUp {
-      from{ opacity:0; transform:translateY(12px); }
-      to{ opacity:1; transform:translateY(0); }
-    }
-    @keyframes appFadeIn{
-      from{ opacity: 0; transform: translateY(6px); }
-      to  { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes shimmer {
-      0%{ background-position: -200% center; }
-      100%{ background-position: 200% center; }
+      --pink:#f06292;
+      --pink2:#d81b60;
+      --soft:#f8bbd0;
+      --line:#f2c5d5;
+
+      --text:#4a2c37;
+      --muted:#7a4a5a;
+
+      --shadow: 0 10px 24px rgba(216,27,96,.10);
+      --radius: 16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+      --input-bg:#ffffff;
+      --input-text:#111827;
+      --table-bg:#ffffff;
+
+      --base-font: 16px;
     }
 
     html{ font-size: var(--base-font); }
@@ -70,42 +35,17 @@
 
     body{
       margin:0;
-      font-family: 'Crimson Text', 'Georgia', serif;
-      background: var(--bg);
-      background-image:
-        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(93,40,140,.35) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(45,24,84,.55) 0%, transparent 55%),
-        radial-gradient(ellipse 40% 30% at 50% 50%, rgba(201,150,58,.04) 0%, transparent 70%);
-      color: var(--text);
-      min-height: 100vh;
+      font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+      background:linear-gradient(180deg, var(--bg), var(--card) 70%);
+      color:var(--text);
     }
 
-    /* Subtle star field */
-    body::before{
-      content:'';
-      position:fixed;
-      inset:0;
-      background-image:
-        radial-gradient(1px 1px at 10% 15%, rgba(232,184,75,.6) 0%, transparent 100%),
-        radial-gradient(1px 1px at 25% 40%, rgba(232,184,75,.4) 0%, transparent 100%),
-        radial-gradient(1px 1px at 40% 8%, rgba(232,184,75,.5) 0%, transparent 100%),
-        radial-gradient(1px 1px at 60% 25%, rgba(232,184,75,.3) 0%, transparent 100%),
-        radial-gradient(1px 1px at 75% 60%, rgba(232,184,75,.5) 0%, transparent 100%),
-        radial-gradient(1px 1px at 85% 15%, rgba(232,184,75,.4) 0%, transparent 100%),
-        radial-gradient(1px 1px at 92% 45%, rgba(232,184,75,.6) 0%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 15% 70%, rgba(232,184,75,.35) 0%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 55% 80%, rgba(232,184,75,.4) 0%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 35% 90%, rgba(232,184,75,.3) 0%, transparent 100%);
-      pointer-events:none;
-      z-index:0;
-    }
-
-    body[data-density="compact"] .panel{ padding:10px; }
+    body[data-density="compact"] .panel{ padding:12px; }
     body[data-density="compact"] input,
-    body[data-density="compact"] select{ padding:7px 10px; }
-    body[data-density="compact"] .tabbtn{ padding:7px 10px; }
-    body[data-density="compact"] tbody td{ padding:5px; }
-    body[data-density="compact"] thead th{ padding:7px 6px; }
+    body[data-density="compact"] select{ padding:8px 10px; }
+    body[data-density="compact"] .tabbtn{ padding:8px 10px; }
+    body[data-density="compact"] tbody td{ padding:6px; }
+    body[data-density="compact"] thead th{ padding:8px 6px; }
     body[data-density="compact"] .cardrow{ padding:8px; }
 
     html[data-motion="reduced"] *{
@@ -114,113 +54,95 @@
       scroll-behavior:auto !important;
     }
 
-    /* ── TOPBAR ── */
     header{
       position:sticky; top:0; z-index:20;
-      background: rgba(18,10,34,.88);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid rgba(201,150,58,.25);
+      background:var(--bg);
+      opacity:0.95;
+      backdrop-filter: blur(12px);
+      border-bottom:1px solid var(--line);
+    }
+    body[data-theme="black"] header{
+      background: rgba(17,24,39,.78);
+      border-bottom:1px solid var(--line);
     }
 
     .wrap{max-width:1700px;margin:0 auto;padding:14px;}
     main .wrap{padding-top:18px;padding-bottom:30px}
 
-    .topbar{ display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap; }
-    .brand{ display:flex;align-items:center;gap:10px; }
+    .topbar{
+      display:flex;gap:12px;align-items:center;justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .brand{display:flex;align-items:center;gap:10px;}
     .logo{
-      width:40px;height:40px;border-radius:12px;
-      background: radial-gradient(circle at 35% 35%, #e8b84b, #8b5e1a);
-      border:1px solid rgba(201,150,58,.5);
-      box-shadow: var(--glow);
+      width:40px;height:40px;border-radius:14px;
+      background: linear-gradient(135deg, var(--card), var(--soft));
+      border:1px solid var(--line);
+      box-shadow: var(--shadow);
       display:grid;place-items:center;
       font-size:20px;
       flex: 0 0 auto;
     }
-    h1{ font-size:18px;margin:0;color:var(--gold2);font-family:'Cinzel',serif;letter-spacing:.06em; }
+    h1{font-size:18px;margin:0;color:var(--pink2)}
 
-    /* ── TABS ── */
     .tabs{
-      display:flex;gap:6px;
+      display:flex;gap:8px;
       overflow-x:auto;
       -webkit-overflow-scrolling: touch;
-      padding-bottom:4px;
+      padding-bottom:6px;
       max-width:100%;
     }
     .tabbtn{
       flex: 0 0 auto;
-      border: 1px solid rgba(201,150,58,.25);
-      background: rgba(33,20,61,.6);
-      color: var(--muted);
-      padding:9px 14px;
-      border-radius:4px;
+      border:1px solid var(--line);
+      background:var(--card);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:999px;
       cursor:pointer;
-      transition: all .2s ease;
-      font-family: 'Cinzel', serif;
-      font-size: .72rem;
-      letter-spacing: .08em;
-      text-transform: uppercase;
+      transition:.15s;
+      box-shadow: 0 6px 14px rgba(240,98,146,.08);
       user-select:none;
       touch-action: manipulation;
       white-space:nowrap;
-      position:relative;
     }
-    .tabbtn::before{
-      content:'';
-      position:absolute;
-      inset:-1px;
-      border-radius:4px;
-      background: linear-gradient(135deg, rgba(201,150,58,.0), rgba(201,150,58,.0));
-      transition: background .2s;
-      pointer-events:none;
-    }
-    .tabbtn:hover{
-      color: var(--gold2);
-      border-color: rgba(201,150,58,.5);
-      transform: translateY(-1px);
-    }
+    .tabbtn:hover{transform:translateY(-1px)}
     .tabbtn.active{
-      background: linear-gradient(135deg, rgba(201,150,58,.18), rgba(201,150,58,.06));
-      border-color: rgba(201,150,58,.55);
-      color: var(--gold2);
-      box-shadow: 0 0 12px rgba(201,150,58,.15), inset 0 1px 0 rgba(201,150,58,.2);
+      background:linear-gradient(180deg, var(--card), var(--soft));
+      border-color:var(--soft);
+      color:var(--pink2);
+      box-shadow: var(--shadow);
+    }
+    body[data-theme="black"] .tabbtn.active{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border-color: rgba(255,255,255,.12);
+      color: var(--text);
     }
 
-    /* ── PANEL ── */
     .panel{
-      background: var(--card);
-      border: 1px solid rgba(201,150,58,.18);
-      border-radius: var(--radius);
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
       box-shadow: var(--shadow);
-      padding: 16px;
-      position:relative;
-      overflow:hidden;
+      padding:14px;
     }
-    /* corner ornaments */
-    .panel::before, .panel::after{
-      content: '✦';
-      position:absolute;
-      font-size:10px;
-      color: rgba(201,150,58,.3);
-      line-height:1;
-    }
-    .panel::before{ top:6px; left:8px; }
-    .panel::after{ bottom:6px; right:8px; }
 
     .panel.soft{
-      background: linear-gradient(160deg, rgba(45,24,84,.45) 0%, rgba(33,20,61,.8) 100%);
+      background: linear-gradient(180deg, var(--bg), var(--card));
     }
 
-    /* ── TYPOGRAPHY ── */
-    .h2{ margin:0 0 10px; color:var(--gold2); font-size:1.05rem; font-family:'Cinzel',serif; letter-spacing:.06em; text-transform:uppercase; }
-    .h3{ margin:0 0 8px; color:var(--gold); font-size:.85rem; font-family:'Cinzel',serif; letter-spacing:.06em; text-transform:uppercase; }
+    .h2{ margin:0 0 8px; color:var(--pink2); font-size:1rem; }
+    .h3{ margin:0 0 8px; color:var(--pink2); font-size:.9rem; }
     .mb10{margin-bottom:10px}
     .mt12{margin-top:12px}
     .mt10{margin-top:10px}
-    .hr{ border:none; border-top:1px solid rgba(201,150,58,.2); margin:14px 0; position:relative; }
-    .hr::after{ content:'◆'; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font-size:9px; color:rgba(201,150,58,.4); background:var(--card); padding:0 6px; }
+    .hr{ border:none;border-top:1px solid var(--line); margin:14px 0; }
 
-    /* ── GRID ── */
-    .grid{ display:grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap:12px; }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr 1fr 1fr 1fr;
+      gap:12px;
+    }
     @media (max-width: 980px){ .grid{grid-template-columns:1fr 1fr} }
     @media (max-width: 600px){ .grid{grid-template-columns:1fr} }
 
@@ -232,1869 +154,727 @@
     @media (max-width: 980px){ .grid-search-top{grid-template-columns:1fr 1fr} }
     @media (max-width: 600px){ .grid-search-top{grid-template-columns:1fr} }
 
-    /* ── INPUTS ── */
-    label{ font-size:.72rem; color:var(--muted); display:block; margin-bottom:6px; font-family:'Cinzel',serif; letter-spacing:.05em; text-transform:uppercase; }
-
+    label{font-size:.75rem;color:var(--muted);display:block;margin-bottom:6px}
     input, select{
       width:100%;
       padding:10px 12px;
-      border-radius:6px;
-      border:1px solid rgba(201,150,58,.2);
+      border-radius:12px;
+      border:1px solid var(--line);
       outline:none;
       font-size:.9rem;
-      font-family:'Crimson Text',serif;
-      background: var(--input-bg);
-      color: var(--input-text);
-      transition: border-color .2s, box-shadow .2s;
+      background:var(--input-bg);
+      color:var(--input-text);
     }
     input:focus, select:focus{
-      border-color: rgba(201,150,58,.6);
-      box-shadow: 0 0 0 3px rgba(201,150,58,.1), var(--glow);
+      border-color:var(--pink);
+      box-shadow:0 0 0 3px rgba(240,98,146,.15);
     }
-    select option{ background: var(--deep); color: var(--text); }
 
-    /* ── BUTTONS ── */
     .btn{
-      border: 1px solid rgba(201,150,58,.4);
-      background: linear-gradient(135deg, rgba(201,150,58,.22), rgba(139,94,26,.18));
-      color: var(--gold2);
-      padding: 10px 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: all .2s ease;
-      font-family: 'Cinzel', serif;
-      font-size: .72rem;
-      font-weight: 600;
-      letter-spacing: .08em;
-      text-transform: uppercase;
+      border:none;
+      background:var(--pink);
+      color:#fff;
+      padding:10px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.15s;
+      font-weight:600;
       touch-action: manipulation;
     }
-    .btn:hover{
-      background: linear-gradient(135deg, rgba(201,150,58,.38), rgba(139,94,26,.28));
-      border-color: rgba(201,150,58,.7);
-      box-shadow: 0 0 16px rgba(201,150,58,.2);
-      transform: translateY(-1px);
-    }
+    .btn:hover{background:var(--pink2)}
     .btn.ghost{
-      background: transparent;
-      border: 1px solid rgba(201,150,58,.25);
-      color: var(--muted);
+      background:var(--card);
+      border:1px solid var(--line);
+      color:var(--text);
+      font-weight:600;
     }
-    .btn.ghost:hover{
-      border-color: rgba(201,150,58,.5);
-      color: var(--gold2);
-      background: rgba(201,150,58,.08);
-    }
+    .btn.ghost:hover{border-color:var(--soft); color:var(--pink2)}
+    body[data-theme="black"] .btn.ghost:hover{ color: var(--text); }
+
     .btn.tiny{
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-size: .66rem;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:.78rem;
     }
     .btn.danger{
-      background: linear-gradient(135deg, rgba(180,50,50,.3), rgba(120,30,30,.2));
-      border-color: rgba(180,50,50,.5);
-      color: #f87171;
+      background:#ef4444;
     }
     .btn.danger:hover{
-      background: linear-gradient(135deg, rgba(180,50,50,.45), rgba(120,30,30,.35));
-      box-shadow: 0 0 14px rgba(180,50,50,.2);
+      background:#b91c1c;
     }
 
     .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
     .spacer{flex:1 1 auto}
-
-    .hint{
-      font-size:.82rem;
-      color:var(--muted);
-      margin-top:8px;
-      font-family:'Crimson Text',serif;
-      font-style:italic;
-    }
-
+    .hint{font-size:.75rem;color:var(--muted);margin-top:8px;}
     .pill{
-      display:inline-flex;align-items:center;gap:6px;
-      padding:4px 10px;border-radius:3px;
-      background: rgba(201,150,58,.08);
-      border:1px solid rgba(201,150,58,.2);
-      font-size:.72rem;
-      color:var(--muted);
-      font-family:'Cinzel',serif;
-      letter-spacing:.04em;
+      display:inline-block;
+      padding:3px 10px;
+      border-radius:999px;
+      font-size:.78rem;
+      font-weight:600;
+      background:var(--soft);
+      color:var(--pink2);
+      border:1px solid var(--line);
     }
 
-    .pillRow{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
-    .mono{font-family:var(--mono)}
-    .small{font-size:.75rem;color:var(--muted)}
-    .right{text-align:right}
-    .chk{width:16px;height:16px;accent-color: var(--gold);}
-
-    .err{
-      margin-top:10px;
-      padding:10px 14px;
-      border-radius:8px;
-      background: rgba(180,50,50,.15);
-      border:1px solid rgba(180,50,50,.4);
-      color: #fca5a5;
-      display:none;
-      white-space:pre-wrap;
-      font-family:'Crimson Text',serif;
-    }
-
-    .notice{
-      background: rgba(201,150,58,.1);
-      border: 1px solid rgba(201,150,58,.3);
-      padding: 10px 14px;
-      border-radius: 8px;
-      color: var(--gold);
-      font-size: .9rem;
-    }
-
-    /* ── TABLE ── */
-    .tablewrap{margin-top:12px; overflow:auto;}
     table{
       width:100%;
-      border-collapse:separate;
-      border-spacing:0;
+      border-collapse:collapse;
+      font-size:.88rem;
+      background:var(--table-bg);
+      border-radius:var(--radius);
       overflow:hidden;
-      border-radius:10px;
-      border:1px solid rgba(201,150,58,.18);
-      background: var(--table-bg);
-      min-width: 980px;
+      box-shadow: var(--shadow);
+    }
+    thead{
+      background:linear-gradient(180deg, var(--soft), var(--card));
+      border-bottom:2px solid var(--line);
     }
     thead th{
-      position:sticky;top:0;
-      background: linear-gradient(180deg, rgba(45,24,84,.95), rgba(30,18,54,.95));
-      color: var(--gold);
-      font-size:.68rem;
       padding:10px 8px;
-      border-bottom:1px solid rgba(201,150,58,.25);
+      font-weight:600;
       text-align:left;
+      color:var(--pink2);
       white-space:nowrap;
-      z-index:1;
-      font-family:'Cinzel',serif;
-      letter-spacing:.07em;
-      text-transform:uppercase;
     }
     tbody td{
       padding:8px;
-      border-bottom:1px solid rgba(201,150,58,.08);
-      vertical-align:middle;
-      font-size:.85rem;
-      background: transparent;
-      font-family:'Crimson Text',serif;
+      border-bottom:1px solid var(--line);
     }
-    tbody tr:hover{ background: rgba(201,150,58,.05) !important; }
-
-    .icon{ width:28px;height:28px; display:inline-block;vertical-align:middle; border-radius:6px; border:1px solid rgba(201,150,58,.2); background:var(--card); }
-
-    .tag{
-      display:inline-block;
-      padding:3px 8px;border-radius:3px;
-      border:1px solid rgba(201,150,58,.2);
-      font-size:.7rem;
-      white-space:nowrap;
-      font-family:'Cinzel',serif;
-      letter-spacing:.04em;
+    tbody tr:hover{
+      background:rgba(240,98,146,.04);
     }
-    .tag.r-common   { background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.15); color:#ccc; }
-    .tag.r-uncommon { background:rgba(140,200,140,.08); border-color:#6d6d6d4d; color:#666666; }
-    .tag.r-rare     { background:rgba(80,120,220,.1); border-color:rgba(240,140,60,.35); color:#fdba74; }
-    .tag.r-mythic   { background:rgba(220,100,30,.1); border-color:rgba(241, 119, 19, 0.35); color:#ff8d13; }
 
-    td.rarity-cell{ background: transparent !important; background-image: none !important; }
-    td.rarity-cell .tag{ box-shadow: none; }
+    .sortable{cursor:pointer;user-select:none;}
+    .sortable:hover{color:var(--pink);}
 
-    .two{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
-    @media(max-width: 900px){ .two{grid-template-columns:1fr} }
+    /* Auth */
+    #authScreen{
+      position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;
+      background:linear-gradient(135deg, var(--bg), var(--soft));
+      display:flex;align-items:center;justify-content:center;
+      padding:20px;
+    }
+    .auth-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      width:100%;max-width:420px;
+      padding:30px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+    .auth-logo{
+      width:70px;height:70px;
+      margin:0 auto 10px;
+      border-radius:20px;
+      background:linear-gradient(135deg, var(--soft), var(--pink));
+      display:grid;place-items:center;
+      font-size:34px;
+      box-shadow:var(--shadow);
+    }
+    .auth-title{
+      text-align:center;
+      font-size:1.6rem;
+      margin:0 0 6px;
+      color:var(--pink2);
+    }
+    .auth-subtitle{
+      text-align:center;
+      font-size:.88rem;
+      color:var(--muted);
+      margin-bottom:12px;
+    }
+    #authMsg, #authMsg2{
+      font-size:.84rem;
+      text-align:center;
+      min-height:20px;
+    }
+    .auth-footer{
+      text-align:center;
+      font-size:.82rem;
+      color:var(--muted);
+      margin-top:8px;
+    }
 
-    .list{ display:flex; flex-direction:column; gap:8px; padding:4px; }
+    #authScreen.is-enter .auth-card{
+      animation: slideInUp 0.4s ease-out;
+    }
+    #authScreen.is-exit .auth-card{
+      animation: slideOutDown 0.35s ease-in;
+    }
+    @keyframes slideInUp{
+      from{transform:translateY(30px);opacity:0}
+      to{transform:translateY(0);opacity:1}
+    }
+    @keyframes slideOutDown{
+      from{transform:translateY(0);opacity:1}
+      to{transform:translateY(30px);opacity:0}
+    }
 
-    .deckListScrollFix{
-      max-height:480px;
-      overflow-y:auto;
-      overflow-x:hidden;
-      padding:6px;
-      position:relative;
-      contain: paint;
-      -webkit-mask-image: linear-gradient(to bottom, black 92%, transparent 100%);
-      mask-image: linear-gradient(to bottom, black 92%, transparent 100%);
+    body.not-authenticated header, body.not-authenticated main{
+      opacity:0; pointer-events:none;
+    }
+    body.app-enter header, body.app-enter main{
+      animation: fadeInContent 0.45s ease-out forwards;
+    }
+    @keyframes fadeInContent{
+      from{opacity:0}
+      to{opacity:1}
+    }
+
+    /* Dark theme adjustments */
+    body[data-theme="black"] {
+      background: linear-gradient(180deg, #111827, #1f2937);
+      color: #e5e7eb;
+    }
+    body[data-theme="black"] .panel,
+    body[data-theme="black"] table,
+    body[data-theme="black"] input,
+    body[data-theme="black"] select {
+      background: rgba(31, 41, 55, 0.8);
+      border-color: rgba(75, 85, 99, 0.3);
+      color: #e5e7eb;
+    }
+    body[data-theme="black"] thead {
+      background: linear-gradient(180deg, rgba(248,187,208,.08), rgba(31,41,55,.8));
+    }
+    body[data-theme="black"] th{ color: #f9a8d4; }
+    body[data-theme="black"] .h2,
+    body[data-theme="black"] .h3{ color: #f9a8d4; }
+    body[data-theme="black"] tbody tr:hover{
+      background: rgba(240,98,146,.06);
+    }
+    body[data-theme="black"] #authScreen{
+      background: linear-gradient(135deg, #111827, #1f2937);
+    }
+    body[data-theme="black"] .auth-card{
+      background: rgba(31, 41, 55, 0.95);
+      border-color: rgba(75, 85, 99, 0.3);
+    }
+    body[data-theme="black"] label{
+      color: #9ca3af;
     }
 
     .cardrow{
-      border:1px solid rgba(201,150,58,.15);
-      border-radius:8px;
-      background: rgba(33,20,61,.5);
-      padding:10px;
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-      cursor:pointer;
-      transition: all .18s ease;
-    }
-    .cardrow:hover{
-      background: rgba(201,150,58,.08);
-      border-color: rgba(201,150,58,.35);
-      box-shadow: 0 0 12px rgba(201,150,58,.1);
-    }
-    .cardrow b{ color:var(--gold2); font-family:'Crimson Text',serif; font-size:1rem; }
-
-    .mini{ display:flex;gap:6px;align-items:center;flex-wrap:wrap; color:var(--muted);font-size:.75rem; }
-
-    .footerbar{ display:flex;gap:8px;flex-wrap:wrap;align-items:center; margin-top:12px; }
-
-    section[data-page]{
-      transition: opacity .2s ease, transform .2s ease;
-      opacity: 1;
-      transform: translateY(0);
-    }
-    section[data-page].is-hidden{
-      opacity: 0;
-      transform: translateY(8px);
-      pointer-events:none;
-    }
-
-    .settingsGrid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
-    @media (max-width: 700px){ .settingsGrid{ grid-template-columns: 1fr; } }
-
-    .toggleRow{
-      display:flex; align-items:center; gap:10px;
-      padding:10px 12px;
-      border:1px solid rgba(201,150,58,.15);
-      border-radius:8px;
-      background: rgba(33,20,61,.4);
-    }
-    .toggleRow input{ width:16px; height:16px; }
-
-    .moneyGrid{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
-    @media (max-width: 700px){ .moneyGrid{ grid-template-columns: 1fr; } }
-
-    .moneyCard{ padding:22px 24px; min-height:110px; }
-    .moneyValue{
-      font-size:1.7rem;
-      font-weight:700;
-      color:var(--gold2);
-      margin:10px 0 4px;
-      font-family:'Cinzel',serif;
-      letter-spacing:.03em;
-      text-shadow: 0 0 20px rgba(232,184,75,.3);
-    }
-
-    .collectionGrid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; }
-    @media (max-width: 980px){ .collectionGrid{ grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 600px){ .collectionGrid{ grid-template-columns: 1fr; } }
-
-    .cCard{
-      border:1px solid rgba(201,150,58,.18);
+      border:1px solid var(--line);
       border-radius:12px;
-      background: var(--card);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      transition: border-color .2s, box-shadow .2s;
-    }
-    .cCard:hover{
-      border-color: rgba(201,150,58,.4);
-      box-shadow: 0 0 20px rgba(201,150,58,.12), var(--shadow);
-    }
-    .cTop{ padding:10px 12px; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
-    .cName{ font-weight:600; color: var(--gold2); line-height:1.15; font-family:'Cinzel',serif; font-size:.88rem; }
-    .cSub{ font-size:.75rem; color: var(--muted); margin-top:4px; font-family:'Crimson Text',serif; font-style:italic; }
-    .cBadges{ display:flex; gap:5px; flex-wrap:wrap; padding:0 12px 8px; }
-    .cBody{
-      padding:10px 12px 12px;
-      border-top:1px solid rgba(201,150,58,.12);
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:8px 10px;
-    }
-    .cField .k{ font-size:.66rem; color:var(--muted); font-family:'Cinzel',serif; letter-spacing:.05em; text-transform:uppercase; }
-    .cField .v{ font-size:.85rem; font-family:'Crimson Text',serif; }
-    .cIcon{ width:26px;height:26px;border-radius:6px;border:1px solid rgba(201,150,58,.2); background:var(--card); padding:3px; flex:0 0 auto; }
-    .cRight{ display:flex; align-items:center; gap:8px; }
-
-    .setIcon{ width:24px; height:24px; border-radius:5px; border:1px solid rgba(201,150,58,.2); background:var(--card); padding:2px; }
-
-    /* ── DECK VIEW ── */
-    .deckViewGrid{ display:grid; grid-template-columns: 1.2fr .8fr; gap:12px; height: calc(100vh - 220px); }
-    @media (max-width: 900px){ .deckViewGrid{ grid-template-columns: 1fr; height:auto; } }
-    .deckListPanel, .deckDetailsPanel{ height:100%; display:flex; flex-direction:column; overflow: hidden; position: relative; isolation: isolate; }
-    #deckViewDetails{ flex: 1; overflow: auto; padding-right: 4px; min-height: 0; }
-    #deckViewDetails img{ display:block; max-height: 70vh; object-fit: contain; }
-    .deckListScroll{ flex:1; overflow-y:auto; padding-right:4px; }
-
-    .deckCommander{
-      border:1px solid rgba(201,150,58,.5);
-      background: linear-gradient(90deg, rgba(201,150,58,.12), rgba(33,20,61,0));
-    }
-    .cmdBadge{
-      display:inline-flex; align-items:center; justify-content:center;
-      padding:2px 8px; border-radius:3px;
-      border:1px solid rgba(201,150,58,.35);
-      font-size:.68rem; font-weight:700;
-      color:var(--gold); font-family:'Cinzel',serif; letter-spacing:.05em;
-    }
-
-    .ownBadge{
-      display:inline-flex; align-items:center; justify-content:center;
-      min-width:24px; height:20px; padding:0 7px;
-      border-radius:3px; font-weight:700; font-size:11px;
-      border:1px solid rgba(201,150,58,.2);
-      font-family:'Cinzel',serif;
-      background: rgba(201,150,58,.06);
-    }
-    .ownBadge.ok{ background:rgba(34,197,94,.15); border-color:rgba(34,197,94,.45); color:#4ade80; }
-    .ownBadge.warn{ background:rgba(245,158,11,.15); border-color:rgba(245,158,11,.45); color:#fbbf24; }
-    .ownBadge.alt{ background:rgba(139,92,246,.15); border-color:rgba(139,92,246,.45); color:#a78bfa; }
-    .ownBadge.no{ opacity:.55; }
-    .ownBadge.bad{ background:rgba(239,68,68,.15); border-color:rgba(239,68,68,.4); color:#f87171; }
-
-    .saleItem{
-      display:flex; justify-content:space-between; gap:10px;
-      padding:10px 12px;
-      border:1px solid rgba(201,150,58,.15);
-      border-radius:8px;
-      background: rgba(33,20,61,.4);
-      margin-bottom:8px;
-      flex-wrap:wrap;
-    }
-
-    .deckGroup{
-      border:1px solid rgba(201,150,58,.15);
-      border-radius:10px;
-      overflow:hidden;
-      background: rgba(30,18,54,.5);
-    }
-    .deckGroup .cardrow{ border:none; border-radius:0; background:transparent; box-shadow:none; }
-    .deckGroup .cardrow:not(:last-child){ border-bottom:1px solid rgba(201,150,58,.08); }
-    .deckGroup .cardrow:hover{ background:rgba(201,150,58,.06); }
-
-    .starBtn{
-      border:0; background:transparent; cursor:pointer;
-      font-size:16px; line-height:1; padding:2px 5px;
-      color:var(--gold); transition: transform .15s, color .15s;
-    }
-    .starBtn:hover{ transform:scale(1.2); color:var(--gold2); }
-    .center{ text-align:center; }
-
-    /* ── AUTH SCREEN ── */
-    .auth-screen{
-      position: fixed; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      padding: 24px;
-      background:
-        radial-gradient(ellipse 70% 60% at 20% 20%, rgba(93,40,140,.5) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 50% at 80% 80%, rgba(45,24,84,.6) 0%, transparent 55%),
-        radial-gradient(ellipse 100% 80% at 50% 50%, rgba(26,15,46,1) 0%, transparent 100%);
-      background-color: var(--deep);
-      z-index: 9999;
-      opacity: 1;
-      transition: opacity .35s ease;
-    }
-    .auth-screen::before{
-      content:'';
-      position:absolute;
-      inset:0;
-      background-image:
-        radial-gradient(1px 1px at 10% 15%, rgba(232,184,75,.6) 0%, transparent 100%),
-        radial-gradient(1px 1px at 25% 40%, rgba(232,184,75,.4) 0%, transparent 100%),
-        radial-gradient(1px 1px at 40% 8%, rgba(232,184,75,.5) 0%, transparent 100%),
-        radial-gradient(1px 1px at 60% 25%, rgba(232,184,75,.35) 0%, transparent 100%),
-        radial-gradient(1px 1px at 75% 60%, rgba(232,184,75,.5) 0%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 85% 15%, rgba(232,184,75,.45) 0%, transparent 100%),
-        radial-gradient(1px 1px at 92% 45%, rgba(232,184,75,.55) 0%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 15% 70%, rgba(232,184,75,.35) 0%, transparent 100%),
-        radial-gradient(1px 1px at 55% 80%, rgba(232,184,75,.4) 0%, transparent 100%),
-        radial-gradient(1px 1px at 35% 90%, rgba(232,184,75,.3) 0%, transparent 100%);
-      pointer-events:none;
-    }
-
-    .auth-card{
-      width: 100%;
-      max-width: 400px;
-      background: rgba(33,20,61,.92);
-      border: 1px solid rgba(201,150,58,.3);
-      backdrop-filter: blur(16px);
-      border-radius: 16px;
-      padding: 36px 32px;
-      box-shadow: 0 40px 80px rgba(0,0,0,.6), 0 0 40px rgba(201,150,58,.08);
-      text-align: center;
-      transform: translateY(12px) scale(.985);
-      opacity: 0;
-      transition: transform .5s cubic-bezier(.2,.8,.2,1), opacity .5s ease;
-      position:relative;
-    }
-    /* gold corner lines */
-    .auth-card::before{
-      content:'';
-      position:absolute;
-      inset:10px;
-      border:1px solid rgba(201,150,58,.12);
-      border-radius:10px;
-      pointer-events:none;
-    }
-    .auth-screen.is-enter .auth-card{ opacity:1; transform:translateY(0) scale(1); }
-    .auth-screen.is-exit{ opacity:0; }
-    .auth-screen.is-exit .auth-card{ transform:translateY(-8px) scale(.99); opacity:0; }
-
-    .auth-brand{ margin-bottom:24px; }
-    .auth-logo{
-      width:70px; height:70px;
-      margin: 0 auto 14px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #e8b84b, #7a4d0e);
-      display: grid; place-items: center;
-      font-size: 32px;
-      box-shadow: 0 0 30px rgba(201,150,58,.4), 0 0 60px rgba(201,150,58,.15);
-      border:1px solid rgba(232,184,75,.4);
-    }
-    .auth-title{ margin:0; font-size:22px; color:var(--gold2); font-family:'Cinzel Decorative',serif; letter-spacing:.06em; }
-    .auth-subtitle{ margin:8px 0 0; font-size:14px; color:var(--muted); font-family:'Crimson Text',serif; font-style:italic; }
-
-    .auth-form{ display:grid; gap:12px; text-align:left; }
-    .auth-form input{
-      padding:12px 14px;
-      border-radius:6px;
-      border:1px solid rgba(201,150,58,.2);
-      font-size:15px;
-      background: rgba(18,10,34,.8);
-      color:var(--text);
-      font-family:'Crimson Text',serif;
-    }
-    .auth-form input:focus{ border-color:rgba(201,150,58,.55); box-shadow:0 0 0 3px rgba(201,150,58,.1); }
-    .auth-btn{ width:100%; }
-    .auth-remember{
-      display:flex; align-items:center; gap:10px;
-      font-size:13px; color:var(--muted); user-select:none;
-      font-family:'Crimson Text',serif; font-style:italic;
-    }
-    .auth-remember input{ width:16px; height:16px; accent-color:var(--gold); }
-    .auth-msg{ min-height:18px; font-size:13px; color:#f87171; text-align:center; font-family:'Crimson Text',serif; }
-
-    /* hide app when not auth */
-    body.not-authenticated .appShell,
-    body.not-authenticated main{ display:none; }
-
-    body.app-enter header,
-    body.app-enter main{ animation: appFadeIn .35s ease both; }
-
-    /* ── APP SHELL ── */
-    .appShell{display:grid;grid-template-columns:280px 1fr;min-height:100vh;}
-
-    .sidebar{
-      position:sticky;top:0;height:100vh;
-      padding:16px 12px;
-      border-right:1px solid rgba(201,150,58,.18);
-      background: linear-gradient(180deg, rgba(26,15,46,.98), rgba(18,10,34,.99));
-      backdrop-filter: blur(16px);
-      display:flex;flex-direction:column;gap:12px;
-      z-index:15;
-      /* subtle ray pattern */
-      background-image:
-        linear-gradient(180deg, rgba(26,15,46,.98), rgba(18,10,34,.99)),
-        repeating-linear-gradient(
-          0deg,
-          transparent,
-          transparent 40px,
-          rgba(201,150,58,.015) 40px,
-          rgba(201,150,58,.015) 41px
-        );
-    }
-
-    .sidebarBrand{
-      display:flex;align-items:center;gap:10px;padding:10px;
-      border-radius:10px;
-      background: rgba(45,24,84,.5);
-      border:1px solid rgba(201,150,58,.2);
-    }
-    .sidebarLogoImg{width:44px;height:44px;object-fit:cover;border-radius:10px;border:1px solid rgba(201,150,58,.3);background:var(--card);flex:0 0 auto;}
-    .sidebarTitle{font-size:15px;font-weight:700;color:var(--gold2);margin:0;font-family:'Cinzel',serif;letter-spacing:.05em;}
-    .sidebarSub{font-size:11px;color:var(--muted);margin-top:2px;font-family:'Crimson Text',serif;font-style:italic;}
-
-    .sidebarTabs{display:flex;flex-direction:column;gap:4px;overflow:auto;padding-right:2px;}
-    .sidebarTabs .tabbtn{
-      width:100%;border-radius:6px;text-align:left;
-      padding:10px 12px;
-      display:flex;align-items:center;justify-content:flex-start;
-      box-shadow:none;
-      font-size:.68rem;
-    }
-
-    .sidebarUserBox{
       padding:10px;
-      border:1px solid rgba(201,150,58,.18);
-      border-radius:10px;
-      background: rgba(45,24,84,.3);
+      background:var(--card);
+      box-shadow:0 4px 12px rgba(240,98,146,.06);
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
     }
-    .sidebarUserRow{display:flex;align-items:center;gap:10px;margin-bottom:0;}
-    .sidebarAvatar{width:40px;height:40px;border-radius:999px;object-fit:cover;border:2px solid rgba(201,150,58,.35);background:var(--card);}
+    .cardrow-left{flex:0 0 80px;}
+    .cardrow-main{flex:1 1 auto;}
+    .cardimg{
+      width:80px;height:112px;border-radius:8px;object-fit:cover;
+      background:linear-gradient(135deg, var(--soft), var(--pink));
+    }
+    .cardrow-name{font-weight:600;color:var(--pink2);margin-bottom:4px}
+    .cardrow-info{font-size:.78rem;color:var(--muted);line-height:1.4}
 
-    .contentArea{min-width:0;padding:18px;}
-    .contentWrap{max-width:1500px;margin:0 auto;}
-
-    .sidebarBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:.2s;z-index:14;}
-
-    .appTopbar{
-      display:flex;align-items:center;gap:12px;margin-bottom:16px;
-      padding:10px 14px;
-      border:1px solid rgba(201,150,58,.2);
-      border-radius:10px;
-      background: rgba(26,15,46,.88);
-      backdrop-filter:blur(12px);
-      box-shadow: var(--shadow);
+    .deck-card{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      background:var(--card);
+      box-shadow:0 4px 12px rgba(240,98,146,.06);
+      cursor:pointer;
+      transition:.15s;
     }
-    .menuToggle{
-      width:42px;height:42px;border-radius:8px;
-      border:1px solid rgba(201,150,58,.25);
-      background: rgba(45,24,84,.4);
-      color:var(--gold);font-size:20px;cursor:pointer;
-      box-shadow:none;flex:0 0 auto;
-      transition: border-color .2s, background .2s;
-    }
-    .menuToggle:hover{ border-color:rgba(201,150,58,.5); background:rgba(201,150,58,.1); }
-    .appTopbarBrand{display:flex;align-items:center;gap:10px;min-width:0;}
-    .appTopbarLogo{width:38px;height:38px;object-fit:cover;border-radius:8px;border:1px solid rgba(201,150,58,.3);background:var(--card);flex:0 0 auto;}
-    .appTopbarTitle{font-weight:700;color:var(--gold2);font-size:.95rem;line-height:1.1;font-family:'Cinzel',serif;letter-spacing:.06em;}
-    .appTopbarSpacer{flex:1 1 auto;}
-
-    .profileQuickBtn{
-      width:40px;height:40px;border-radius:999px;
-      border:1px solid rgba(201,150,58,.3);
-      background:rgba(45,24,84,.5);padding:0;
-      display:grid;place-items:center;cursor:pointer;
-      box-shadow: 0 0 10px rgba(201,150,58,.1);
-      overflow:hidden;
-      transition: border-color .2s, box-shadow .2s;
-    }
-    .profileQuickBtn img{width:100%;height:100%;object-fit:cover;}
-    .profileQuickBtn:hover{ border-color:rgba(201,150,58,.6); box-shadow:0 0 16px rgba(201,150,58,.2); }
-
-    .sidebarFooter{
-      margin-top:auto;padding:8px 10px;
-      border-top:1px solid rgba(201,150,58,.12);
-      color:var(--muted);font-size:.72rem;
-      font-family:'Crimson Text',serif;font-style:italic;text-align:center;
-    }
-
-    /* profile tabs */
-    .profileTabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 12px;}
-    .profileTabBtn{
-      border:1px solid rgba(201,150,58,.2);
-      background:transparent;
-      color:var(--muted);padding:8px 14px;border-radius:4px;
-      cursor:pointer;font-weight:600;
-      font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;
-      transition:all .2s;
-    }
-    .profileTabBtn.active{
-      background:rgba(201,150,58,.15);
-      border-color:rgba(201,150,58,.5);
-      color:var(--gold2);
-      box-shadow:0 0 12px rgba(201,150,58,.12);
-    }
-    .profileTabPane{display:none;}
-    .profileTabPane.is-active{display:block;}
-
-    .profileAboutGrid{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;margin-top:14px;}
-    .profileAboutList{display:grid;gap:10px;}
-    .profileAboutItem{
-      display:flex;justify-content:space-between;gap:12px;
-      padding:10px 14px;
-      border:1px solid rgba(201,150,58,.15);
-      border-radius:8px;background:rgba(45,24,84,.3);
-    }
-    .profileAboutItem .label{color:var(--muted);font-weight:600;font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;}
-    .profileBadgeBox{
-      min-height:200px;display:grid;place-items:center;text-align:center;
-      padding:18px;border:1px dashed rgba(201,150,58,.2);
-      border-radius:14px;color:var(--muted);background:rgba(45,24,84,.2);
-    }
-    .profileRanking{margin-top:14px;}
-    .profileRankingTop{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-    .rankCard{
-      padding:16px;border-radius:12px;
-      border:1px solid rgba(201,150,58,.18);
-      background:rgba(33,20,61,.6);
-      text-align:center;box-shadow:var(--shadow);
-    }
-    .rankCard.big{ transform:translateY(-8px); border-color:rgba(201,150,58,.4); }
-    .rankIcon{
-      width:68px;height:68px;margin:0 auto 10px;border-radius:999px;
-      display:grid;place-items:center;font-size:28px;
-      background:radial-gradient(circle at 35% 35%, rgba(232,184,75,.3), rgba(45,24,84,.5));
-      border:1px solid rgba(201,150,58,.25);
-    }
-    .rankPts{font-size:1.5rem;font-weight:700;color:var(--gold2);font-family:'Cinzel',serif;}
-    .rankList{margin-top:12px;display:grid;gap:8px;}
-    .rankListItem{
-      display:grid;grid-template-columns:60px 1fr auto;gap:10px;
-      align-items:center;padding:10px 12px;
-      border-radius:8px;background:rgba(45,24,84,.3);
-      border:1px solid rgba(201,150,58,.12);font-weight:600;
-      font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.04em;
-    }
-    .profileHeaderActions{display:flex;gap:10px;flex-wrap:wrap;}
-
-    @media (max-width:980px){.profileAboutGrid{grid-template-columns:1fr;}.profileRankingTop{grid-template-columns:1fr;}.rankCard.big{transform:none;}}
-
-    @media (max-width: 640px){.appTopbar{padding:8px 10px;gap:8px;}.menuToggle{width:38px;height:38px;font-size:18px;}.appTopbarLogo{width:34px;height:34px;}.appTopbarTitle{font-size:.88rem;}}
-    .appShell.sidebar-collapsed{grid-template-columns:0 1fr;}
-    .appShell.sidebar-collapsed .sidebar{transform:translateX(-110%);opacity:0;pointer-events:none;}
-    .sidebar{transition:transform .22s ease, opacity .22s ease;}
-    @media (max-width: 820px){
-      .sidebarBackdrop.is-open{opacity:1;pointer-events:auto;}
-      .appShell{grid-template-columns:1fr;}
-      .appShell .sidebar{position:fixed;left:0;top:0;width:min(300px,88vw);height:100vh;transform:translateX(-110%);opacity:0;pointer-events:none;box-shadow:0 20px 60px rgba(0,0,0,.6);}
-      .appShell.sidebar-open .sidebar{transform:translateX(0);opacity:1;pointer-events:auto;}
-      .appShell.sidebar-collapsed{grid-template-columns:1fr;}
-    }
-    @media (min-width: 821px){
-      .appShell.sidebar-open .sidebar{transform:translateX(0);opacity:1;pointer-events:auto;}
-      .appShell.sidebar-open .sidebarBackdrop{display:none;}
-    }
-
-    .collectionVisual{display:grid;grid-template-columns:100px 1fr;gap:12px;align-items:start;}
-    .collectionThumb{
-      width:100px;height:140px;border-radius:8px;object-fit:cover;
-      border:1px solid rgba(201,150,58,.25);
-      background:rgba(45,24,84,.4);box-shadow:0 8px 20px rgba(0,0,0,.4);
-    }
-    .collectionThumb.placeholder{
-      display:grid;place-items:center;font-size:10px;
-      color:var(--muted);padding:6px;text-align:center;
-      font-family:'Crimson Text',serif;font-style:italic;
-    }
-    @media (max-width:640px){.collectionVisual{grid-template-columns:1fr;}.collectionThumb{width:100%;max-width:200px;height:auto;aspect-ratio:63/88;}}
-
-    .profileViewGrid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;margin-top:14px;}
-    @media (max-width:980px){.profileViewGrid{grid-template-columns:1fr;}}
-    .sectionActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
-
-    .pageHeader{margin-bottom:16px;}
-    .pageHeader h2{margin:0;color:var(--gold2);font-family:'Cinzel',serif;letter-spacing:.06em;text-transform:uppercase;}
-    .pageHeader p{margin:6px 0 0;color:var(--muted);font-size:.92rem;font-family:'Crimson Text',serif;font-style:italic;}
-
-    .auth-logo-img{
-      width:70px;height:70px;object-fit:cover;margin:0 auto 14px;display:block;
-      border-radius:50%;border:2px solid rgba(201,150,58,.4);
-      box-shadow:0 0 28px rgba(201,150,58,.3);background:var(--card);
-    }
-
-    .profileHero{
-      position:relative;min-height:240px;border-radius:16px;overflow:hidden;
-      border:1px solid rgba(201,150,58,.25);
+    .deck-card:hover{
+      transform:translateY(-2px);
       box-shadow:var(--shadow);
-      background:linear-gradient(180deg, rgba(0,0,0,.1), rgba(0,0,0,.4)),
-        var(--profile-banner, linear-gradient(135deg, #3d2060, #1a0f2e, #2d1854));
-      background-size:cover;background-position:center;
     }
-    .profileHeroOverlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.5));}
-    .profileHeroContent{position:relative;z-index:1;display:flex;align-items:flex-end;gap:18px;min-height:240px;padding:20px;color:#fff;}
-    .profileAvatarLarge{
-      width:110px;height:110px;border-radius:999px;object-fit:cover;
-      border:3px solid rgba(201,150,58,.7);background:var(--card);
-      box-shadow:0 0 20px rgba(201,150,58,.25);
+    .deck-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .deck-icon{
+      width:34px;height:34px;border-radius:10px;
+      background:linear-gradient(135deg, var(--soft), var(--pink));
+      display:grid;place-items:center;
+      font-size:18px;
     }
-    .profileMeta h2{margin:0;font-size:1.6rem;color:#fff;font-family:'Cinzel',serif;letter-spacing:.04em;}
-    .profileMeta .profileEmail{margin-top:5px;font-size:.9rem;opacity:.85;font-family:'Crimson Text',serif;font-style:italic;}
-    .profileMeta .profileMini{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;}
-    .profileMini .pill{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:#fff;}
+    .deck-name{font-size:1rem;font-weight:600;color:var(--pink2)}
+    .deck-count{font-size:.78rem;color:var(--muted)}
 
-    .profileGrid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px;}
-    .profilePreviewRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-    .profileSmallAvatar{width:64px;height:64px;border-radius:999px;object-fit:cover;border:2px solid rgba(201,150,58,.3);background:var(--card);}
-    .fileInput{display:none;}.uploadBtn{display:inline-flex;align-items:center;justify-content:center;}
-    .profileStatGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
-    .profileStat{
-      padding:14px;border-radius:10px;
-      border:1px solid rgba(201,150,58,.15);background:rgba(45,24,84,.3);
+    .chart-panel{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
     }
-    .profileStat .k{font-size:.68rem;color:var(--muted);font-family:'Cinzel',serif;letter-spacing:.05em;text-transform:uppercase;}
-    .profileStat .v{margin-top:6px;font-size:1.25rem;font-weight:700;color:var(--gold2);font-family:'Cinzel',serif;}
-    .marketEmpty{padding:16px;border:1px dashed rgba(201,150,58,.2);border-radius:10px;color:var(--muted);font-family:'Crimson Text',serif;font-style:italic;}
-    @media (max-width:980px){.profileGrid{grid-template-columns:1fr;}}
-    @media (max-width:820px){.contentArea{padding:12px;}}
-    @media (max-width:600px){.profileStatGrid{grid-template-columns:1fr;}}
-
-    /* scrollbar */
-    ::-webkit-scrollbar{ width:6px; height:6px; }
-    ::-webkit-scrollbar-track{ background:rgba(18,10,34,.5); }
-    ::-webkit-scrollbar-thumb{ background:rgba(201,150,58,.3); border-radius:3px; }
-    ::-webkit-scrollbar-thumb:hover{ background:rgba(201,150,58,.5); }
-
+    body[data-theme="black"] .chart-panel{
+      background: rgba(31,41,55,.8);
+    }
   </style>
 </head>
 
-<body class="not-authenticated">
+<body>
 
-  <!-- AUTH SCREEN (login/registro) -->
-  <section id="authScreen" class="auth-screen is-enter" aria-label="Inicio de sesión">
-    <div class="auth-card">
-      <div class="auth-brand">
-        <img class="auth-logo-img" src="assets/logo.png" alt="Logo MTG Manager">
-        <h1 class="auth-title">MTG Manager</h1>
-        <p class="auth-subtitle">Tu colección, sin complicaciones</p>
-      </div>
+<!-- PANTALLA DE AUTENTICACIÓN -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">💗</div>
+    <h2 class="auth-title">MTG Manager</h2>
+    <p class="auth-subtitle">Accede a tu colección desde cualquier PC</p>
 
-      <!-- Vista: Login -->
-      <div id="authLoginView" class="auth-form">
-        <input id="authEmail" type="email" placeholder="Email" autocomplete="email" />
-        <input id="authPass" type="password" placeholder="Contraseña" autocomplete="current-password" />
-
-        <button class="btn auth-btn" id="btnSignIn">Iniciar sesión</button>
-        <button class="btn ghost auth-btn" id="btnSignUp">Crear cuenta</button>
-        <button class="btn ghost auth-btn" id="btnForgotPass" style="font-size:.75rem;padding:7px 14px;opacity:.8;">¿Olvidaste tu contraseña?</button>
-
-        <div class="auth-msg" id="authMsg"></div>
-      </div>
-
-      <!-- Vista: Registro -->
-      <div id="authSignupView" class="auth-form" style="display:none;">
-        <input id="suUsername" type="text" placeholder="Nombre de usuario" autocomplete="username" />
-
-        <input id="suEmail" type="email" placeholder="Email" autocomplete="email" />
-        <input id="suEmail2" type="email" placeholder="Confirmar email" autocomplete="email" />
-
-        <input id="suPass" type="password" placeholder="Contraseña" autocomplete="new-password" />
-        <input id="suPass2" type="password" placeholder="Repetir contraseña" autocomplete="new-password" />
-
-        <button class="btn auth-btn" id="btnCreateAccount">Crear cuenta</button>
-        <button class="btn ghost auth-btn" id="btnBackToLogin">← Volver</button>
-
-        <div class="auth-msg" id="authMsg2"></div>
-      </div>
-    </div>
-  </section>
-<div class="sidebarBackdrop" id="sidebarBackdrop"></div>
-<div class="appShell sidebar-collapsed" id="appShell">
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebarBrand">
-      <img class="sidebarLogoImg" src="assets/logo.png" alt="Logo MTG Manager">
+    <!-- VISTA DE LOGIN -->
+    <div id="authLoginView">
       <div>
-        <div class="sidebarTitle">✦ MTG Manager ✦</div>
-        <div class="sidebarSub">Tu colección</div>
+        <label>Email</label>
+        <input id="authEmail" type="email" placeholder="tu@email.com"/>
       </div>
+      <div>
+        <label>Contraseña</label>
+        <input id="authPass" type="password" placeholder="••••••••"/>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.84rem">
+        <input id="authRemember" type="checkbox" style="width:auto" checked/>
+        <label for="authRemember" style="margin:0;color:var(--text)">Recordar sesión</label>
+      </div>
+      <button class="btn" id="btnSignIn">Iniciar sesión</button>
+      <button class="btn ghost" id="btnSignUp">Crear cuenta</button>
+      <div id="authMsg"></div>
     </div>
 
-    <div class="sidebarTabs" id="tabs"></div>
-
-    <div class="sidebarUserBox" id="sidebarUserBox">
-      <div class="sidebarUserRow">
-        <img class="sidebarAvatar" id="sidebarAvatar" src="assets/logo.png" alt="Avatar">
-        <div>
-          <div style="font-weight:700;font-size:.85rem;" id="sidebarUserName">Usuario</div>
-          <div class="small" id="sidebarUserMini">Perfil local</div>
-        </div>
+    <!-- VISTA DE REGISTRO -->
+    <div id="authSignupView" style="display:none">
+      <div>
+        <label>Nombre de usuario</label>
+        <input id="suUsername" type="text" placeholder="MrsRia"/>
       </div>
+      <div>
+        <label>Email</label>
+        <input id="suEmail" type="email" placeholder="mariarapsan@gmail.com"/>
+      </div>
+      <div>
+        <label>Confirmar email</label>
+        <input id="suEmail2" type="email" placeholder="mariarapsan@gmail.com"/>
+      </div>
+      <div>
+        <label>Contraseña</label>
+        <input id="suPass" type="password" placeholder="••••••••"/>
+      </div>
+      <div>
+        <label>Confirmar contraseña</label>
+        <input id="suPass2" type="password" placeholder="••••••••"/>
+      </div>
+      <button class="btn" id="btnCreateAccount">Crear cuenta</button>
+      <button class="btn ghost" id="btnBackToLogin">← Volver</button>
+      <div id="authMsg2"></div>
     </div>
 
-    <div class="sidebarFooter">✦ MTG Manager ✦</div>
+    <div class="auth-footer">
+      Todos tus datos se guardan de forma segura en la nube.
+    </div>
+  </div>
+</div>
 
-    <div id="globalErrorBox" class="notice" style="display:none;"></div>
-  </aside>
-
-  <main class="contentArea">
-    <div class="contentWrap">
-      <div class="appTopbar">
-        <button class="menuToggle" id="menuToggle" aria-label="Abrir menú">☰</button>
-        <div class="appTopbarBrand">
-          <img class="appTopbarLogo" src="assets/logo.png" alt="Logo MTG Manager">
-          <div class="appTopbarTitle">✦ MTG Manager ✦</div>
-        </div>
-        <div class="appTopbarSpacer"></div>
-        <button class="profileQuickBtn" id="btnTopProfile" aria-label="Ir al perfil">
-          <img id="topbarAvatar" src="assets/logo.png" alt="Perfil">
-        </button>
+<!-- APLICACIÓN PRINCIPAL -->
+<header>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">💗</div>
+        <h1>MTG Manager</h1>
+        <span id="authStatus" style="font-size:.78rem;color:var(--muted)">No logueado</span>
       </div>
-
-    <!-- INTRO -->
-    <section class="panel" data-page="intro">
-      <h2 class="h2">Introducción</h2>
-
-      <div class="pill">Gestor de colección para Magic: The Gathering</div>
-
-      <p class="hint">
-        Registra tu colección de Magic con datos de Scryfall: precio, rareza, color, tipo y más.
-        Organiza mazos, lleva una lista de deseos y consulta estadísticas de lo que tienes.
-      </p>
-
-      <div class="two mt12">
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Modo de uso</h3>
-          <p class="hint" style="margin:0;">Para identificar una carta correctamente necesitas:</p>
-          <ul class="hint" style="margin:0;padding-left:16px;">
-            <li>Nombre de la carta en español o en inglés</li>
-            <li>Código de la colección</li>
-            <li>Número de la carta</li>
-          </ul>
-          <p class="hint" style="margin:0;">Si no tienes el código o número:</p>
-          <ul class="hint" style="margin:0;padding-left:16px;">
-            <li>Escribe solo el nombre — se carga la impresión más antigua.</li>
-            <li>Guía visual de dónde encontrar el código: <b>https://i.imgur.com/VHDtcZc.jpeg</b></li>
-            <li>La tabla al final de esta página lista todas las colecciones y sus códigos.</li>
-          </ul>
-        </div>
-
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Ajustes y guardado</h3>
-          <p class="hint" style="margin:0;">Todo se guarda localmente en el navegador. Exporta e importa en JSON cuando quieras.</p>
-          <p class="hint" style="margin:0;">Los mazos y cartas también se pueden importar en TXT o CSV (ManaBox).</p>
-          <p class="hint" style="margin:0;">Tema, moneda y tamaño de letra se configuran en Ajustes, dentro de tu perfil.</p>
-          <div class="pillRow">
-            <span class="pill">💾 Guardado local</span>
-            <span class="pill">📤 Exportar</span>
-            <span class="pill">📥 Importar</span>
-            <span class="pill">🎨 Personalización</span>
-          </div>
-        </div>
+      <div class="row">
+        <button class="btn ghost tiny" id="btnSignOutTop" style="display:none">Cerrar sesión</button>
       </div>
+    </div>
+    <div class="tabs">
+      <button class="tabbtn active" data-tab="cards">🗂️ Colección</button>
+      <button class="tabbtn" data-tab="search">🔍 Buscar carta</button>
+      <button class="tabbtn" data-tab="decks">🎴 Mazos</button>
+      <button class="tabbtn" data-tab="wishlist">⭐ Wishlist</button>
+      <button class="tabbtn" data-tab="stats">📊 Estadísticas</button>
+      <button class="tabbtn" data-tab="import">📥 Importar/Exportar</button>
+      <button class="tabbtn" data-tab="settings">⚙️ Configuración</button>
+    </div>
+  </div>
+</header>
 
-      <div class="panel" style="box-shadow:none; margin-top:12px;">
-        <h3 class="h3">Colecciones de Magic</h3>
-        <p class="hint">Colecciones oficiales de Magic: The Gathering según Scryfall.</p>
-        <div class="tablewrap" style="max-height:360px;">
-          <table id="tblIntroSets" style="min-width:520px;">
-            <thead>
-              <tr>
-                <th>Logo</th>
-                <th>Nombre</th>
-                <th class="mono">Código</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="hint" id="introSetsInfo"></div>
-      </div>
-    </section>
+<main>
+  <div class="wrap">
 
-    <!-- CARTAS -->
-    <section class="panel is-hidden" data-page="cartas" style="display:none;">
-      <div class="row mb10">
-        <h2 class="h2" style="margin:0;">Cartas</h2>
-        <div class="spacer"></div>
-
-        <button class="btn ghost" id="btnExport">Exportar JSON</button>
-        <button class="btn ghost" id="btnImport">Importar JSON</button>
-        <button class="btn ghost" id="btnImportManaBox">Importar ManaBox (CSV)</button>
-        <button class="btn ghost" id="btnClear">Borrar todo</button>
-      </div>
-
-      <div class="grid">
-        <div>
-          <label>Nombre (ES o EN)</label>
-          <input id="inName" placeholder="Sol Ring / Anillo solar"/>
-          <div class="hint">Sin SetCode y Nº se carga la impresión más antigua disponible.</div>
-        </div>
-        <div>
-          <label>SetCode (opcional)</label>
-          <input id="inSet" placeholder="cmm" class="mono"/>
-        </div>
-        <div>
-          <label>Nº colección (opcional)</label>
-          <input id="inCn" placeholder="001" class="mono"/>
-        </div>
-        <div style="display:flex;align-items:end;gap:10px;">
-          <button class="btn" id="btnAdd" style="width:100%;">Añadir carta</button>
-        </div>
-
-        <div>
-          <label>Idioma</label>
-          <select id="inLang">
-            <option value="es">Español</option>
-            <option value="en">Inglés</option>
-            <option value="fr">Francés</option>
-            <option value="de">Alemán</option>
-            <option value="it">Italiano</option>
-            <option value="pt">Portugués</option>
-            <option value="ja">Japonés</option>
-            <option value="ko">Coreano</option>
-            <option value="zhs">Chino (Simpl.)</option>
-            <option value="zht">Chino (Trad.)</option>
-          </select>
-        </div>
-        <div>
-          <label>Cantidad</label>
-          <input id="inQty" type="number" min="1" value="1"/>
-        </div>
-        <div><label>Proxy</label><input id="inProxy" type="checkbox" class="chk"/></div>
-        <div><label>Foil</label><input id="inFoil" type="checkbox" class="chk"/></div>
-        <div><label>Promo</label><input id="inPromo" type="checkbox" class="chk"/></div>
-        <div><label>Promo pre</label><input id="inPromoPre" type="checkbox" class="chk"/></div>
-        <div><label>A la venta</label><input id="inSale" type="checkbox" class="chk"/></div>
-      </div>
-
-      <div id="errBox" class="err"></div>
-
-      <div class="footerbar">
-        <span class="pill">Total cartas: <b id="countCards">0</b></span>
-        <span class="pill">Total unidades: <b id="countUnits">0</b></span>
-        <span class="pill">Valor estimado (€): <b id="sumEur">0.00</b></span>
-
-        <div class="spacer"></div>
-
-        <label style="margin:0;">
-          <span class="small">Ordenar</span>
-          <select id="sortKey" style="width:auto;min-width:180px;">
-            <option value="added">Añadidas (reciente primero)</option>
-            <option value="name">Nombre</option>
-            <option value="set">SetCode</option>
-            <option value="price">Precio</option>
-            <option value="mv">MV/CMC</option>
-            <option value="rarity">Rareza</option>
-            <option value="qty">Cantidad</option>
-          </select>
-        </label>
-
-        <select id="sortDir" style="width:auto;min-width:140px;">
-          <option value="desc">Desc</option>
-          <option value="asc">Asc</option>
-        </select>
-
-        <button class="btn ghost" id="btnApplySort">Aplicar</button>
-        <button class="btn ghost" id="btnRefreshPrices">Refrescar precios</button>
-      </div>
-
-      <div class="tablewrap">
-        <table id="tbl">
-          <thead>
-            <tr>
-              <th>★</th>
-              <th>Carta</th>
-              <th>Colección</th>
-              <th>Nº</th>
-              <th>Tipo</th>
-              <th>Subtipo</th>
-              <th>Color</th>
-              <th>Maná</th>
-              <th>MV</th>
-              <th>Rareza</th>
-              <th>Logo</th>
-              <th class="right">Precio</th>
-              <th>Proxy</th>
-              <th>Foil</th>
-              <th>Promo</th>
-              <th>Pre</th>
-              <th>Idioma</th>
-              <th class="right">Cant.</th>
-              <th class="right">Mejor venta</th>
-              <th>Venta</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- STATS -->
-    <section class="panel is-hidden" data-page="stats" style="display:none;">
-      <div class="row mb10">
-        <h2 class="h2" style="margin:0;">Estadísticas</h2>
-        <div class="spacer"></div>
-        <button class="btn ghost" id="btnRecalcColors">Recalcular</button>
-        <button class="btn ghost" id="btnRecalcTypes">Actualizar tipos</button>
-        <button class="btn ghost" id="btnRecalcMoney">Actualizar dinero</button>
-      </div>
-
-      <div class="two">
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Colores</h3>
-          <canvas id="chartColors"></canvas>
-        </div>
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Resumen de colores</h3>
-          <div id="colorsSummary" class="hint"></div>
-        </div>
-      </div>
-
-      <div class="two mt12">
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Tipos</h3>
-          <canvas id="chartTypes"></canvas>
-        </div>
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Rarezas</h3>
-          <canvas id="chartRarity"></canvas>
-        </div>
-      </div>
-
-      <hr class="hr"/>
-
-      <div class="row mb10">
-        <h3 class="h3" style="margin:0;">Dineros</h3>
-      </div>
-
-      <div class="moneyGrid">
-        <div class="panel soft moneyCard" style="box-shadow:none;">
-          <h3 class="h3">Valor total</h3>
-          <div class="moneyValue" id="moneyInvestAll">0.00 €</div>
-          <div class="hint">Precio × cantidad de cada carta</div>
-        </div>
-        <div class="panel soft moneyCard" style="box-shadow:none;">
-          <h3 class="h3">Sin proxies</h3>
-          <div class="moneyValue" id="moneyInvestNoProxy">0.00 €</div>
-          <div class="hint">Excluye proxies</div>
-        </div>
-        <div class="panel soft moneyCard" style="box-shadow:none;">
-          <h3 class="h3">Mejor venta estimada</h3>
-          <div class="moneyValue" id="moneyBestSellAll">0.00 €</div>
-          <div class="hint">Campo "mejor venta" × cantidad</div>
-        </div>
-        <div class="panel soft moneyCard" style="box-shadow:none;">
-          <h3 class="h3">Beneficio estimado</h3>
-          <div class="moneyValue" id="moneyProfitAll">0.00 €</div>
-          <div class="hint">Mejor venta − valor total</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- BUSCADOR -->
-    <section class="panel is-hidden" data-page="buscador" style="display:none;">
-      <div class="row mb10">
-        <h2 class="h2" style="margin:0;">Buscador</h2>
-        <div class="spacer"></div>
-        <span class="pill">Resultados: <b id="searchCount">0</b></span>
-        <button class="btn ghost" id="btnClearFilters">Limpiar filtros</button>
-      </div>
-
-      <div class="grid-search-top">
-        <div>
-          <label>Nombre</label>
-          <input id="searchQ" placeholder="Escribe parte del nombre..."/>
-        </div>
-
-        <div>
-          <label>Colección (setCode)</label>
-          <input id="searchSet" placeholder="cmm" class="mono"/>
-        </div>
-
-        <div>
-          <label>Rareza</label>
-          <select id="searchRarity">
-            <option value="">(cualquiera)</option>
-            <option>Común</option>
-            <option>Poco común</option>
-            <option>Rara</option>
-            <option>Mítica</option>
-            <option>Especial</option>
-          </select>
-        </div>
-
-        <div style="display:flex;align-items:end;">
-          <button class="btn" id="btnSearch" style="width:100%;">Buscar</button>
-        </div>
-      </div>
-
-      <div class="grid-4 mt12">
-        <div>
-          <label>Color (identidad)</label>
-          <select id="searchColors"></select>
-          <div class="hint">Ej: WU = blanco/azul. Incoloro = sin colores WUBRG.</div>
-        </div>
-
-        <div>
-          <label>Tipo</label>
-          <select id="searchType">
-            <option value="">(cualquiera)</option>
-            <option>Criatura</option>
-            <option>Instantáneo</option>
-            <option>Conjuro</option>
-            <option>Artefacto</option>
-            <option>Encantamiento</option>
-            <option>Tierra</option>
-            <option>Planeswalker</option>
-            <option>Batalla</option>
-            <option>Otro</option>
-          </select>
-        </div>
-
-        <div>
-          <label>MV/CMC mínimo</label>
-          <input id="searchMvMin" type="number" min="0" placeholder="0"/>
-        </div>
-
-        <div>
-          <label>MV/CMC máximo</label>
-          <input id="searchMvMax" type="number" min="0" placeholder="20"/>
-        </div>
-      </div>
-
-      <div class="list mt12" id="searchResults"></div>
-    </section>
-
-    <!-- COLECCIÓN -->
-    <section class="panel is-hidden" data-page="coleccion" style="display:none;">
-      <div class="row mb10">
-        <h2 class="h2" style="margin:0;">Colección</h2>
-        <div class="spacer"></div>
-        <span class="pill">Cartas: <b id="colCountCards">0</b></span>
-        <span class="pill">Unidades: <b id="colCountUnits">0</b></span>
-        <span class="pill">Valor (€): <b id="colSumEur">0.00</b></span>
-      </div>
-
-      <div class="hint mb10">Todas tus cartas guardadas. Filtra por nombre, set, tipo o texto.</div>
-      <div class="row mb10" style="gap:10px; flex-wrap:wrap; align-items:end;">
-        <div style="min-width:260px; flex:1 1 320px;">
-          <label>Buscar en tu colección</label>
-          <input id="colSearchInput" placeholder="Busca por nombre, set, tipo o texto..." />
-        </div>
-        <div style="min-width:260px;">
-          <label>Filtrar por favoritos</label>
-          <select id="colFavFilter">
-            <option value="all">Todos</option>
-            <option value="fav">Solo favoritos</option>
-            <option value="nofav">Sin favoritos</option>
-          </select>
-        </div>
-      </div>
-
-      <div id="collectionGrid" class="collectionGrid"></div>
-    </section>
-
-    <!-- MAZOS -->
-    <section class="panel is-hidden" data-page="mazos" style="display:none;">
-      <div class="row mb10">
-        <h2 class="h2" style="margin:0;">Mazos</h2>
-        <div class="spacer"></div>
-        <button class="btn ghost" id="btnDeckExport">Exportar mazos</button>
-        <button class="btn ghost" id="btnDeckImport">Importar mazos (JSON/TXT)</button>
-      </div>
-
-      <div class="two">
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Crear mazo</h3>
-          <label>Nombre del mazo</label>
-          <input id="deckName" placeholder="Mi mazo Commander"/>
-          <div class="row mt12">
-            <button class="btn" id="btnCreateDeck">Crear</button>
-            <div class="spacer"></div>
-            <span class="pill">Mazos: <b id="deckCount">0</b></span>
-          </div>
-
-          <hr class="hr"/>
-
-          <h3 class="h3">Seleccionar mazo</h3>
-          <label>Mazo</label>
-          <select id="deckSelect"></select>
-
-          <div class="row mt10">
-            <button class="btn ghost tiny" id="btnDeckRename">Renombrar</button>
-            <button class="btn ghost tiny" id="btnDeckDuplicate">Duplicar</button>
-            <button class="btn danger tiny" id="btnDeckDelete">Eliminar</button>
-          </div>
-          <div class="hint">Estas acciones afectan al mazo seleccionado en el desplegable.</div>
-
-          <hr class="hr"/>
-
-          <h3 class="h3">Comandante (apartado propio)</h3>
-          <div class="grid" style="grid-template-columns:2fr 1fr 1fr; margin-top:10px;">
-            <div>
-              <label>Nombre</label>
-              <input id="deckCmdName" placeholder="Atraxa, Praetors' Voice"/>
-            </div>
-            <div>
-              <label>SetCode (opcional)</label>
-              <input id="deckCmdSet" class="mono" placeholder="cmm"/>
-            </div>
-            <div>
-              <label>Nº (opcional)</label>
-              <input id="deckCmdCn" class="mono" placeholder="380"/>
-            </div>
-          </div>
-
-          <div class="row mt10">
-            <button class="btn" id="btnSetCommander">Guardar comandante</button>
-            <button class="btn ghost" id="btnClearCommander">Quitar comandante</button>
-            <div class="spacer"></div>
-            <span class="pill">Actual: <b id="deckCommanderLabel">—</b></span>
-          </div>
-          <div class="hint">Con solo el nombre es suficiente. Set+nº garantiza la impresión exacta al exportar.</div>
-
-          <hr class="hr"/>
-
-          <h3 class="h3">Añadir carta al mazo</h3>
-          <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr; margin-top:10px;">
-            <div>
-              <label>Nombre</label>
-              <input id="deckCardName" placeholder="Sol Ring"/>
-            </div>
-            <div>
-              <label>SetCode</label>
-              <input id="deckCardSet" class="mono" placeholder="cmm"/>
-            </div>
-            <div>
-              <label>Nº</label>
-              <input id="deckCardCn" class="mono" placeholder="380"/>
-            </div>
-            <div>
-              <label>Cantidad</label>
-              <input id="deckCardQty" type="number" min="1" value="1"/>
-            </div>
-          </div>
-
-          <button class="btn" id="btnAddToDeck" style="margin-top:10px;width:100%;">Añadir al mazo</button>
-          <div class="hint">No consulta Scryfall al añadir: guarda la referencia y la cantidad.</div>
-
-          <hr class="hr"/>
-
-          <h3 class="h3">Acciones rápidas</h3>
-          <div class="row">
-            <button class="btn ghost" id="btnDeckExportOneTxt">Exportar mazo (TXT)</button>
-            <button class="btn ghost" id="btnDeckExportOneJson">Exportar mazo (JSON)</button>
-            <button class="btn ghost" id="btnDeckCopyTxt">Copiar TXT</button>
-          </div>
-          <div class="hint">Exporta o copia el mazo actual.</div>
-        </div>
-
-        <div class="panel soft" style="box-shadow:none;">
-          <div class="row" style="margin-bottom:8px;">
-            <h3 class="h3" style="margin:0;">Mis mazos</h3>
-            <div class="spacer"></div>
-          </div>
-
-          <div class="grid" style="grid-template-columns:2fr 1fr; gap:10px; margin-bottom:10px;">
-            <div>
-              <label>Buscar mazo</label>
-              <input id="deckListQ" placeholder="Escribe parte del nombre..." />
-            </div>
-            <div>
-              <label>Orden</label>
-              <select id="deckListSort">
-                <option value="recent">Recientes</option>
-                <option value="az">A–Z</option>
-                <option value="za">Z–A</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="deckListScrollFix">
-            <div id="deckList" class="list"></div>
-          </div>
-
-        </div>
-      </div>
-
-      <div class="hint mt12">
-        Formatos TXT soportados:
-        <div class="mono">Mazo: Nombre</div>
-        <div class="mono">Comandante: Nombre (SET #123)</div>
-        <div class="mono">2x Carta (SET #123)</div>
-        <div class="mono">2 Carta (SET) 123</div>
-        <div class="mono">2x Carta</div>
-        <div class="small">(Puedes usar comentarios con # o //)</div>
-      </div>
-    </section>
-    <!-- TUS VENTAS -->
-    <section class="panel is-hidden" data-page="mis_ventas" style="display:none;">
-      <div class="pageHeader">
-        <h2>Tus ventas</h2>
-        <p>Cartas de tu colección marcadas como disponibles para venta.</p>
-      </div>
-
-      <div class="sectionActions">
-        <button class="btn" onclick="showPage('tienda')">Ir a la tienda</button>
-        <button class="btn ghost" onclick="showPage('coleccion')">Ver colección</button>
-        <div class="pill" id="salesCountPill" style="width:fit-content;">En venta: 0</div>
-      </div>
-
-      <div class="tablewrap mt12">
-        <table id="tblSales">
-          <thead>
-            <tr>
-              <th>★</th><th>Carta</th><th>Colección</th><th>Nº</th><th class="right">Cant.</th><th class="right">Precio</th><th class="right">Mejor venta</th><th class="right">Acción</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- TIENDA -->
-    <section class="panel is-hidden" data-page="tienda" style="display:none;">
-      <div class="pageHeader">
-        <h2>Tienda</h2>
-        <p>Ventas activas de otros usuarios registrados en este navegador.</p>
-      </div>
-
-      <div class="sectionActions">
-        <button class="btn" onclick="showPage('mis_ventas')">Ir a tus ventas</button>
-        <button class="btn ghost" onclick="showPage('coleccion')">Ver colección</button>
-        <div class="pill" id="otherSalesCountPill" style="width:fit-content;">Otros usuarios: 0</div>
-      </div>
-
-      <div class="panel soft mt12" style="box-shadow:none;">
-        <div class="row mb10">
-          <h3 class="h3" style="margin:0;">Ventas de otros usuarios</h3>
-          <div class="spacer"></div>
-          <input id="marketSearch" placeholder="Buscar por carta o vendedor" style="max-width:280px;">
-        </div>
-
-        <div class="tablewrap">
-          <table id="tblOtherSales">
-            <thead>
-              <tr>
-                <th>Vendedor</th><th>Carta</th><th>Colección</th><th>Nº</th><th class="right">Cant.</th><th class="right">Precio</th><th class="right">Mejor venta</th><th>Estado</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-<!-- DECK VIEW -->
-    <section class="panel is-hidden" data-page="deck_view" style="display:none;">
-      <div class="row mb10">
-        <button class="btn ghost" id="btnDeckBack">← Volver</button>
-        <h2 class="h2" style="margin:0;" id="deckViewTitle">Mazo</h2>
-        <div class="spacer"></div>
-        <button class="btn ghost" id="btnDeckViewExportTxt">Exportar TXT</button>
-        <button class="btn ghost" id="btnDeckToWish">Faltan → Deseos</button>
-        <button class="btn danger" id="btnDeckViewDelete">Eliminar mazo</button>
-      </div>
-
-      <div class="panel soft" id="deckCmdWarnings" style="margin:10px 0; display:none; box-shadow:none;"></div>
-
-      <div class="deckViewGrid">
-        <div class="panel soft deckListPanel" style="box-shadow:none;">
-          <div class="grid" style="grid-template-columns:2fr 1fr;gap:12px;">
-            <div>
-              <label>Buscar</label>
-              <input id="deckViewQ" placeholder="Nombre..." />
-            </div>
-            <div>
-              <label>Agrupar</label>
-              <select id="deckViewGroup">
-                <option value="type">Por tipo</option>
-                <option value="none">Sin agrupar</option>
-              </select>
-            </div>
-          </div>
-          <div id="deckViewCommanderBox" class="hint" style="display:none;"></div>
-          <div class="hint mt10" id="deckViewMeta"></div>
-          <div class="deckListScroll mt10" id="deckViewList"></div>
-        </div>
-
-        <div class="panel soft deckDetailsPanel" style="box-shadow:none;">
-          <h3 class="h3">Detalles</h3>
-          <div id="deckViewDetails" class="hint">Selecciona una carta para ver sus detalles.</div>
-        </div>
-      </div><!-- /deckViewGrid -->
-    </section>
-
-    <!-- AJUSTES -->
-    <section class="panel is-hidden" data-page="deseos" style="display:none;">
-      <h2 class="h2">Lista de deseos</h2>
-      <p class="hint">Cartas que quieres conseguir. Compara con tu colección y rastrea el historial de precios.</p>
-
-      <div class="panel soft" style="box-shadow:none;">
-        <div class="grid-4">
+    <!-- TAB: Colección -->
+    <section id="tab_cards" style="display:none">
+      <div class="panel soft mb10">
+        <h2 class="h2">🗂️ Tu Colección</h2>
+        <div class="grid mb10">
           <div>
-            <label>Nombre</label>
-            <input id="wishName" placeholder="Ej: Sol Ring">
+            <label>Carta</label>
+            <input id="newCardName" placeholder="Ej: Black Lotus"/>
+          </div>
+          <div>
+            <label>Edición</label>
+            <input id="newCardSet" placeholder="Ej: Alpha"/>
           </div>
           <div>
             <label>Cantidad</label>
-            <input id="wishQty" type="number" min="1" value="1">
+            <input id="newCardQuantity" type="number" value="1" min="1"/>
           </div>
           <div>
-            <label>SetCode (opcional)</label>
-            <input id="wishSet" class="mono" placeholder="cmm">
+            <label>Precio unitario (€)</label>
+            <input id="newCardPrice" type="number" step="0.01" placeholder="0.00"/>
           </div>
+        </div>
+        <div class="grid mb10">
           <div>
-            <label>Nº colección (opcional)</label>
-            <input id="wishCn" class="mono" placeholder="001">
-          </div>
-        </div>
-        <div class="row mt10">
-          <button class="btn" id="btnWishAdd">Añadir a deseos</button>
-          <button class="btn ghost" id="btnWishRefresh">Actualizar precios</button>
-          <div class="spacer"></div>
-          <input id="wishQ" placeholder="Buscar en deseos..." style="max-width:260px;">
-        </div>
-      </div>
-
-      <div class="panel soft mt12" style="box-shadow:none;">
-        <div class="row" style="gap:10px; flex-wrap:wrap;">
-          <span class="pill"><b id="wishCount">0</b> items</span>
-          <span class="pill">Faltan: <b id="wishMissingCount">0</b></span>
-          <span class="pill">Cubiertos: <b id="wishCoveredCount">0</b></span>
-        </div>
-        <div id="wishlistList" style="margin-top:10px;"></div>
-      </div>
-    </section>
-
-
-    <section class="panel is-hidden" data-page="usuario" style="display:none;">
-      <div class="pageHeader">
-        <div class="row" style="align-items:flex-start;gap:12px;">
-          <div>
-            <h2>Mi perfil</h2>
-            <p>Tu perfil y estadísticas de colección.</p>
-          </div>
-          <div class="spacer"></div>
-          <div class="profileHeaderActions">
-            <button class="btn ghost" id="btnProfileGoCollection">Ver colección</button>
-            <button class="btn ghost" id="btnProfileGoStore">Ir a tienda</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="profileHero" id="profileHero"><div class="profileHeroOverlay"></div><div class="profileHeroContent"><img id="profileAvatarLarge" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar"><div class="profileMeta"><h2 id="profileDisplayName">Usuario</h2><div class="profileEmail" id="profileDisplayEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="89eae6fbfbece6c9ece3ece4f9e5e6a7eae6e4">[email&#160;protected]</a></div><div class="profileMini"><span class="pill">Colección: <b id="profileCardsCount">0</b></span><span class="pill">Mazos: <b id="profileDecksCount">0</b></span><span class="pill">Deseos: <b id="profileWishCount">0</b></span></div></div></div></div>
-
-      <div class="profileTabs" id="profileTabs">
-        <button class="profileTabBtn active" data-profile-tab="resumen">Resumen</button>
-        <button class="profileTabBtn" data-profile-tab="amigos">Amigos</button>
-        <button class="profileTabBtn" data-profile-tab="solicitudes">Solicitudes</button>
-        <button class="profileTabBtn" data-profile-tab="editar">Editar perfil</button>
-        <button class="profileTabBtn" data-profile-tab="ajustes">Ajustes</button>
-      </div>
-
-      <div class="profileTabPane is-active" data-profile-pane="resumen">
-        <div class="profileAboutGrid">
-          <div class="panel soft" style="box-shadow:none;">
-            <h3 class="h3">Sobre</h3>
-            <div class="profilePreviewRow" style="margin-bottom:14px;">
-              <img id="profileAvatarPreview" class="profileSmallAvatar" src="assets/logo.png" alt="Preview avatar">
-              <div>
-                <div><b id="profilePublicName">Usuario</b></div>
-                <div class="hint" id="profilePublicBio">Sin bio todavía.</div>
-              </div>
-            </div>
-            <div class="profileAboutList">
-              <div class="profileAboutItem"><span class="label">Nombre visible</span><span id="profileAboutName">Usuario</span></div>
-
-              <div class="profileAboutItem"><span class="label">Cartas distintas</span><span id="profileStatCards">0</span></div>
-              <div class="profileAboutItem"><span class="label">Mazos</span><span id="profileStatDecks">0</span></div>
-              <div class="profileAboutItem"><span class="label">Deseos</span><span id="profileStatWishes">0</span></div>
-              <div class="profileAboutItem"><span class="label">Valor estimado</span><span id="profileStatValue">0.00€</span></div>
-            </div>
-          </div>
-          <div class="panel soft" style="box-shadow:none;">
-            <h3 class="h3">Insignias</h3>
-            <div class="profileBadgeBox">
-              <div>
-                <div style="font-size:42px;line-height:1;">🏵️</div>
-                <div style="font-weight:800;margin-top:10px;">Sin insignias desbloqueadas</div>
-                <div class="hint" style="margin-top:6px;">Las insignias se añadirán próximamente.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="panel soft profileRanking" style="box-shadow:none;">
-          <h3 class="h3">Estadísticas</h3>
-          <div class="profileRankingTop">
-            <div class="rankCard">
-              <div class="rankIcon">🥉</div>
-              <div style="font-weight:800;">Deseos</div>
-              <div class="rankPts" id="rankWishValue">0</div>
-              <div class="hint">En seguimiento</div>
-            </div>
-            <div class="rankCard big">
-              <div class="rankIcon">🥇</div>
-              <div style="font-weight:800;">Colección</div>
-              <div class="rankPts" id="rankCollectionValue">0</div>
-              <div class="hint">Cartas distintas</div>
-            </div>
-            <div class="rankCard">
-              <div class="rankIcon">🥈</div>
-              <div style="font-weight:800;">Mazos</div>
-              <div class="rankPts" id="rankDeckValue">0</div>
-              <div class="hint">Mazos activos</div>
-            </div>
-          </div>
-          <div class="rankList">
-            <div class="rankListItem"><span>#1</span><span>Cartas (total)</span><span id="rankTotalCards">0</span></div>
-            <div class="rankListItem"><span>#2</span><span>Copias guardadas</span><span id="rankTotalCopies">0</span></div>
-            <div class="rankListItem"><span>#3</span><span>Items en deseos</span><span id="rankWishlistTotal">0</span></div>
-            <div class="rankListItem"><span>#4</span><span>En venta</span><span id="rankSalesTotal">0</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="profileTabPane" data-profile-pane="amigos">
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Amigos</h3>
-          <div class="hint">Busca por nombre de usuario o email. Los datos se almacenan solo en este navegador.</div>
-          <div class="row mt12" style="gap:8px; align-items:center;">
-            <input id="friendSearchInput" placeholder="Usuario o email">
-            <button class="btn" id="btnSendFriendRequest">Añadir amigo</button>
-          </div>
-          <div class="row mt10" style="gap:8px; flex-wrap:wrap;">
-            <span class="pill">Amigos: <b id="friendCount">0</b></span>
-            <span class="pill">Solicitudes recibidas: <b id="friendReceivedCount">0</b></span>
-            <span class="pill">Solicitudes enviadas: <b id="friendSentCount">0</b></span>
-          </div>
-          <div id="friendsList" style="margin-top:12px;"></div>
-        </div>
-      </div>
-
-      <div class="profileTabPane" data-profile-pane="solicitudes">
-        <div class="panel soft" style="box-shadow:none;">
-          <h3 class="h3">Solicitudes pendientes</h3>
-          <div class="hint">Acepta, rechaza o cancela solicitudes pendientes.</div>
-          <h4 class="h3" style="font-size:1rem;margin-top:14px;">Recibidas</h4>
-          <div id="friendRequestsReceived" style="margin-top:8px;"></div>
-          <hr class="hr">
-          <h4 class="h3" style="font-size:1rem;">Enviadas</h4>
-          <div id="friendRequestsSent" style="margin-top:8px;"></div>
-        </div>
-      </div>
-
-      <div class="profileTabPane" data-profile-pane="editar">
-        <div class="profileGrid">
-          <div class="panel soft" style="box-shadow:none;">
-            <h3 class="h3">Imagen de perfil</h3>
-            <div class="profilePreviewRow"><img id="profileEditAvatarPreview" class="profileSmallAvatar" src="assets/logo.png" alt="Preview avatar"><div class="row" style="gap:8px;"><label class="btn uploadBtn" for="profileAvatarInput">Subir foto</label><button class="btn ghost" id="btnResetAvatar">Restablecer</button></div></div>
-            <input class="fileInput" id="profileAvatarInput" type="file" accept="image/*"><div class="hint">Se guarda localmente en el navegador.</div><hr class="hr"><h3 class="h3">Datos del perfil</h3><label>Nombre visible</label><input id="profileNameInput" placeholder="Nombre visible"><label class="mt10">Biografía corta</label><input id="profileBioInput" placeholder="Descripción breve"><div class="row mt12"><button class="btn" id="btnSaveProfileText">Guardar perfil</button></div>
-          </div>
-          <div class="panel soft" style="box-shadow:none;">
-            <h3 class="h3">Banner de fondo</h3><div class="row" style="gap:8px; margin-bottom:10px;"><label class="btn uploadBtn" for="profileBannerInput">Subir banner</label><button class="btn ghost" id="btnResetBanner">Restablecer</button></div><input class="fileInput" id="profileBannerInput" type="file" accept="image/*"><div class="hint">Mejor en formato horizontal.</div><hr class="hr"><h3 class="h3">Vista previa</h3><div class="profileHero" id="profileHeroEditPreview"><div class="profileHeroOverlay"></div><div class="profileHeroContent"><img id="profileEditAvatarLarge" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar"><div class="profileMeta"><h2 id="profileEditDisplayName">Usuario</h2><div class="profileEmail" id="profileEditDisplayEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f89b978a8a9d97b89d929d95889497d69b9795">[email&#160;protected]</a></div></div></div></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="profileTabPane" data-profile-pane="ajustes">
-        <div class="row mb10">
-          <h2 class="h2" style="margin:0;">Ajustes</h2>
-          <div class="spacer"></div>
-          <button class="btn ghost" id="btnResetSettings">Reset ajustes</button>
-        </div>
-        <div class="settingsGrid">
-          <div class="panel soft" style="box-shadow:none;">
-            <h3 class="h3">Tema</h3>
-            <label>Elige tema</label>
-            <select id="setTheme">
-              <option value="cosmic">Cósmico (morado/dorado)</option><option value="red">♂ Sangre</option><option value="green">☽ Esmeralda</option><option value="yellow">☀ Sol Dorado</option><option value="blue">☿ Zafiro</option><option value="black">◉ Ónix</option>
+            <label>Idioma</label>
+            <select id="newCardLang">
+              <option value="Español">Español</option>
+              <option value="Inglés">Inglés</option>
+              <option value="Japonés">Japonés</option>
+              <option value="Alemán">Alemán</option>
+              <option value="Francés">Francés</option>
+              <option value="Italiano">Italiano</option>
+              <option value="Portugués">Portugués</option>
+              <option value="Chino">Chino</option>
+              <option value="Coreano">Coreano</option>
+              <option value="Ruso">Ruso</option>
             </select>
-            <div class="hint">Cambia la paleta de colores de la app.</div>
           </div>
-          <div class="panel soft" style="box-shadow:none;">
-            <h3 class="h3">Tamaño de letra</h3>
-            <label>Tamaño: <span class="mono" id="fontPxLabel">16</span>px</label>
-            <input id="setFontSize" type="range" min="12" max="20" step="1"/>
-            <div class="hint">15–17px en escritorio, 16–18px en móvil.</div>
+          <div>
+            <label>Estado</label>
+            <select id="newCardCondition">
+              <option value="Near Mint">Near Mint (NM)</option>
+              <option value="Slightly Played">Slightly Played (SP)</option>
+              <option value="Moderately Played">Moderately Played (MP)</option>
+              <option value="Heavily Played">Heavily Played (HP)</option>
+              <option value="Damaged">Damaged (D)</option>
+            </select>
           </div>
-          <div class="panel soft" style="box-shadow:none;">
-            <h3 class="h3">Comodidad</h3>
-            <div class="toggleRow" style="margin-top:8px;"><input id="setCompact" type="checkbox" class="chk"/><div><b>Modo compacto</b><div class="hint" style="margin:2px 0 0;">Reduce el espaciado general.</div></div></div>
-            <div class="toggleRow" style="margin-top:10px;"><input id="setReducedMotion" type="checkbox" class="chk"/><div><b>Reducir animaciones</b><div class="hint" style="margin:2px 0 0;">Desactiva transiciones y animaciones.</div></div></div>
+          <div>
+            <label>Foil</label>
+            <select id="newCardFoil">
+              <option value="No">No</option>
+              <option value="Sí">Sí</option>
+            </select>
           </div>
-          <div class="panel soft" style="box-shadow:none;">
-            <h3 class="h3">Precios</h3>
-            <label>Preferencia de moneda</label>
-            <select id="setCurrency"><option value="EUR">Mostrar € primero</option><option value="USD">Mostrar $ primero</option></select>
-            <div class="hint">Si no hay precio en esa divisa, se muestra la otra.</div>
-          </div>
-        </div>
-        <div class="panel soft" style="box-shadow:none;margin-top:14px;">
-          <h3 class="h3">Sesión</h3>
-          <div class="row" style="gap:10px;flex-wrap:wrap;">
-            <button class="btn ghost" id="btnSignOutTop" style="display:none;">Cerrar sesión</button>
-            <button class="btn ghost" id="btnBackFromProfileSettings">Volver al resumen</button>
+          <div style="display:flex;align-items:flex-end">
+            <button class="btn" style="width:100%" onclick="addCard()">Añadir</button>
           </div>
         </div>
+      </div>
 
-        <div class="panel soft" style="box-shadow:none;margin-top:14px;">
-          <h3 class="h3">Backup automático</h3>
-          <div class="toggleRow" style="margin-bottom:10px;">
-            <input id="setAutoBackup" type="checkbox" class="chk"/>
-            <div><b>Activar backup automático</b><div class="hint" style="margin:2px 0 0;">Copia automática en localStorage.</div></div>
-          </div>
-          <label>Frecuencia</label>
-          <select id="setAutoBackupEvery">
-            <option value="5">Cada 5 minutos</option>
-            <option value="15">Cada 15 minutos</option>
-            <option value="30" selected>Cada 30 minutos</option>
-            <option value="60">Cada hora</option>
-          </select>
-          <div class="hint" id="backupInfo" style="margin-top:8px;">No hay backups aún.</div>
-          <div class="row mt10" style="gap:8px;flex-wrap:wrap;">
-            <button class="btn ghost" id="btnBackupNow">Hacer backup ahora</button>
-            <button class="btn ghost" id="btnBackupDownload">Descargar backup</button>
-            <button class="btn ghost" id="btnBackupRestore">Restaurar último backup</button>
-          </div>
+      <div class="panel">
+        <div class="row mb10">
+          <h2 class="h2">📋 Listado</h2>
+          <div class="spacer"></div>
+          <button class="btn ghost tiny" onclick="exportCardsCSV()">📥 Exportar CSV</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table id="cardsTable">
+            <thead>
+              <tr>
+                <th class="sortable" onclick="sortCards('name')">Nombre</th>
+                <th class="sortable" onclick="sortCards('set')">Edición</th>
+                <th class="sortable" onclick="sortCards('lang')">Idioma</th>
+                <th class="sortable" onclick="sortCards('condition')">Estado</th>
+                <th class="sortable" onclick="sortCards('foil')">Foil</th>
+                <th class="sortable" onclick="sortCards('quantity')">Cant.</th>
+                <th class="sortable" onclick="sortCards('price')">Precio u.</th>
+                <th>Total</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="cardsBody">
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
 
-    </div>
-  </main>
-</div>
+    <!-- TAB: Buscar carta -->
+    <section id="tab_search" style="display:none">
+      <div class="panel soft mb10">
+        <h2 class="h2">🔍 Buscar carta en Scryfall</h2>
+        <div class="grid-search-top mb10">
+          <div>
+            <label>Nombre de la carta</label>
+            <input id="searchCardName" placeholder="Ej: Lightning Bolt"/>
+          </div>
+          <div>
+            <label>Edición</label>
+            <input id="searchCardSet" placeholder="(Opcional)"/>
+          </div>
+          <div>
+            <label>Idioma</label>
+            <select id="searchLang">
+              <option value="">Cualquiera</option>
+              <option value="es">Español</option>
+              <option value="en">Inglés</option>
+              <option value="ja">Japonés</option>
+              <option value="de">Alemán</option>
+              <option value="fr">Francés</option>
+              <option value="it">Italiano</option>
+              <option value="pt">Portugués</option>
+              <option value="zh">Chino</option>
+              <option value="ko">Coreano</option>
+              <option value="ru">Ruso</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <button class="btn" style="width:100%" onclick="searchCardScryfall()">Buscar</button>
+          </div>
+        </div>
+        <div id="searchResults"></div>
+      </div>
+    </section>
+
+    <!-- TAB: Mazos -->
+    <section id="tab_decks" style="display:none">
+      <div class="panel soft mb10">
+        <h2 class="h2">🎴 Mis Mazos</h2>
+        <div class="row mb10">
+          <input id="newDeckName" placeholder="Nombre del mazo"/>
+          <button class="btn" onclick="createDeck()">Crear mazo</button>
+        </div>
+      </div>
+      <div id="decksList" class="grid-4">
+      </div>
+      <div id="deckDetail" style="display:none">
+        <div class="panel soft mb10">
+          <div class="row">
+            <button class="btn ghost" onclick="closeDeck()">← Volver</button>
+            <div class="spacer"></div>
+            <button class="btn danger tiny" onclick="deleteDeck()">Eliminar mazo</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2 class="h2" id="deckDetailName"></h2>
+          <div class="grid mb10">
+            <div>
+              <label>Añadir carta del buscador</label>
+              <input id="deckAddCardName" placeholder="Nombre de la carta"/>
+            </div>
+            <div>
+              <label>Cantidad</label>
+              <input id="deckAddCardQty" type="number" value="1" min="1"/>
+            </div>
+            <div style="display:flex;align-items:flex-end">
+              <button class="btn" style="width:100%" onclick="addCardToDeck()">Añadir</button>
+            </div>
+          </div>
+          <div class="hr"></div>
+          <div id="deckCards"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: Wishlist -->
+    <section id="tab_wishlist" style="display:none">
+      <div class="panel soft mb10">
+        <h2 class="h2">⭐ Wishlist</h2>
+        <div class="grid mb10">
+          <div>
+            <label>Nombre de la carta</label>
+            <input id="wishCardName" placeholder="Ej: Mox Pearl"/>
+          </div>
+          <div>
+            <label>Edición</label>
+            <input id="wishCardSet" placeholder="(Opcional)"/>
+          </div>
+          <div>
+            <label>Prioridad</label>
+            <select id="wishPriority">
+              <option value="Alta">Alta</option>
+              <option value="Media">Media</option>
+              <option value="Baja">Baja</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <button class="btn" style="width:100%" onclick="addWish()">Añadir</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div id="wishlistDiv"></div>
+      </div>
+    </section>
+
+    <!-- TAB: Estadísticas -->
+    <section id="tab_stats" style="display:none">
+      <div class="panel soft mb10">
+        <h2 class="h2">📊 Estadísticas de tu colección</h2>
+        <div class="grid-4 mb10">
+          <div class="panel">
+            <div class="h3">Total de cartas</div>
+            <div style="font-size:2rem;font-weight:700;color:var(--pink2)" id="statTotal">0</div>
+          </div>
+          <div class="panel">
+            <div class="h3">Cartas únicas</div>
+            <div style="font-size:2rem;font-weight:700;color:var(--pink2)" id="statUnique">0</div>
+          </div>
+          <div class="panel">
+            <div class="h3">Valor total (€)</div>
+            <div style="font-size:2rem;font-weight:700;color:var(--pink2)" id="statValue">0</div>
+          </div>
+          <div class="panel">
+            <div class="h3">Foils</div>
+            <div style="font-size:2rem;font-weight:700;color:var(--pink2)" id="statFoils">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="grid mb10">
+        <div class="chart-panel">
+          <h3 class="h3">Distribución por idioma</h3>
+          <canvas id="chartLang"></canvas>
+        </div>
+        <div class="chart-panel">
+          <h3 class="h3">Distribución por estado</h3>
+          <canvas id="chartCondition"></canvas>
+        </div>
+      </div>
+      <div class="chart-panel">
+        <h3 class="h3">Top 10 ediciones</h3>
+        <canvas id="chartSets"></canvas>
+      </div>
+    </section>
+
+    <!-- TAB: Importar/Exportar -->
+    <section id="tab_import" style="display:none">
+      <div class="panel soft mb10">
+        <h2 class="h2">📥 Importar CSV</h2>
+        <p class="hint">Formato: Nombre,Edición,Idioma,Estado,Foil,Cantidad,Precio</p>
+        <textarea id="importArea" rows="8" style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);font-family:var(--mono);font-size:.82rem"></textarea>
+        <div class="mt10">
+          <button class="btn" onclick="importCardsCSV()">Importar</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2 class="h2">📤 Exportar/Backup</h2>
+        <div class="row">
+          <button class="btn ghost" onclick="exportCardsCSV()">Descargar colección (CSV)</button>
+          <button class="btn ghost" onclick="exportDecksJSON()">Descargar mazos (JSON)</button>
+          <button class="btn ghost" onclick="exportAllJSON()">Backup completo (JSON)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: Configuración -->
+    <section id="tab_settings" style="display:none">
+      <div class="panel soft mb10">
+        <h2 class="h2">⚙️ Configuración</h2>
+        <div class="grid mb10">
+          <div>
+            <label>Tamaño de fuente base</label>
+            <select id="settingFontSize" onchange="applySettings()">
+              <option value="14px">Pequeño</option>
+              <option value="16px">Normal</option>
+              <option value="18px">Grande</option>
+              <option value="20px">Extra grande</option>
+            </select>
+          </div>
+          <div>
+            <label>Densidad de la interfaz</label>
+            <select id="settingDensity" onchange="applySettings()">
+              <option value="normal">Normal</option>
+              <option value="compact">Compacto</option>
+            </select>
+          </div>
+          <div>
+            <label>Tema de color</label>
+            <select id="settingTheme" onchange="applySettings()">
+              <option value="default">Rosa (por defecto)</option>
+              <option value="black">Negro</option>
+            </select>
+          </div>
+          <div>
+            <label>Reducir movimiento</label>
+            <select id="settingMotion" onchange="applySettings()">
+              <option value="normal">Normal</option>
+              <option value="reduced">Reducido</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2 class="h2">☁️ Sincronización en la nube</h2>
+        <p class="hint mb10">Tus datos se guardan automáticamente en Firebase cuando estás logueado.</p>
+        <div class="row">
+          <button class="btn" onclick="manualCloudSave()">Guardar ahora</button>
+          <button class="btn ghost" onclick="manualCloudLoad()">Cargar desde la nube</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC2CyBcmqd4dhuNtIX2sjUk_dadwriF0x8",
+    authDomain: "mtg-manager-2005.firebaseapp.com",
+    projectId: "mtg-manager-2005",
+    storageBucket: "mtg-manager-2005.firebasestorage.app",
+    messagingSenderId: "310699881878",
+    appId: "1:310699881878:web:dcb0f21e31434393f719b7",
+    measurementId: "G-T3PQ24KKCF"
+  };
+
+  const app   = initializeApp(firebaseConfig);
+  const auth  = getAuth(app);
+  const db    = getFirestore(app);
+
+  // Exponer globalmente para que el resto del código los use
+  window._fbAuth = auth;
+  window._fbDb   = db;
+  window._fbFns  = {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    sendEmailVerification,
+    doc,
+    setDoc,
+    getDoc,
+    collection,
+    query,
+    where,
+    getDocs
+  };
+
+  // Auto-login si hay sesión activa en Firebase
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // Bloquear acceso si el email no está verificado
+      if (!user.emailVerified) {
+        auth.signOut();
+        window._fbCurrentUser = null;
+        if (typeof window.showLogin === "function") window.showLogin();
+        if (typeof window.setMsg === "function") {
+          window.setMsg("Verifica tu email antes de entrar. Revisa tu bandeja de entrada.");
+        }
+        return;
+      }
+      window._fbCurrentUser = user;
+      // Cargar datos de la nube cuando el usuario ya está logueado
+      if (typeof window.cloudLoadAll === "function") {
+        window.cloudLoadAll().then(() => {
+          if (typeof window.showApp === "function") window.showApp();
+        });
+      }
+    } else {
+      window._fbCurrentUser = null;
+    }
+  });
+</script>
 
 <script>
-
-// ===== Firebase Auth =====
-const firebaseConfig = {
-  apiKey: "AIzaSyC2CyBcmqd4dhuNtIX2sjUk_dadwriF0x8",
-  authDomain: "mtg-manager-2005.firebaseapp.com",
-  projectId: "mtg-manager-2005",
-  storageBucket: "mtg-manager-2005.firebasestorage.app",
-  messagingSenderId: "310699881878",
-  appId: "1:310699881878:web:dcb0f21e31434393f719b7",
-  measurementId: "G-T3PQ24KKCF"
-};
-firebase.initializeApp(firebaseConfig);
-const fbAuth    = firebase.auth();
-const fbDb      = firebase.firestore();
-const fbStorage = firebase.storage();
-
-// Usuario activo en memoria (se actualiza por onAuthStateChanged)
-let _fbUser = null;
-
-function currentUserId(){ return _fbUser?.uid || ""; }
-
-/************************************************************
- * Firestore — helpers de lectura/escritura
- ************************************************************/
-
-// Guarda el perfil público del usuario en Firestore (users/{uid})
-// Sube una imagen a Firebase Storage y devuelve la URL pública
-async function fsUploadImage(file, storagePath){
-  const ref = fbStorage.ref(storagePath);
-  const snap = await ref.put(file);
-  return await snap.ref.getDownloadURL();
-}
-
-// Sube el avatar a Storage y actualiza perfil
-async function fsUploadAvatar(file){
-  const uid = currentUserId();
-  if(!uid || !file) return null;
-  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-  const url = await fsUploadImage(file, `avatars/${uid}.${ext}`);
-  profile.avatar = url;
-  saveProfile();
-  await _fbUser.updateProfile({ photoURL: url });
-  return url;
-}
-
-// Sube el banner a Storage y actualiza perfil
-async function fsUploadBanner(file){
-  const uid = currentUserId();
-  if(!uid || !file) return null;
-  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-  const url = await fsUploadImage(file, `banners/${uid}.${ext}`);
-  profile.banner = url;
-  saveProfile();
-  return url;
-}
-
-async function fsSaveProfile(){
-  const uid = currentUserId();
-  if(!uid) return;
-  try{
-    await fbDb.collection("users").doc(uid).set({
-      uid,
-      username:    _fbUser.displayName || "",
-      email:       _fbUser.email || "",
-      displayName: profile.displayName || _fbUser.displayName || "",
-      bio:         profile.bio || "",
-      avatar:      profile.avatar || "",
-      updatedAt:   firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-  }catch(e){ console.warn("fssaveProfile:", e); }
-}
-
-// Busca un usuario en Firestore por username o email
-async function fsSearchUser(query){
-  const q = String(query||"").trim().toLowerCase();
-  if(!q) return null;
-  // Buscar por username exacto
-  let snap = await fbDb.collection("users")
-    .where("username", "==", q)
-    .limit(1).get();
-  if(!snap.empty) return snap.docs[0].data();
-  // Buscar por email exacto
-  snap = await fbDb.collection("users")
-    .where("email", "==", q)
-    .limit(1).get();
-  if(!snap.empty) return snap.docs[0].data();
-  return null;
-}
-
-// Envía solicitud de amistad real en Firestore
-async function fsSendFriendRequest(toUid){
-  const uid = currentUserId();
-  const reqId = [uid, toUid].sort().join("__");
-  await fbDb.collection("friend_requests").doc(reqId).set({
-    from: uid,
-    to:   toUid,
-    status: "pending",
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-}
-
-// Acepta solicitud de amistad en Firestore
-async function fsAcceptFriendRequest(reqId){
-  const uid = currentUserId();
-  const ref  = fbDb.collection("friend_requests").doc(reqId);
-  const snap = await ref.get();
-  if(!snap.exists) return;
-  const { from, to } = snap.data();
-  const batch = fbDb.batch();
-  // Marcar solicitud como aceptada
-  batch.update(ref, { status: "accepted" });
-  // Crear friendship bidireccional
-  const fid = [from, to].sort().join("__");
-  batch.set(fbDb.collection("friendships").doc(fid), {
-    users: [from, to], createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  await batch.commit();
-}
-
-// Rechaza / cancela solicitud
-async function fsDeclineFriendRequest(reqId){
-  await fbDb.collection("friend_requests").doc(reqId).delete();
-}
-
-// Elimina amistad
-async function fsRemoveFriend(friendUid){
-  const uid = currentUserId();
-  const fid = [uid, friendUid].sort().join("__");
-  await fbDb.collection("friendships").doc(fid).delete();
-}
-
-// Carga solicitudes y amigos del usuario actual desde Firestore
-async function fsLoadSocialData(){
-  const uid = currentUserId();
-  if(!uid) return;
-
-  // Solicitudes recibidas pendientes
-  const recvSnap = await fbDb.collection("friend_requests")
-    .where("to", "==", uid).where("status", "==", "pending").get();
-
-  // Solicitudes enviadas pendientes
-  const sentSnap = await fbDb.collection("friend_requests")
-    .where("from", "==", uid).where("status", "==", "pending").get();
-
-  // Amistades
-  const friendSnap = await fbDb.collection("friendships")
-    .where("users", "array-contains", uid).get();
-
-  // Enriquecer con perfiles públicos
-  const allUids = new Set();
-  recvSnap.forEach(d=> allUids.add(d.data().from));
-  sentSnap.forEach(d=> allUids.add(d.data().to));
-  friendSnap.forEach(d=> d.data().users.forEach(u=> allUids.has(u) || allUids.add(u)));
-  allUids.delete(uid);
-
-  const profiles = {};
-  await Promise.all([...allUids].map(async (id)=>{
-    const snap = await fbDb.collection("users").doc(id).get();
-    profiles[id] = snap.exists ? snap.data() : { uid: id, displayName: "Usuario", username: id, avatar: "" };
-  }));
-
-  // Construir estructura compatible con el sistema local de social
-  const requests = [];
-  recvSnap.forEach(d=> requests.push({ id: d.id, from: d.data().from, to: d.data().to, createdAt: d.data().createdAt?.toMillis?.() || 0 }));
-  sentSnap.forEach(d=> requests.push({ id: d.id, from: d.data().from, to: d.data().to, createdAt: d.data().createdAt?.toMillis?.() || 0 }));
-
-  const friendships = [];
-  friendSnap.forEach(d=> friendships.push({ id: d.id, a: d.data().users[0], b: d.data().users[1], createdAt: d.data().createdAt?.toMillis?.() || 0 }));
-
-  // Guardar en localStorage como caché (para que las funciones locales sigan funcionando)
-  saveSocial({ requests, friendships });
-
-  // Guardar perfiles en cache local
-  Object.entries(profiles).forEach(([id, p])=>{
-    const key = scopedKey(LS_PROFILE, id);
-    if(!localStorage.getItem(key)){
-      localStorage.setItem(key, JSON.stringify({ displayName: p.displayName||p.username||"", bio: p.bio||"", avatar: p.avatar||"" }));
-    }
-  });
-}
-
-// Publica una carta en la tienda global (Firestore listings)
-async function fsPublishSaleCard(card){
-  const uid = currentUserId();
-  if(!uid || !card) return;
-  await fbDb.collection("listings").doc(`${uid}__${card.id}`).set({
-    sellerId:    uid,
-    sellerName:  getProfileName(),
-    sellerAvatar:getProfileAvatar(),
-    cardId:      card.id,
-    name:        card.name || "",
-    setCode:     card.setCode || "",
-    collectorNumber: card.collectorNumber || "",
-    qty:         card.qty || 1,
-    priceText:   card.priceText || "",
-    bestSell:    card.bestSell || "",
-    foil:        !!card.foil,
-    lang:        card.lang || "es",
-    imgUrl:      card.imgUrl || "",
-    isActive:    true,
-    updatedAt:   firebase.firestore.FieldValue.serverTimestamp()
-  });
-}
-
-// Elimina una carta de la tienda global
-async function fsRemoveSaleListing(cardId){
-  const uid = currentUserId();
-  if(!uid) return;
-  await fbDb.collection("listings").doc(`${uid}__${cardId}`).delete();
-}
-
-// Sincroniza todas las cartas en venta del usuario a Firestore
-async function fsSyncAllSaleCards(){
-  const uid = currentUserId();
-  if(!uid) return;
-  const forSale = cards.filter(c => !!c.sale);
-  // Publicar o actualizar las activas
-  await Promise.all(forSale.map(c => fsPublishSaleCard(c)));
-  // Eliminar las que ya no están en venta
-  const snap = await fbDb.collection("listings").where("sellerId", "==", uid).get();
-  const activeIds = new Set(forSale.map(c => `${uid}__${c.id}`));
-  const toDelete = snap.docs.filter(d => !activeIds.has(d.id));
-  await Promise.all(toDelete.map(d => d.ref.delete()));
-}
-
-// Carga el mercado global desde Firestore
-async function fsLoadMarket(){
-  const uid = currentUserId();
-  const snap = await fbDb.collection("listings")
-    .where("isActive", "==", true)
-    .orderBy("updatedAt", "desc")
-    .limit(200)
-    .get();
-
-  const offers = [];
-  snap.forEach(d=>{
-    const data = d.data();
-    if(data.sellerId !== uid){
-      offers.push({
-        marketId:    d.id,
-        sellerId:    data.sellerId,
-        sellerName:  data.sellerName || "Usuario",
-        sellerAvatar:data.sellerAvatar || "assets/logo.png",
-        cardId:      data.cardId,
-        name:        data.name || "",
-        setCode:     data.setCode || "",
-        collectorNumber: data.collectorNumber || "",
-        qty:         data.qty || 1,
-        priceText:   data.priceText || "",
-        bestSell:    data.bestSell || "",
-        updatedAt:   data.updatedAt?.toMillis?.() || 0
-      });
-    }
-  });
-
-  saveMarketOffers(offers);
-  return offers;
-}
-function getSession(){
-  if(!_fbUser) return null;
-  return { id: _fbUser.uid, email: _fbUser.email, username: _fbUser.displayName || _fbUser.email?.split("@")[0] || "Usuario" };
-}
-function clearSession(){ /* Firebase gestiona la sesión — se cierra con fbAuth.signOut() */ }
-
-function scopedKey(base, userId = currentUserId()){ return userId ? `${base}__${userId}` : base; }
-function loadJson(key, fallback){ try{ const raw = localStorage.getItem(key); if(raw) return JSON.parse(raw); }catch{} return fallback; }
-function userLoad(baseKey, fallback, oldKeys=[]){ const uid = currentUserId(); if(uid){ const scoped = loadJson(scopedKey(baseKey, uid), undefined); if(typeof scoped !== "undefined") return scoped; } try{ const raw = localStorage.getItem(baseKey); if(raw) return JSON.parse(raw); }catch{} for(const k of oldKeys){ try{ const raw = localStorage.getItem(k); if(raw) return JSON.parse(raw); }catch{} } return fallback; }
-function userSave(baseKey, value){ localStorage.setItem(scopedKey(baseKey), JSON.stringify(value)); }
-function loadMarketOffers(){ return loadJson(LS_MARKET, []); }
-function saveMarketOffers(list){ localStorage.setItem(LS_MARKET, JSON.stringify(Array.isArray(list) ? list : [])); }
-function getPublicSellerName(user){ if(!user) return "Usuario"; return user.username || user.email || "Usuario"; }
-function syncCurrentUserSalesToMarket(){ const sess = getSession(); if(!sess) return; const market = loadMarketOffers().filter(x => x.sellerId !== sess.id); const offers = cards.filter(c=>!!c.sale).map(c=>({ marketId:`${sess.id}__${c.id}`, sellerId:sess.id, sellerName: typeof getProfileName === "function" ? getProfileName() : getPublicSellerName(sess), sellerAvatar: typeof getProfileAvatar === "function" ? getProfileAvatar() : "assets/logo.png", cardId:c.id, name:c.name||"", inputName:c.inputName||"", setCode:c.setCode||"", collectorNumber:c.collectorNumber||"", qty:c.qty||1, priceText:c.priceText||"", bestSell:c.bestSell||"", fav:!!c.fav, updatedAt:Date.now() })); saveMarketOffers(market.concat(offers)); }
-function reloadScopedAppState(){ cards = userLoad(LS_KEY, [], OLD_CARD_KEYS); decks = userLoad(LS_DECKS, [], OLD_DECK_KEYS); wishlist = userLoad(LS_WISHLIST, [], []); settings = (()=>{ const raw = userLoad(LS_SETTINGS, null, []); return raw ? {...DEFAULT_SETTINGS, ...(raw||{})} : {...DEFAULT_SETTINGS}; })(); sortState = (()=>{ const raw = userLoad(LS_SORT, null, []); const base = { key:"added", dir:"desc" }; return raw ? {...base, ...(raw||{})} : base; })(); profile = (()=>{ const raw = userLoad(LS_PROFILE, null, []); return raw ? {...DEFAULT_PROFILE, ...(raw||{})} : {...DEFAULT_PROFILE}; })(); normalizeCards(); normalizeDecks(); applySettings(); }
-
 /************************************************************
  * Storage keys + migración
  ************************************************************/
@@ -2107,9 +887,6 @@ const LS_SETTINGS   = "mtg_rosita_settings_v9";
 
 
 const LS_WISHLIST   = "mtg_rosita_wishlist_v1";
-const LS_PROFILE    = "mtg_rosita_profile_v1";
-const LS_SOCIAL     = "mtg_rosita_social_v1";
-const LS_MARKET     = "mtg_rosita_market_v1";
 /* Backups */
 const LS_BACKUP_LAST    = "mtg_rosita_backup_last_v1";
 const LS_BACKUP_HISTORY = "mtg_rosita_backup_history_v1";
@@ -2137,16 +914,26 @@ function loadWithMigration(primaryKey, oldKeys, fallback){
  * Ajustes (Tema + letra + extras)
  ************************************************************/
 const THEME_PRESETS = {
-  pink:  { bg:"#1a0f2e", card:"#21143d", pink:"#c9963a", pink2:"#e8b84b", soft:"#3d2060", line:"#4a2d6f", text:"#e8d5b0", muted:"#9e86c2", inputBg:"#180e2a", inputText:"#e8d5b0", tableBg:"#1e1236", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(201,150,58,.08)" },
-  red:   { bg:"#200a0a", card:"#2d1010", pink:"#e05555", pink2:"#f87171", soft:"#4a1515", line:"#6b2222", text:"#f0d0d0", muted:"#c28080", inputBg:"#180808", inputText:"#f0d0d0", tableBg:"#1a0808", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(224,85,85,.08)" },
-  green: { bg:"#0a1a0f", card:"#102415", pink:"#3abf70", pink2:"#5de08a", soft:"#1a4028", line:"#2a6040", text:"#d0f0d8", muted:"#70c290", inputBg:"#081408", inputText:"#d0f0d8", tableBg:"#081408", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(58,191,112,.08)" },
-  yellow:{ bg:"#1a1400", card:"#251c00", pink:"#d4a500", pink2:"#f0c000", soft:"#3d3000", line:"#5a4800", text:"#f5e8b0", muted:"#b89a40", inputBg:"#140f00", inputText:"#f5e8b0", tableBg:"#141000", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(212,165,0,.08)" },
-  blue:  { bg:"#080e1e", card:"#0e1628", pink:"#4f8ef0", pink2:"#7cb0ff", soft:"#162040", line:"#1e3060", text:"#c8d8f8", muted:"#6888c0", inputBg:"#060c18", inputText:"#c8d8f8", tableBg:"#080e1e", shadow:"0 10px 40px rgba(0,0,0,.55), 0 2px 8px rgba(79,142,240,.08)" },
-  black: { bg:"#080808", card:"#101010", pink:"#888888", pink2:"#aaaaaa", soft:"#1a1a1a", line:"#2a2a2a", text:"#d0d0d0", muted:"#606060", inputBg:"#060606", inputText:"#d0d0d0", tableBg:"#0c0c0c", shadow:"0 10px 40px rgba(0,0,0,.7)" },
+  // Rosa (predeterminado)
+  pink:  { bg:"#fff0f6", card:"#ffffff", pink:"#f06292", pink2:"#d81b60", soft:"#f8bbd0", line:"#f2c5d5", text:"#4a2c37", muted:"#7a4a5a", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(216,27,96,.10)" },
+  // Blanco - Llanuras (W)
+  white: { bg:"#fafaf7", card:"#ffffff", pink:"#c8a84b", pink2:"#8b6914", soft:"#f5f0dc", line:"#e8dfc4", text:"#2a2416", muted:"#6b5a38", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(139,105,20,.10)" },
+  // Azul - Islas (U)
+  blue:  { bg:"#eff6ff", card:"#ffffff", pink:"#3b82f6", pink2:"#1d4ed8", soft:"#bfdbfe", line:"#c7d2fe", text:"#1e2a44", muted:"#4b5b7a", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(29,78,216,.12)" },
+  // Negro - Pantanos (B)
+  black: { bg:"#0b0b10", card:"#111827", pink:"#a78bfa", pink2:"#7c3aed", soft:"#1f2937", line:"#374151", text:"#e5e7eb", muted:"#9ca3af", inputBg:"#0f172a", inputText:"#e5e7eb", tableBg:"#0f172a", shadow:"0 10px 26px rgba(0,0,0,.45)" },
+  // Rojo - Montanas (R)
+  red:   { bg:"#fff1f1", card:"#ffffff", pink:"#ef4444", pink2:"#b91c1c", soft:"#fecaca", line:"#f5b5b5", text:"#3a1f1f", muted:"#7a4a4a", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(185,28,28,.12)" },
+  // Verde - Bosques (G)
+  green: { bg:"#ecfdf5", card:"#ffffff", pink:"#22c55e", pink2:"#15803d", soft:"#bbf7d0", line:"#a7f3d0", text:"#15352a", muted:"#3f6b57", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(21,128,61,.12)" },
+  // Oro - Multicolor
+  gold:  { bg:"#fffbeb", card:"#ffffff", pink:"#d97706", pink2:"#92400e", soft:"#fde68a", line:"#fcd34d", text:"#3d2a08", muted:"#78550e", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(146,64,14,.12)" },
+  // Alias de compatibilidad
+  yellow: { bg:"#fffbeb", card:"#ffffff", pink:"#f59e0b", pink2:"#b45309", soft:"#fde68a", line:"#fcd34d", text:"#4a2c0f", muted:"#7a5a2f", inputBg:"#ffffff", inputText:"#111827", tableBg:"#ffffff", shadow:"0 10px 24px rgba(180,83,9,.12)" },
 };
 
 const DEFAULT_SETTINGS = {
-  theme: "pink", /* Luna Cosmic */
+  theme: "pink",
   fontPx: 16,
   density: "normal",
   motion: "normal",
@@ -2157,15 +944,18 @@ const DEFAULT_SETTINGS = {
 
 let settings = (() => {
   try{
-    const parsed = userLoad(LS_SETTINGS, null, []);
-    if(!parsed) return {...DEFAULT_SETTINGS};
+    const raw = localStorage.getItem(LS_SETTINGS);
+    if(!raw) return {...DEFAULT_SETTINGS};
+    const parsed = JSON.parse(raw);
     return {...DEFAULT_SETTINGS, ...(parsed||{})};
   }catch{
     return {...DEFAULT_SETTINGS};
   }
 })();
 
-function saveSettings(){ userSave(LS_SETTINGS, settings); }
+function saveSettings(){ localStorage.setItem(LS_SETTINGS, JSON.stringify(settings)); 
+  try{ cloudSaveAll(); }catch{}
+}
 
 function applyThemePreset(key){
   const preset = THEME_PRESETS[key] || THEME_PRESETS.pink;
@@ -2174,8 +964,6 @@ function applyThemePreset(key){
   root.style.setProperty("--card", preset.card);
   root.style.setProperty("--pink", preset.pink);
   root.style.setProperty("--pink2", preset.pink2);
-  root.style.setProperty("--gold", preset.pink);
-  root.style.setProperty("--gold2", preset.pink2);
   root.style.setProperty("--soft", preset.soft);
   root.style.setProperty("--line", preset.line);
   root.style.setProperty("--text", preset.text);
@@ -2184,8 +972,6 @@ function applyThemePreset(key){
   root.style.setProperty("--input-text", preset.inputText);
   root.style.setProperty("--table-bg", preset.tableBg);
   root.style.setProperty("--shadow", preset.shadow);
-  root.style.setProperty("--deep", preset.bg);
-  root.style.setProperty("--plum", preset.soft);
   document.body.dataset.theme = key;
 }
 
@@ -2209,7 +995,7 @@ function hexToRgba(hex, a){
 /************************************************************
  * Estado principal
  ************************************************************/
-let cards = userLoad(LS_KEY, [], OLD_CARD_KEYS);
+let cards = loadWithMigration(LS_KEY, OLD_CARD_KEYS, []);
 
 /* Normaliza cartas antiguas (por ejemplo fav como string) */
 function normalizeCards(){
@@ -2222,10 +1008,10 @@ function normalizeCards(){
   if(changed) saveCards();
 }
 normalizeCards();
-let decks = userLoad(LS_DECKS, [], OLD_DECK_KEYS);
+let decks = loadWithMigration(LS_DECKS, OLD_DECK_KEYS, []);
 
 
-let wishlist = userLoad(LS_WISHLIST, [], []);
+let wishlist = loadWithMigration(LS_WISHLIST, [], []);
 /* Normaliza decks antiguos */
 function normalizeDecks(){
   let changed = false;
@@ -2253,15 +1039,15 @@ normalizeDecks();
 /************************************************************
  * Persist
  ************************************************************/
-function saveCards(){
-  userSave(LS_KEY, cards);
-  syncCurrentUserSalesToMarket();
-  // Sincronizar cartas en venta con Firestore (async, sin bloquear)
-  if(currentUserId()) fsSyncAllSaleCards().catch(()=>{});
-  try{ renderWishlist(); }catch{}
+function saveCards(){ localStorage.setItem(LS_KEY, JSON.stringify(cards)); try{ renderWishlist(); 
+  try{ cloudSaveAll(); }catch{}
+}catch{} }
+function saveDecks(){ localStorage.setItem(LS_DECKS, JSON.stringify(decks)); 
+  try{ cloudSaveAll(); }catch{}
 }
-function saveDecks(){ userSave(LS_DECKS, decks); }
-function saveWishlist(){ userSave(LS_WISHLIST, wishlist); }
+function saveWishlist(){ localStorage.setItem(LS_WISHLIST, JSON.stringify(wishlist)); 
+  try{ cloudSaveAll(); }catch{}
+}
 
 function touchDeck(d){
   d._updatedAt = Date.now();
@@ -2328,12 +1114,12 @@ function doBackupNow(silent=false){
   const payload = buildBackupPayload();
   saveBackupLocal(payload);
   updateBackupInfoUI();
-  if(!silent) alert("Backup guardado.");
+  if(!silent) alert("Backup guardado ✅");
 }
 function restoreLastBackup(){
   const last = getLastBackup();
-  if(!last){ alert("No hay ningún backup guardado."); return; }
-  if(!confirm(`¿Restaurar el backup del ${formatTs(last.ts)}? Se reemplazarán los datos actuales.`)) return;
+  if(!last){ alert("No hay backup para restaurar."); return; }
+  if(!confirm(`¿Restaurar el backup del ${formatTs(last.ts)}? Esto reemplaza tus datos actuales.`)) return;
 
   cards = Array.isArray(last.cards) ? last.cards : [];
   decks = Array.isArray(last.decks) ? last.decks : [];
@@ -2355,7 +1141,7 @@ function restoreLastBackup(){
   if(document.querySelector('section[data-page="coleccion"]:not(.is-hidden)')) renderColeccion();
 
   updateBackupInfoUI();
-  alert("Backup restaurado.");
+  alert("Backup restaurado ✅");
 }
 function downloadBackup(){
   const payload = buildBackupPayload();
@@ -2410,25 +1196,27 @@ function initBackupUI(){
 const UI_TABS = {
   intro: "Introducción",
   cartas: "Cartas",
-  stats: "Stats",
-  buscador: "Buscador",
+  stats_colores: "Stats Colores",
+  stats_tipos: "Stats Tipos/Rarezas",
   coleccion: "Colección",
+  buscador: "Buscador",
   mazos: "Mazos",
   deseos: "Deseos",
-  tienda: "Tienda",
-  mis_ventas: "Ventas",
+  ventas: "Ventas",
+  ajustes: "Ajustes",
 };
 
 const pages = [
   {id:"intro", label:UI_TABS.intro},
   {id:"cartas", label:UI_TABS.cartas},
-  {id:"stats", label:UI_TABS.stats},
-  {id:"buscador", label:UI_TABS.buscador},
+  {id:"stats_colores", label:UI_TABS.stats_colores},
+  {id:"stats_tipos", label:UI_TABS.stats_tipos},
   {id:"coleccion", label:UI_TABS.coleccion},
+  {id:"buscador", label:UI_TABS.buscador},
   {id:"mazos", label:UI_TABS.mazos},
   {id:"deseos", label:UI_TABS.deseos},
-  {id:"tienda", label:UI_TABS.tienda},
-  {id:"mis_ventas", label:UI_TABS.mis_ventas},
+  {id:"ventas", label:UI_TABS.ventas},
+  {id:"ajustes", label:UI_TABS.ajustes},
 ];
 
 function getLastTab(){
@@ -2465,17 +1253,17 @@ function showPage(id){
 
   try{
     if (id === "cartas") renderCardsTableFull();
-    if (id === "stats") { renderColorStats(); renderTypeStats(); updateInvestmentUI(); }
+    if (id === "stats_colores") renderColorStats();
+    if (id === "stats_tipos") { renderTypeStats(); updateInvestmentUI(); }
     if (id === "buscador") { ensureSearchOptions(); loadSearchStateToUI(); renderSearchResults(); }
     if (id === "mazos") renderDecks();
-    if (id === "usuario") { renderUserProfilePage(); initSettingsUI(); }
+    if (id === "ajustes") initSettingsUI();
     if (id === "coleccion") {
       const sel = document.getElementById("colFavFilter");
       if(sel) sel.value = settings.colFavFilter || sel.value || "all";
       renderColeccion();
     }
-    if (id === "tienda" || id === "mis_ventas") renderSalesTable();
-    closeSidebar();
+    if (id === "ventas") renderSalesTable();
   }catch(err){
     console.error("Error al renderizar pestaña:", id, err);
     const box = document.getElementById("globalErrorBox");
@@ -2747,10 +1535,10 @@ function manaValueFromCard(card){
  ************************************************************/
 let sortState = { key:"added", dir:"desc" };
 try{
-  const raw = localStorage.getItem(scopedKey(LS_SORT));
+  const raw = localStorage.getItem(LS_SORT);
   if(raw) sortState = {...sortState, ...JSON.parse(raw)};
 }catch{}
-function saveSortState(){ userSave(LS_SORT, sortState); }
+function saveSortState(){ localStorage.setItem(LS_SORT, JSON.stringify(sortState)); }
 
 function ensureAddedAt(){
   let changed = false;
@@ -2820,6 +1608,11 @@ function clearAddForm(){
   const s=document.getElementById("inSale"); if(s) s.checked=false;
 }
 
+function toTitleCase(str){
+  if(!str) return "";
+  return String(str).trim().replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+}
+
 function updateCardsMetrics(){
   let totalUnits=0;
   let sumEur=0;
@@ -2848,25 +1641,10 @@ function computeInvestmentTotals(){
 
 function updateInvestmentUI(){
   const t = computeInvestmentTotals();
-
-  // Stats tab: dinero en colección
-  const elInvAll      = document.getElementById("moneyInvestAll");
-  const elInvNoProxy  = document.getElementById("moneyInvestNoProxy");
-  const elBestSellAll = document.getElementById("moneyBestSellAll");
-  const elProfitAll   = document.getElementById("moneyProfitAll");
-
-  if(elInvAll)      elInvAll.textContent      = `${t.invAll.toFixed(2)} €`;
-  if(elInvNoProxy)  elInvNoProxy.textContent  = `${t.invReal.toFixed(2)} €`;
-
-  // Calcular mejor venta total y beneficio
-  let bestSellTotal = 0;
-  for(const c of cards){
-    const qty = c.qty || 1;
-    const bs = parseEuro(c.bestSell);
-    if(Number.isFinite(bs)) bestSellTotal += bs * qty;
-  }
-  if(elBestSellAll) elBestSellAll.textContent = `${bestSellTotal.toFixed(2)} €`;
-  if(elProfitAll)   elProfitAll.textContent   = `${(bestSellTotal - t.invAll).toFixed(2)} €`;
+  const elInvReal = document.getElementById("invReal");
+  const elInvAll  = document.getElementById("invAll");
+  if(elInvReal) elInvReal.textContent = `${t.invReal.toFixed(2)}€`;
+  if(elInvAll)  elInvAll.textContent  = `${t.invAll.toFixed(2)}€`;
 }
 
 function renderCardsTableFull(){
@@ -2944,14 +1722,6 @@ function renderColeccion(){
   if(favMode === "fav") view = view.filter(c=>isFav(c));
   else if(favMode === "nofav") view = view.filter(c=>!isFav(c));
 
-  const q = (document.getElementById("colSearchInput")?.value || "").trim().toLowerCase();
-  if(q){
-    view = view.filter(c => [c.name, c.setCode, c.type, c.subtype, c.lang, c.inputName, c.rarity, c.color]
-      .filter(Boolean)
-      .some(v => String(v).toLowerCase().includes(q))
-    );
-  }
-
   let totalUnits = 0;
   let sumEur = 0;
 
@@ -2969,9 +1739,6 @@ function renderColeccion(){
     if(!bg) el.style.backgroundColor = PASTEL.C;
 
     el.innerHTML = `
-      <div class="collectionVisual">
-        ${c.imgUrl ? `<img class="collectionThumb" src="${escapeHtml(c.imgUrl)}" alt="${escapeHtml(c.name||"")}">` : `<div class="collectionThumb placeholder">Sin imagen</div>`}
-        <div>
       <div class="cTop">
         <div>
           <div class="cName">${escapeHtml(c.name||"")}</div>
@@ -2997,8 +1764,6 @@ function renderColeccion(){
         <div class="cField"><div class="k">Precio</div><div class="v mono">${escapeHtml(c.priceText||"")}</div></div>
         <div class="cField"><div class="k">Mejor venta</div><div class="v mono">${escapeHtml(c.bestSell||"")}</div></div>
         <div class="cField"><div class="k">Nombre introducido</div><div class="v">${escapeHtml(c.inputName||"")}</div></div>
-      </div>
-        </div>
       </div>
     `;
     grid.appendChild(el);
@@ -3161,11 +1926,11 @@ function writeSearchStateToUI(s){
 }
 
 function saveSearchState(){
-  try{ localStorage.setItem(scopedKey(LS_SEARCH), JSON.stringify(readSearchStateFromUI())); }catch{}
+  try{ localStorage.setItem(LS_SEARCH, JSON.stringify(readSearchStateFromUI())); }catch{}
 }
 function loadSearchStateToUI(){
   try{
-    const raw = localStorage.getItem(scopedKey(LS_SEARCH));
+    const raw = localStorage.getItem(LS_SEARCH);
     if(!raw) return;
     const s = JSON.parse(raw);
     if(!s) return;
@@ -3296,7 +2061,7 @@ function renderColorStats(){
   chartColors = new Chart(ctx, {
     type: "bar",
     data: { labels, datasets: [{ label: "Cartas por identidad de color (por cantidad)", data, backgroundColor: hexToRgba(accent, 0.30), borderColor: hexToRgba(accent2, 0.90), borderWidth: 1 }]},
-    options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { color: "rgba(216, 27, 96, 0.08)" } }, y: { grid: { color: "rgba(216, 27, 96, 0.08)" } } } }
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { color: hexToRgba(getCssVar("--pink"), 0.08) } }, y: { grid: { color: hexToRgba(getCssVar("--pink"), 0.08) } } } }
   });
 
   const sumDiv = document.getElementById("colorsSummary");
@@ -3332,7 +2097,7 @@ function renderTypeStats(){
     chartTypes = new Chart(ctxT, {
       type: "bar",
       data: { labels: typeLabels, datasets: [{ label: "Tipos (por cantidad)", data: typeData, backgroundColor: hexToRgba(accent, 0.22), borderColor: hexToRgba(accent2, 0.90), borderWidth: 1 }]},
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { color: "rgba(216, 27, 96, 0.08)" } }, y: { grid: { color: "rgba(216, 27, 96, 0.08)" } } } }
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { color: hexToRgba(getCssVar("--pink"), 0.08) } }, y: { grid: { color: hexToRgba(getCssVar("--pink"), 0.08) } } } }
     });
   }
 
@@ -3497,7 +2262,7 @@ function duplicateDeck(deckId){
 function deleteDeck(deckId){
   const d = decks.find(x=>x.id===deckId) || selectedDeck();
   if(!d) return alert("No hay mazo para eliminar.");
-  if(!confirm(`Eliminar el mazo "${d.name}"?`)) return;
+  if(!confirm(`¿Eliminar el mazo "${d.name}"?`)) return;
 
   const currentSel = document.getElementById("deckSelect")?.value || null;
   decks = decks.filter(x=>x.id !== d.id);
@@ -3696,7 +2461,7 @@ async function copyDeckTxt(deckId){
   const txt = deckToText(d);
   try{
     await navigator.clipboard.writeText(txt);
-    alert("TXT copiado al portapapeles.");
+    alert("TXT copiado al portapapeles ✅");
   }catch{
     // fallback
     const ta = document.createElement("textarea");
@@ -3705,7 +2470,7 @@ async function copyDeckTxt(deckId){
     ta.select();
     document.execCommand("copy");
     ta.remove();
-    alert("TXT copiado.");
+    alert("TXT copiado ✅");
   }
 }
 
@@ -4074,7 +2839,7 @@ function renderWishlist(){
     `;
 
     row.querySelector('[data-act="del"]').onclick = ()=>{
-      if(!confirm(`Eliminar "${w.name}" de deseos?`)) return;
+      if(!confirm(`¿Eliminar "${w.name}" de deseos?`)) return;
       wishlist = wishlist.filter(x=>x.id !== w.id);
       saveWishlist();
       renderWishlist();
@@ -4420,6 +3185,21 @@ function initSettingsUI(){
   motionChk.checked = settings.motion === "reduced";
   currencySel.value = settings.currency;
 
+  // Theme swatch clicks
+  document.querySelectorAll(".theme-swatch").forEach(sw=>{
+    sw.addEventListener("click", ()=>{
+      const t = sw.dataset.t;
+      settings.theme = t;
+      saveSettings();
+      applySettings();
+      if(themeSel) themeSel.value = t;
+      if(document.querySelector('section[data-page="stats_colores"]:not(.is-hidden)')) renderColorStats();
+      if(document.querySelector('section[data-page="stats_tipos"]:not(.is-hidden)')) renderTypeStats();
+      updateInvestmentUI();
+      renderSalesTable();
+    });
+  });
+
   themeSel.onchange = ()=>{
     settings.theme = themeSel.value;
     saveSettings();
@@ -4460,7 +3240,7 @@ function initSettingsUI(){
   };
 
   document.getElementById("btnResetSettings").onclick = ()=>{
-    if(!confirm("¿Resetear todos los ajustes?")) return;
+    if(!confirm("¿Resetear ajustes (tema, letra, etc.)?")) return;
     settings = {...DEFAULT_SETTINGS};
     saveSettings();
     applySettings();
@@ -4529,7 +3309,6 @@ document.getElementById("btnAdd").onclick = async ()=>{
       manaValue: mv,
       rarity: rarityMap[card.rarity] || card.rarity || "",
       logoUrl,
-      imgUrl: card.image_uris?.normal || card.image_uris?.large || card.card_faces?.[0]?.image_uris?.normal || "",
       priceText: price,
       proxy, foil, promo, promoPre,
       lang,
@@ -4720,7 +3499,7 @@ document.getElementById("btnImportManaBox").onclick = ()=>{
       updateInvestmentUI();
   renderSalesTable();
       showPage("cartas");
-      alert("Importación completada. Las filas con errores se omitieron.");
+      alert("Importación ManaBox CSV terminada (las filas que fallen se omiten).");
     }catch(e){
       alert("No se pudo importar ManaBox CSV: " + (e?.message||e));
     }
@@ -4729,7 +3508,7 @@ document.getElementById("btnImportManaBox").onclick = ()=>{
 };
 
 document.getElementById("btnClear").onclick = ()=>{
-  if(confirm("¿Borrar todas las cartas guardadas?")){
+  if(confirm("¿Borrar TODAS las cartas guardadas?")){
     cards = [];
     saveCards();
     renderCardsTableFull();
@@ -4792,7 +3571,7 @@ document.getElementById("btnSetCommander").onclick = ()=>{
   touchDeck(d);
   saveDecks();
   renderDecks();
-  alert("Comandante guardado.");
+  alert("Comandante guardado ✅");
 };
 
 document.getElementById("btnClearCommander").onclick = ()=>{
@@ -4816,7 +3595,7 @@ document.getElementById("btnAddToDeck").onclick = ()=>{
   const cn = document.getElementById("deckCardCn").value.trim();
   const qty = Math.max(1, parseInt(document.getElementById("deckCardQty").value||"1",10));
 
-  if(!name || !set || !cn){ alert("Nombre, SetCode y número son obligatorios."); return; }
+  if(!name || !set || !cn){ alert("Rellena nombre + setCode + nº."); return; }
 
   const key = `${set}#${cn}`;
   const existing = d.items.find(it=> (it.key===key && it.name.toLowerCase()===name.toLowerCase()));
@@ -4858,7 +3637,7 @@ document.getElementById("btnDeckImport").onclick = ()=>{
       }
 
       if(!Array.isArray(imported) || !imported.length){
-        alert("No se encontraron mazos en el archivo.");
+        alert("No se detectaron mazos en el archivo.");
         return;
       }
 
@@ -4877,7 +3656,7 @@ document.getElementById("btnDeckImport").onclick = ()=>{
       saveDecks();
       normalizeDecks();
       renderDecks();
-      alert(`${imported.length} mazo(s) importados.`);
+      alert(`Importados: ${imported.length} mazo(s).`);
     }catch(e){
       alert("No se pudo importar: " + (e.message||e));
     }
@@ -4942,440 +3721,13 @@ function initTabs(){
 }
 
 /************************************************************
- * Perfil de usuario
- ************************************************************/
-const DEFAULT_PROFILE = { displayName:"", bio:"", avatar:"", banner:"" };
-let profile = (() => { try{ const raw = userLoad(LS_PROFILE, null, []); if(!raw) return {...DEFAULT_PROFILE}; return {...DEFAULT_PROFILE, ...raw}; }catch{ return {...DEFAULT_PROFILE}; } })();
-function saveProfile(){
-  userSave(LS_PROFILE, profile);
-  syncCurrentUserSalesToMarket();
-  // Actualizar perfil público en Firestore
-  if(currentUserId()) fsSaveProfile().catch(()=>{});
-}
-function fileToDataUrl(file){ return new Promise((resolve, reject)=>{ const reader = new FileReader(); reader.onload = ()=> resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }); }
-function getCurrentSessionUser(){ return getSession(); }
-function getProfileName(){ const sess = getCurrentSessionUser(); return profile.displayName?.trim() || sess?.username || "Usuario"; }
-function getProfileEmail(){ const sess = getCurrentSessionUser(); return sess?.email || "Sin email"; }
-function getProfileAvatar(){ return profile.avatar || "assets/logo.png"; }
-function getProfileBannerCss(){ return profile.banner ? `url("${profile.banner}")` : "linear-gradient(135deg, #c084fc, #7c3aed, #312e81)"; }
-function openProfileTab(tab){
-  const wanted = tab || 'resumen';
-  document.querySelectorAll('[data-profile-tab]').forEach(btn=> btn.classList.toggle('active', btn.dataset.profileTab === wanted));
-  document.querySelectorAll('[data-profile-pane]').forEach(pane=> pane.classList.toggle('is-active', pane.dataset.profilePane === wanted));
-  try{ localStorage.setItem('mtg_profile_tab', wanted); }catch{}
-}
-function getSavedProfileTab(){
-  try{ return localStorage.getItem('mtg_profile_tab') || 'resumen'; }catch{ return 'resumen'; }
-}
-function renderSidebarProfile(){
-  const avatar = document.getElementById("sidebarAvatar");
-  const mini = document.getElementById("sidebarUserMini");
-  const userName = document.getElementById("sidebarUserName");
-  const topAvatar = document.getElementById('topbarAvatar');
-  const avatarSrc = getProfileAvatar();
-  if(avatar) avatar.src = avatarSrc;
-  if(topAvatar) topAvatar.src = avatarSrc;
-  if(userName) userName.textContent = getProfileName();
-  if(mini) mini.textContent = profile.bio?.trim() || "Perfil local";
-}
-
-function loadSocial(){
-  const raw = loadJson(LS_SOCIAL, null);
-  return {
-    requests: Array.isArray(raw?.requests) ? raw.requests : [],
-    friendships: Array.isArray(raw?.friendships) ? raw.friendships : []
-  };
-}
-function saveSocial(data){
-  localStorage.setItem(LS_SOCIAL, JSON.stringify({
-    requests: Array.isArray(data?.requests) ? data.requests : [],
-    friendships: Array.isArray(data?.friendships) ? data.friendships : []
-  }));
-}
-function socialPairKey(a,b){ return [String(a||""), String(b||"")].sort().join("__"); }
-function getPublicProfileByUserId(userId){
-  // Con Firebase Auth no tenemos acceso al directorio de usuarios en cliente.
-  // Se usa el perfil guardado en localStorage (scoped) como fuente pública local.
-  const p = loadJson(scopedKey(LS_PROFILE, userId), {});
-  return {
-    id: userId,
-    username: p?.displayName?.trim() || "Usuario",
-    email: "",
-    displayName: p?.displayName?.trim() || "Usuario",
-    bio: p?.bio?.trim() || "",
-    avatar: p?.avatar || "assets/logo.png"
-  };
-}
-function getFriendsData(){
-  const uid = currentUserId();
-  const social = loadSocial();
-  const friends = social.friendships
-    .filter(f => f.a === uid || f.b === uid)
-    .map(f => {
-      const otherId = f.a === uid ? f.b : f.a;
-      return { ...getPublicProfileByUserId(otherId), createdAt: f.createdAt || 0, friendshipId: f.id || socialPairKey(uid, otherId) };
-    })
-    .sort((a,b) => a.displayName.localeCompare(b.displayName, 'es', {sensitivity:'base'}));
-
-  const received = social.requests
-    .filter(r => r.to === uid)
-    .map(r => ({ ...r, user: getPublicProfileByUserId(r.from) }))
-    .sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
-
-  const sent = social.requests
-    .filter(r => r.from === uid)
-    .map(r => ({ ...r, user: getPublicProfileByUserId(r.to) }))
-    .sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
-
-  return { social, friends, received, sent };
-}
-async function sendFriendRequest(query){
-  const uid = currentUserId();
-  if(!uid) throw new Error("Debes iniciar sesión.");
-  const q = String(query || "").trim().toLowerCase();
-  if(!q) throw new Error("Escribe un nombre de usuario o email.");
-
-  // Buscar el usuario en Firestore
-  const target = await fsSearchUser(q);
-  if(!target) throw new Error("No se encontró ningún usuario con ese nombre o email.");
-  if(target.uid === uid) throw new Error("No puedes enviarte una solicitud a ti mismo.");
-
-  // Verificar si ya son amigos (caché local)
-  const social = loadSocial();
-  const alreadyFriends = social.friendships.some(f => socialPairKey(f.a,f.b) === socialPairKey(uid, target.uid));
-  if(alreadyFriends) throw new Error("Ya sois amigos.");
-
-  const existing = social.requests.find(r =>
-    (r.from === uid && r.to === target.uid) ||
-    (r.from === target.uid && r.to === uid)
-  );
-  if(existing){
-    if(existing.from === target.uid && existing.to === uid){
-      await fsAcceptFriendRequest(existing.id);
-      await fsLoadSocialData();
-      return { autoAccepted: true, target };
-    }
-    throw new Error("Ya hay una solicitud pendiente.");
-  }
-
-  await fsSendFriendRequest(target.uid);
-  await fsLoadSocialData();
-  return { autoAccepted: false, target };
-}
-async function acceptFriendRequest(requestId){
-  await fsAcceptFriendRequest(requestId);
-  await fsLoadSocialData();
-}
-async function declineFriendRequest(requestId){
-  await fsDeclineFriendRequest(requestId);
-  await fsLoadSocialData();
-}
-async function cancelFriendRequest(requestId){
-  await fsDeclineFriendRequest(requestId);
-  await fsLoadSocialData();
-}
-async function removeFriend(friendId){
-  await fsRemoveFriend(friendId);
-  await fsLoadSocialData();
-}
-function friendRowHtml(user, actions){
-  return `<div class="saleItem" style="align-items:center;">
-    <div style="display:flex;align-items:center;gap:10px;min-width:0;">
-      <img src="${escapeHtml(user.avatar || 'assets/logo.png')}" alt="avatar" class="sidebarAvatar">
-      <div style="min-width:0;">
-        <div style="font-weight:700;">${escapeHtml(user.displayName || 'Usuario')}</div>
-        <div class="small mono" style="overflow:hidden;text-overflow:ellipsis;">@${escapeHtml(user.username || 'user')}</div>
-        <div class="small">${escapeHtml(user.bio || user.email || 'Sin bio')}</div>
-      </div>
-    </div>
-    <div class="row" style="gap:8px;flex-wrap:wrap;">${actions}</div>
-  </div>`;
-}
-function renderFriendsUI(){
-  const friendsList = document.getElementById('friendsList');
-  const receivedList = document.getElementById('friendRequestsReceived');
-  const sentList = document.getElementById('friendRequestsSent');
-  const friendCount = document.getElementById('friendCount');
-  const friendReceivedCount = document.getElementById('friendReceivedCount');
-  const friendSentCount = document.getElementById('friendSentCount');
-  if(!friendsList || !receivedList || !sentList) return;
-
-  const { friends, received, sent } = getFriendsData();
-  if(friendCount) friendCount.textContent = String(friends.length);
-  if(friendReceivedCount) friendReceivedCount.textContent = String(received.length);
-  if(friendSentCount) friendSentCount.textContent = String(sent.length);
-
-  friendsList.innerHTML = friends.length
-    ? friends.map(f => friendRowHtml(f, `<button class="btn ghost tiny" data-remove-friend="${escapeHtml(f.id)}">Quitar</button>`)).join('')
-    : '<div class="hint">Todavía no tienes amigos añadidos.</div>';
-
-  receivedList.innerHTML = received.length
-    ? received.map(r => friendRowHtml(r.user, `<button class="btn tiny" data-accept-friend="${escapeHtml(r.id)}">Aceptar</button><button class="btn ghost tiny" data-decline-friend="${escapeHtml(r.id)}">Rechazar</button>`)).join('')
-    : '<div class="hint">No tienes solicitudes recibidas.</div>';
-
-  sentList.innerHTML = sent.length
-    ? sent.map(r => friendRowHtml(r.user, `<button class="btn ghost tiny" data-cancel-friend="${escapeHtml(r.id)}">Cancelar</button>`)).join('')
-    : '<div class="hint">No has enviado solicitudes.</div>';
-}
-
-function loadMySales(){
-  const sess = getSession();
-  if(!sess) return [];
-  return cards.filter(c=>!!c.sale);
-}
-
-function renderUserProfilePage(){
-  const hero = document.getElementById("profileHero");
-  const heroEdit = document.getElementById("profileHeroEditPreview");
-  const avatarLarge = document.getElementById("profileAvatarLarge");
-  const avatarPreview = document.getElementById("profileAvatarPreview");
-  const editAvatarPreview = document.getElementById("profileEditAvatarPreview");
-  const editAvatarLarge = document.getElementById("profileEditAvatarLarge");
-  const name = document.getElementById("profileDisplayName");
-  const publicName = document.getElementById("profilePublicName");
-  const editDisplayName = document.getElementById("profileEditDisplayName");
-  const email = document.getElementById("profileDisplayEmail");
-  const editEmail = document.getElementById("profileEditDisplayEmail");
-  const bio = document.getElementById("profilePublicBio");
-  const nameInput = document.getElementById("profileNameInput");
-  const bioInput = document.getElementById("profileBioInput");
-  const bannerCss = getProfileBannerCss();
-
-  if(hero) hero.style.setProperty("--profile-banner", bannerCss);
-  if(heroEdit) heroEdit.style.setProperty("--profile-banner", bannerCss);
-
-  const avatarSrc = getProfileAvatar();
-  if(avatarLarge) avatarLarge.src = avatarSrc;
-  if(avatarPreview) avatarPreview.src = avatarSrc;
-  if(editAvatarPreview) editAvatarPreview.src = avatarSrc;
-  if(editAvatarLarge) editAvatarLarge.src = avatarSrc;
-
-  const displayName = getProfileName();
-  if(name) name.textContent = displayName;
-  if(publicName) publicName.textContent = displayName;
-  if(editDisplayName) editDisplayName.textContent = displayName;
-  if(email) email.textContent = getProfileEmail();
-  if(editEmail) editEmail.textContent = getProfileEmail();
-  if(bio) bio.textContent = profile.bio?.trim() || "Sin bio.";
-  if(nameInput) nameInput.value = profile.displayName || "";
-  if(bioInput) bioInput.value = profile.bio || "";
-
-  const cardsCount = cards.length;
-  const decksCount = decks.length;
-  const wishCount = wishlist.length;
-  const inv = computeInvestmentTotals();
-
-  const totalCopies = cards.reduce((n, c)=> n + (Number(c.count || c.qty || 1) || 1), 0);
-  const mySales = loadMySales();
-  const ids = {
-    profileCardsCount: cardsCount,
-    profileDecksCount: decksCount,
-    profileWishCount: wishCount,
-    profileStatCards: cardsCount,
-    profileStatDecks: decksCount,
-    profileStatWishes: wishCount,
-    profileStatValue: `${inv.invAll.toFixed(2)}€`,
-    profileAboutName: displayName,
-    profileAboutEmail: getProfileEmail(),
-    rankCollectionValue: cardsCount,
-    rankDeckValue: decksCount,
-    rankWishValue: wishCount,
-    rankTotalCards: cardsCount,
-    rankTotalCopies: totalCopies,
-    rankWishlistTotal: wishlist.length,
-    rankSalesTotal: mySales.length
-  };
-
-  Object.entries(ids).forEach(([id, value])=>{
-    const el = document.getElementById(id);
-    if(el) el.textContent = String(value);
-  });
-
-  renderFriendsUI();
-  renderSidebarProfile();
-  openProfileTab(getSavedProfileTab());
-}
-function initUserProfilePage(){
-  const avatarInput = document.getElementById("profileAvatarInput");
-  const bannerInput = document.getElementById("profileBannerInput");
-  const btnResetAvatar = document.getElementById("btnResetAvatar");
-  const btnResetBanner = document.getElementById("btnResetBanner");
-  const btnSaveText = document.getElementById("btnSaveProfileText");
-  const btnTopProfile = document.getElementById("btnTopProfile");
-  const btnSendFriend = document.getElementById("btnSendFriendRequest");
-  const friendSearchInput = document.getElementById("friendSearchInput");
-  const btnProfileGoCollection = document.getElementById('btnProfileGoCollection');
-  const btnProfileGoStore = document.getElementById('btnProfileGoStore');
-  const btnBackFromProfileSettings = document.getElementById('btnBackFromProfileSettings');
-
-  if(btnTopProfile) btnTopProfile.onclick = ()=> { showPage("usuario"); openProfileTab('resumen'); };
-  if(btnProfileGoCollection) btnProfileGoCollection.onclick = ()=> showPage('coleccion');
-  if(btnProfileGoStore) btnProfileGoStore.onclick = ()=> showPage('tienda');
-  if(btnBackFromProfileSettings) btnBackFromProfileSettings.onclick = ()=> openProfileTab('resumen');
-
-  document.querySelectorAll('[data-profile-tab]').forEach(btn=>{
-    btn.addEventListener('click', ()=> openProfileTab(btn.dataset.profileTab));
-  });
-
-  if(avatarInput){
-    avatarInput.addEventListener("change", async (e)=>{
-      const file = e.target.files?.[0];
-      if(!file) return;
-      const btn = document.querySelector('label[for="profileAvatarInput"]');
-      if(btn) btn.textContent = "Subiendo…";
-      try{
-        if(currentUserId()){
-          await fsUploadAvatar(file);
-        }else{
-          // Fallback local si no hay sesión Firebase activa
-          profile.avatar = await fileToDataUrl(file);
-          saveProfile();
-        }
-        renderUserProfilePage();
-        renderSalesTable();
-      }catch(err){
-        alert("No se pudo subir la imagen: " + (err?.message || err));
-      }finally{
-        if(btn) btn.textContent = "Subir foto";
-        e.target.value = "";
-      }
-    });
-  }
-
-  if(bannerInput){
-    bannerInput.addEventListener("change", async (e)=>{
-      const file = e.target.files?.[0];
-      if(!file) return;
-      const btn = document.querySelector('label[for="profileBannerInput"]');
-      if(btn) btn.textContent = "Subiendo…";
-      try{
-        if(currentUserId()){
-          await fsUploadBanner(file);
-        }else{
-          profile.banner = await fileToDataUrl(file);
-          saveProfile();
-        }
-        renderUserProfilePage();
-      }catch(err){
-        alert("No se pudo subir el banner: " + (err?.message || err));
-      }finally{
-        if(btn) btn.textContent = "Subir banner";
-        e.target.value = "";
-      }
-    });
-  }
-
-  if(btnResetAvatar){
-    btnResetAvatar.onclick = ()=>{
-      profile.avatar = "";
-      saveProfile();
-      renderUserProfilePage();
-      renderSalesTable();
-    };
-  }
-
-  if(btnResetBanner){
-    btnResetBanner.onclick = ()=>{
-      profile.banner = "";
-      saveProfile();
-      renderUserProfilePage();
-    };
-  }
-
-  if(btnSaveText){
-    btnSaveText.onclick = ()=>{
-      const nameInput = document.getElementById("profileNameInput");
-      const bioInput = document.getElementById("profileBioInput");
-      profile.displayName = nameInput?.value?.trim() || "";
-      profile.bio = bioInput?.value?.trim() || "";
-      saveProfile();
-      renderUserProfilePage();
-      setAuthTop(getCurrentSessionUser());
-      renderSalesTable();
-      openProfileTab('resumen');
-      alert("Perfil guardado.");
-    };
-  }
-
-  if(btnSendFriend){
-    btnSendFriend.onclick = async ()=>{
-      try{
-        btnSendFriend.disabled = true;
-        btnSendFriend.textContent = "Buscando…";
-        const query = friendSearchInput?.value || "";
-        const res = await sendFriendRequest(query);
-        if(friendSearchInput) friendSearchInput.value = "";
-        renderUserProfilePage();
-        openProfileTab('amigos');
-        alert(res.autoAccepted ? "Solicitud mutua: ya sois amigos." : "Solicitud enviada.");
-      }catch(err){
-        alert(err?.message || err);
-      }finally{
-        btnSendFriend.disabled = false;
-        btnSendFriend.textContent = "Añadir amigo";
-      }
-    };
-  }
-
-  if(friendSearchInput){
-    friendSearchInput.addEventListener('keydown', (e)=>{
-      if(e.key === 'Enter'){
-        e.preventDefault();
-        btnSendFriend?.click();
-      }
-    });
-  }
-
-  if(!window.__friendsDelegated){ window.__friendsDelegated = true; document.addEventListener('click', async (e)=>{
-    const acceptBtn = e.target.closest('[data-accept-friend]');
-    const declineBtn = e.target.closest('[data-decline-friend]');
-    const cancelBtn = e.target.closest('[data-cancel-friend]');
-    const removeBtn = e.target.closest('[data-remove-friend]');
-    try{
-      if(acceptBtn){ await acceptFriendRequest(acceptBtn.dataset.acceptFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
-      if(declineBtn){ await declineFriendRequest(declineBtn.dataset.declineFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
-      if(cancelBtn){ await cancelFriendRequest(cancelBtn.dataset.cancelFriend); renderUserProfilePage(); openProfileTab('solicitudes'); }
-      if(removeBtn){ await removeFriend(removeBtn.dataset.removeFriend); renderUserProfilePage(); openProfileTab('amigos'); }
-    }catch(err){
-      alert(err?.message || err);
-    }
-  }); }
-
-  initSettingsUI();
-  renderUserProfilePage();
-}
-
-/************************************************************
  * ARRANQUE
  ************************************************************/
-function closeSidebar(){ const appShell=document.getElementById("appShell"), backdrop=document.getElementById("sidebarBackdrop"); if(!appShell) return; backdrop?.classList.remove("is-open"); appShell.classList.remove("sidebar-open"); appShell.classList.add("sidebar-collapsed"); }
-function syncSidebarMode(){
-  const appShell=document.getElementById("appShell"), backdrop=document.getElementById("sidebarBackdrop");
-  if(!appShell) return;
-  if(window.innerWidth <= 820){
-    appShell.classList.remove("sidebar-collapsed");
-    appShell.classList.remove("sidebar-open");
-    backdrop?.classList.remove("is-open");
-  }else{
-    appShell.classList.add("sidebar-collapsed");
-    appShell.classList.remove("sidebar-open");
-    backdrop?.classList.remove("is-open");
-  }
-}
-function toggleSidebar(){ const appShell=document.getElementById("appShell"), backdrop=document.getElementById("sidebarBackdrop"); if(!appShell) return; if(window.innerWidth <= 820){ const willOpen = !appShell.classList.contains("sidebar-open"); appShell.classList.toggle("sidebar-open", willOpen); backdrop?.classList.toggle("is-open", willOpen); }else{ appShell.classList.toggle("sidebar-collapsed"); } }
-function initSidebarUI(){ const toggle=document.getElementById("menuToggle"), backdrop=document.getElementById("sidebarBackdrop"); syncSidebarMode(); if(toggle) toggle.addEventListener("click", toggleSidebar); if(backdrop) backdrop.addEventListener("click", closeSidebar); window.addEventListener("resize", syncSidebarMode); document.querySelectorAll(".sidebar .tabbtn").forEach(btn=> btn.addEventListener("click", closeSidebar)); }
-
-// ── initAppUI: registra listeners de UI que no dependen del usuario ──
-// Se llama UNA vez al cargar el DOM, antes de que Firebase resuelva la sesión.
-let _appUIInited = false;
-function initAppUI(){
-  if(_appUIInited) return;
-  _appUIInited = true;
-
+document.addEventListener("DOMContentLoaded", ()=>{
   applySettings();
-  initSidebarUI();
+  initTabs();
 
-  // Colección: filtro favoritos
+  // Colección: filtro por favoritos
   const colFavSel = document.getElementById("colFavFilter");
   if(colFavSel){
     colFavSel.value = settings.colFavFilter || "all";
@@ -5386,9 +3738,7 @@ function initAppUI(){
     });
   }
 
-  // Colección: búsqueda en tiempo real
-  const colSearchInput = document.getElementById("colSearchInput");
-  if(colSearchInput) colSearchInput.addEventListener("input", ()=> renderColeccion());
+
 
   // Deseos
   const bWishAdd = document.getElementById("btnWishAdd");
@@ -5401,82 +3751,50 @@ function initAppUI(){
   const bDeckToWish = document.getElementById("btnDeckToWish");
   if(bDeckToWish) bDeckToWish.onclick = ()=> addMissingDeckToWishlist(selectedDeck());
 
-  const marketSearch = document.getElementById("marketSearch");
-  if(marketSearch) marketSearch.addEventListener("input", ()=> renderSalesTable());
+  document.getElementById("sortKey").value = sortState.key;
+  document.getElementById("sortDir").value = sortState.dir;
+
+  ensureSearchOptions();
+  loadSearchStateToUI();
+
+  const startPage = getLastTab();
+  showPage(startPage);
+
+  renderCardsTableFull();
+  renderDecks();
+  updateInvestmentUI();
+  renderSalesTable();
 
   loadIntroSets();
-}
+});
 function renderSalesTable(){
   const tbody = document.querySelector("#tblSales tbody");
   const pill = document.getElementById("salesCountPill");
-  const otherPill = document.getElementById("otherSalesCountPill");
-  const otherTbody = document.querySelector("#tblOtherSales tbody");
-  const marketSearch = document.getElementById("marketSearch");
-  const mine = cards.filter(c=>!!c.sale);
-  if(pill) pill.textContent = "En venta: " + mine.reduce((a,c)=>a+(c.qty||1),0);
-  if(tbody){
-    tbody.innerHTML = "";
-    for(const c of mine){
-      const tr = document.createElement("tr");
-      tr.dataset.id = c.id;
-      const bg = gradientFromColorIds(c.colorId);
-      tr.style.backgroundImage = bg || "none";
-      if(!bg) tr.style.backgroundColor = PASTEL.C;
-      tr.innerHTML = `
-        <td class="center"><button class="starBtn" data-star="1" title="Favorito">${c.fav ? "★" : "☆"}</button></td>
-        <td><b>${escapeHtml(c.name)}</b><div class="small">${escapeHtml(c.inputName||"")}</div></td>
-        <td class="mono">${escapeHtml(c.setCode||"")}</td>
-        <td class="mono">${escapeHtml(c.collectorNumber||"")}</td>
-        <td class="right"><span class="mono">${escapeHtml(c.qty||1)}</span></td>
-        <td class="right mono">${escapeHtml(c.priceText||"")}</td>
-        <td class="right mono">${escapeHtml(c.bestSell||"")}</td>
-        <td class="right"><button class="btn ghost" data-sold="1" onclick="markSoldById('${c.id}')">Vendida</button></td>`;
-      tbody.appendChild(tr);
-    }
-  }
-  if(otherTbody){
-    // Mostrar caché local mientras carga Firestore
-    _renderOtherSales(otherTbody, otherPill, marketSearch);
-    // Actualizar desde Firestore en segundo plano
-    if(currentUserId()){
-      fsLoadMarket().then(()=>{
-        _renderOtherSales(otherTbody, otherPill, marketSearch);
-      }).catch(()=>{});
-    }
-  }
-}
+  if(!tbody || !pill) return;
 
-function _renderOtherSales(otherTbody, otherPill, marketSearch){
-  const sess = getSession();
-  const q = (marketSearch?.value || "").trim().toLowerCase();
-  let market = loadMarketOffers().filter(x => x.sellerId && x.qty > 0);
-  if(sess?.id) market = market.filter(x => x.sellerId !== sess.id);
-  if(q){
-    market = market.filter(x =>
-      String(x.name||"").toLowerCase().includes(q) ||
-      String(x.sellerName||"").toLowerCase().includes(q) ||
-      String(x.setCode||"").toLowerCase().includes(q)
-    );
-  }
-  if(otherPill) otherPill.textContent = "Otros usuarios: " + market.reduce((a,c)=>a+(c.qty||1),0);
-  otherTbody.innerHTML = "";
-  for(const item of market){
+  const list = cards.filter(c=>!!c.sale);
+  pill.textContent = "En venta: " + list.reduce((a,c)=>a+(c.qty||1),0);
+
+  tbody.innerHTML = "";
+  for(const c of list){
     const tr = document.createElement("tr");
+    tr.dataset.id = c.id;
+
+    const bg = gradientFromColorIds(c.colorId);
+    tr.style.backgroundImage = bg || "none";
+    if(!bg) tr.style.backgroundColor = PASTEL.C;
+
     tr.innerHTML = `
-      <td><div class="row" style="gap:8px;flex-wrap:nowrap;"><img src="${escapeHtml(item.sellerAvatar || 'assets/logo.png')}" alt="avatar" class="sidebarAvatar" style="width:34px;height:34px;"><div><b>${escapeHtml(item.sellerName || "Usuario")}</b><div class="small">Vendedor</div></div></div></td>
-      <td><b>${escapeHtml(item.name)}</b></td>
-      <td class="mono">${escapeHtml(item.setCode||"")}</td>
-      <td class="mono">${escapeHtml(item.collectorNumber||"")}</td>
-      <td class="right mono">${escapeHtml(item.qty||1)}</td>
-      <td class="right mono">${escapeHtml(item.priceText||"")}</td>
-      <td class="right mono">${escapeHtml(item.bestSell||"")}</td>
-      <td><span class="pill">Disponible</span></td>`;
-    otherTbody.appendChild(tr);
-  }
-  if(!market.length){
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td colspan="8"><div class="marketEmpty">Sin anuncios activos de otros usuarios.</div></td>`;
-    otherTbody.appendChild(tr);
+      <td class="center"><button class="starBtn" data-star="1" title="Favorito">${c.fav ? "★" : "☆"}</button></td>
+      <td><b>${escapeHtml(c.name)}</b><div class="small">${escapeHtml(c.inputName||"")}</div></td>
+      <td class="mono">${escapeHtml(c.setCode||"")}</td>
+      <td class="mono">${escapeHtml(c.collectorNumber||"")}</td>
+      <td class="right"><span class="mono">${escapeHtml(c.qty||1)}</span></td>
+      <td class="right mono">${escapeHtml(c.priceText||"")}</td>
+      <td class="right mono">${escapeHtml(c.bestSell||"")}</td>
+      <td class="right"><button class="btn ghost" data-sold="1" onclick="markSoldById('${c.id}')">Vendida</button></td>
+    `;
+    tbody.appendChild(tr);
   }
 }
 
@@ -5506,16 +3824,65 @@ function markSoldById(id){
  * - Estas funciones quedan como no-ops para no romper el resto del código
  ************************************************************/
 function getAppPayload(){
-  return { cards, decks, wishlist, settings, sortState, profile };
+  return { cards, decks, wishlist, settings, sortState };
+}
+
+// ====================================================
+// FIREBASE: Guardar y cargar datos en la nube
+// ====================================================
+
+async function cloudSaveAll() {
+  const user = window._fbCurrentUser;
+  if (!user) return;
+  const { doc, setDoc } = window._fbFns;
+  const db = window._fbDb;
+  try {
+    const payload = {
+      cards,
+      decks,
+      wishlist,
+      settings,
+      sortState,
+      updatedAt: Date.now()
+    };
+    await setDoc(doc(db, "users", user.uid, "data", "main"), payload);
+  } catch(e) {
+    console.error("Error al guardar en nube:", e);
+  }
+}
+
+async function cloudLoadAll() {
+  const user = window._fbCurrentUser;
+  if (!user) return false;
+  const { doc, getDoc } = window._fbFns;
+  const db = window._fbDb;
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid, "data", "main"));
+    if (!snap.exists()) return false;
+    const data = snap.data();
+    if (Array.isArray(data.cards))    cards    = data.cards;
+    if (Array.isArray(data.decks))    decks    = data.decks;
+    if (Array.isArray(data.wishlist)) wishlist = data.wishlist;
+    if (data.settings)  settings  = { ...DEFAULT_SETTINGS, ...data.settings };
+    if (data.sortState) sortState = data.sortState;
+    // Persistir localmente también
+    saveCards(); saveDecks(); saveWishlist(); saveSettings();
+    return true;
+  } catch(e) {
+    console.error("Error al cargar de nube:", e);
+    return false;
+  }
 }
 
 /************************************************************
- * Firebase Auth — login / registro / logout
+ * Auth local: login/registro + recordar
  ************************************************************/
+const REMEMBER_KEY = "mtg_rosita_remember_v1";
 
 function showLogin(){
   document.body.classList.add("not-authenticated");
   document.body.classList.remove("app-enter");
+
   const scr = document.getElementById("authScreen");
   if(scr){
     scr.style.display = "flex";
@@ -5538,23 +3905,25 @@ function showApp(){
 }
 
 function setAuthTop(user){
+  const status = document.getElementById("authStatus");
   const btnOut = document.getElementById("btnSignOutTop");
+  if(status){
+    status.textContent = user ? `👤 ${user.username || ""} ${user.email ? "("+user.email+")" : ""}`.trim() : "No logueado";
+  }
   if(btnOut) btnOut.style.display = user ? "" : "none";
-  renderFriendsUI();
-  renderSidebarProfile();
 }
 
 function setMsg(text, ok=false){
   const msg = document.getElementById("authMsg");
   if(!msg) return;
-  msg.style.color = ok ? "#4ade80" : "#f87171";
+  msg.style.color = ok ? "#16a34a" : "#ef4444";
   msg.textContent = text || "";
 }
 
 function setMsg2(text, ok=false){
   const msg = document.getElementById("authMsg2");
   if(!msg) return;
-  msg.style.color = ok ? "#4ade80" : "#f87171";
+  msg.style.color = ok ? "#16a34a" : "#ef4444";
   msg.textContent = text || "";
 }
 
@@ -5573,222 +3942,190 @@ function showAuthView(which){
   try{ setMsg2(""); }catch{}
 }
 
-function signOutAndReturnToLogin(){
-  fbAuth.signOut().then(()=>{
-    _fbUser = null;
-    setAuthTop(null);
-    showLogin();
-  });
-}
-
 function isValidEmail(email){
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(email||"").trim());
+  const e = String(email||"").trim();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
 }
 
 function isStrongPassword(pw){
   const p = String(pw||"");
-  return p.length >= 6; // Firebase requiere mínimo 6 caracteres
+  if(p.length < 8) return false;
+  if(!/[A-Za-z]/.test(p)) return false;
+  if(!/\d/.test(p)) return false;
+  return true;
 }
 
-function _onFirebaseLogin(firebaseUser){
-  _fbUser = firebaseUser;
-  reloadScopedAppState();
-  setAuthTop(getSession());
-
-  // Inicializa listeners de UI estáticos (solo la primera vez)
-  initAppUI();
-
-  // Tabs y perfil (dependen del usuario)
-  initTabs();
-  initUserProfilePage();
-
-  // Restaurar estado de ordenación
-  const skEl = document.getElementById("sortKey");
-  const sdEl = document.getElementById("sortDir");
-  if(skEl) skEl.value = sortState.key;
-  if(sdEl) sdEl.value = sortState.dir;
-
-  ensureSearchOptions();
-  loadSearchStateToUI();
-
-  // Renderizar con datos locales primero (respuesta inmediata)
-  showPage(getLastTab());
-  renderCardsTableFull();
-  renderDecks();
-  updateInvestmentUI();
-  renderSalesTable();
-  showApp();
-
-  // Sincronizar con Firestore en segundo plano
-  fsSaveProfile().catch(()=>{});
-  fsLoadSocialData().then(()=> renderUserProfilePage()).catch(()=>{});
-  fsSyncAllSaleCards().catch(()=>{});
+function getRememberPref(){
+  try{
+    const v = localStorage.getItem(REMEMBER_KEY);
+    return v !== "0";
+  }catch{ return true; }
+}
+function setRememberPref(v){
+  try{ localStorage.setItem(REMEMBER_KEY, v ? "1" : "0"); }catch{}
 }
 
-async function initAuth(){
-  const emailEl    = document.getElementById("authEmail");
-  const passEl     = document.getElementById("authPass");
-  const btnUp      = document.getElementById("btnSignUp");
-  const btnIn      = document.getElementById("btnSignIn");
-  const btnForgot  = document.getElementById("btnForgotPass");
-  const btnOutTop  = document.getElementById("btnSignOutTop");
+function signOutAndReturnToLogin(){
+  clearSession();
+  setAuthTop(null);
+  showLogin();
+}
 
-  const suUserEl   = document.getElementById("suUsername");
-  const suEmailEl  = document.getElementById("suEmail");
-  const suEmail2El = document.getElementById("suEmail2");
-  const suPassEl   = document.getElementById("suPass");
-  const suPass2El  = document.getElementById("suPass2");
-  const btnCreate  = document.getElementById("btnCreateAccount");
-  const btnBack    = document.getElementById("btnBackToLogin");
+async function initAuth() {
+  const emailEl   = document.getElementById("authEmail");
+  const passEl    = document.getElementById("authPass");
+  const chkRem    = document.getElementById("authRemember");
+  const btnIn     = document.getElementById("btnSignIn");
+  const btnUp     = document.getElementById("btnSignUp");
+  const btnOutTop = document.getElementById("btnSignOutTop");
 
-  // Estado inicial — espera a onAuthStateChanged antes de mostrar nada
+  const suUserEl  = document.getElementById("suUsername");
+  const suEmailEl = document.getElementById("suEmail");
+  const suEmail2El= document.getElementById("suEmail2");
+  const suPassEl  = document.getElementById("suPass");
+  const suPass2El = document.getElementById("suPass2");
+  const btnCreate = document.getElementById("btnCreateAccount");
+  const btnBack   = document.getElementById("btnBackToLogin");
+
   showLogin();
   showAuthView("login");
 
-  // ── Botón: ir a pantalla de registro ──
-  if(btnUp){
-    btnUp.onclick = ()=>{
-      setMsg("");
-      showAuthView("signup");
-      try{
-        const e = (emailEl?.value||"").trim();
-        if(e && suEmailEl) suEmailEl.value = e;
-      }catch{}
-    };
-  }
+  // Volver al login
+  if (btnBack) btnBack.onclick = () => showAuthView("login");
 
-  // ── Botón: volver al login ──
-  if(btnBack){
-    btnBack.onclick = ()=> showAuthView("login");
-  }
+  // Mostrar registro
+  if (btnUp) btnUp.onclick = () => {
+    setMsg("");
+    showAuthView("signup");
+    if (emailEl?.value && suEmailEl) suEmailEl.value = emailEl.value;
+  };
 
-  // ── Recuperar contraseña ──
-  if(btnForgot){
-    btnForgot.onclick = async ()=>{
-      const email = (emailEl?.value || "").trim();
-      if(!email || !isValidEmail(email)){
-        setMsg("Escribe tu email arriba y pulsa este botón.");
+  // Cerrar sesión
+  if (btnOutTop) btnOutTop.onclick = async () => {
+    await window._fbFns.signOut(window._fbAuth);
+    clearSession();
+    setAuthTop(null);
+    showLogin();
+  };
+
+  // ── CREAR CUENTA ──
+  if (btnCreate) btnCreate.onclick = async () => {
+    setMsg2("");
+    const username = (suUserEl?.value || "").trim();
+    const email1   = (suEmailEl?.value || "").trim();
+    const email2   = (suEmail2El?.value || "").trim();
+    const pass1    = suPassEl?.value || "";
+    const pass2    = suPass2El?.value || "";
+
+    if (!username)          return setMsg2("Escribe un nombre de usuario.");
+    if (username.length < 3) return setMsg2("El nombre de usuario debe tener al menos 3 caracteres.");
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) return setMsg2("Solo letras, números y guiones bajos (_).");
+    if (!email1 || !email2) return setMsg2("Completa y confirma el email.");
+    if (email1.toLowerCase() !== email2.toLowerCase()) return setMsg2("Los emails no coinciden.");
+    if (!isValidEmail(email1)) return setMsg2("El email no es válido.");
+    if (!pass1 || !pass2) return setMsg2("Completa y repite la contraseña.");
+    if (pass1 !== pass2) return setMsg2("Las contraseñas no coinciden.");
+    if (!isStrongPassword(pass1)) return setMsg2("Mínimo 8 caracteres, letras y números.");
+
+    btnCreate.disabled = true;
+    btnCreate.textContent = "Creando cuenta…";
+
+    try {
+      const { createUserWithEmailAndPassword, sendEmailVerification,
+              doc, setDoc, collection, query, where, getDocs } = window._fbFns;
+      const db = window._fbDb;
+
+      // ── 1. Verificar username único en Firestore ──
+      const uq = query(collection(db, "usernames"), where("username_lower", "==", username.toLowerCase()));
+      const usnap = await getDocs(uq);
+      if (!usnap.empty) {
+        setMsg2("Ese nombre de usuario ya está en uso. Elige otro.");
         return;
       }
-      btnForgot.disabled = true;
-      btnForgot.textContent = "Enviando…";
-      try{
-        await fbAuth.sendPasswordResetEmail(email);
-        setMsg(`Email de recuperación enviado a ${email}. Revisa tu bandeja.`, true);
-      }catch(err){
-        setMsg(_fbErrorMsg(err));
-      }finally{
-        btnForgot.disabled = false;
-        btnForgot.textContent = "¿Olvidaste tu contraseña?";
-      }
-    };
-  }
 
-  // ── Cerrar sesión ──
-  if(btnOutTop){
-    btnOutTop.onclick = ()=> signOutAndReturnToLogin();
-  }
+      // ── 2. Crear usuario en Firebase Auth ──
+      const cred = await createUserWithEmailAndPassword(window._fbAuth, email1, pass1);
 
-  // ── Crear cuenta con Firebase Auth ──
-  if(btnCreate){
-    btnCreate.onclick = async ()=>{
-      setMsg2("");
+      // ── 3. Guardar perfil en Firestore ──
+      await setDoc(doc(db, "users", cred.user.uid), {
+        uid:            cred.user.uid,
+        username:       username,
+        username_lower: username.toLowerCase(),
+        email:          email1.toLowerCase(),
+        createdAt:      Date.now(),
+        updatedAt:      Date.now()
+      });
 
-      const username = (suUserEl?.value || "").trim();
-      const email1   = (suEmailEl?.value || "").trim();
-      const email2   = (suEmail2El?.value || "").trim();
-      const pass1    = suPassEl?.value || "";
-      const pass2    = suPass2El?.value || "";
+      // ── 4. Reservar username (colección separada para queries rápidas) ──
+      await setDoc(doc(db, "usernames", username.toLowerCase()), {
+        uid:            cred.user.uid,
+        username_lower: username.toLowerCase()
+      });
 
-      if(!username)                                    return setMsg2("Escribe un nombre de usuario.");
-      if(!email1 || !email2)                           return setMsg2("Completa y confirma el email.");
-      if(email1.toLowerCase() !== email2.toLowerCase()) return setMsg2("Los emails no coinciden.");
-      if(!isValidEmail(email1))                        return setMsg2("El email no es válido.");
-      if(!pass1 || !pass2)                             return setMsg2("Completa y repite la contraseña.");
-      if(pass1 !== pass2)                              return setMsg2("Las contraseñas no coinciden.");
-      if(!isStrongPassword(pass1))                     return setMsg2("Contraseña demasiado corta (mínimo 6 caracteres).");
+      // ── 5. Enviar email de verificación ──
+      await sendEmailVerification(cred.user);
 
-      btnCreate.disabled = true;
-      btnCreate.textContent = "Creando cuenta…";
+      // ── 6. Cerrar sesión hasta que verifique el email ──
+      await window._fbFns.signOut(window._fbAuth);
 
-      try{
-        const cred = await fbAuth.createUserWithEmailAndPassword(email1, pass1);
-        // Guardar el displayName en Firebase
-        await cred.user.updateProfile({ displayName: username });
-        // onAuthStateChanged se dispara automáticamente — _onFirebaseLogin lo gestiona
-        setMsg("Cuenta creada. Bienvenido.", true);
-      }catch(err){
-        setMsg2(_fbErrorMsg(err));
-      }finally{
-        btnCreate.disabled = false;
-        btnCreate.textContent = "Crear cuenta";
-      }
-    };
-  }
-
-  // ── Iniciar sesión con Firebase Auth ──
-  if(btnIn){
-    btnIn.onclick = async ()=>{
-      setMsg("");
-      const email    = (emailEl?.value || "").trim();
-      const password = passEl?.value || "";
-
-      if(!email || !password) return setMsg("Completa email y contraseña.");
-      if(!isValidEmail(email)) return setMsg("El email no es válido.");
-
-      btnIn.disabled = true;
-      btnIn.textContent = "Entrando…";
-
-      try{
-        await fbAuth.signInWithEmailAndPassword(email, password);
-        // onAuthStateChanged lo gestiona
-      }catch(err){
-        setMsg(_fbErrorMsg(err));
-      }finally{
-        btnIn.disabled = false;
-        btnIn.textContent = "Iniciar sesión";
-      }
-    };
-  }
-
-  // ── Enter en inputs de login ──
-  [emailEl, passEl].forEach(el=>{
-    el?.addEventListener("keydown", e=>{ if(e.key==="Enter") btnIn?.click(); });
-  });
-}
-
-// Traduce códigos de error de Firebase a español
-function _fbErrorMsg(err){
-  const code = err?.code || "";
-  const map = {
-    "auth/user-not-found":        "No existe una cuenta con ese email.",
-    "auth/wrong-password":        "Contraseña incorrecta.",
-    "auth/invalid-credential":    "Email o contraseña incorrectos.",
-    "auth/email-already-in-use":  "Ya existe una cuenta con ese email.",
-    "auth/weak-password":         "Contraseña demasiado débil (mínimo 6 caracteres).",
-    "auth/invalid-email":         "El email no es válido.",
-    "auth/too-many-requests":     "Demasiados intentos. Espera un momento.",
-    "auth/network-request-failed":"Sin conexión. Revisa tu red.",
-  };
-  return map[code] || (err?.message || "Error desconocido.");
-}
-
-// ── Punto de entrada: DOMContentLoaded ──
-// 1. Inicializa la UI estática inmediatamente
-// 2. Espera a Firebase para saber si hay sesión
-window.addEventListener("DOMContentLoaded", ()=>{
-  initAppUI(); // listeners de UI que no dependen de auth
-
-  fbAuth.onAuthStateChanged(async (firebaseUser)=>{
-    if(firebaseUser){
-      _onFirebaseLogin(firebaseUser);
-    }else{
-      _fbUser = null;
-      setAuthTop(null);
-      await initAuth();
-      showLogin();
+      showAuthView("login");
+      if (emailEl) emailEl.value = email1;
+      setMsg("Cuenta creada ✅ Revisa tu email y haz clic en el enlace de verificación antes de entrar.", true);
+    } catch(e) {
+      const msgs = {
+        "auth/email-already-in-use": "Ya existe una cuenta con ese email.",
+        "auth/weak-password": "Contraseña demasiado débil.",
+        "auth/invalid-email": "Email no válido."
+      };
+      setMsg2(msgs[e.code] || "Error al crear cuenta: " + e.message);
+    } finally {
+      btnCreate.disabled = false;
+      btnCreate.textContent = "Crear cuenta";
     }
-  });
+  };
+
+  // ── INICIAR SESIÓN ──
+  if (btnIn) btnIn.onclick = async () => {
+    setMsg("");
+    const email    = (emailEl?.value || "").trim();
+    const password = passEl?.value || "";
+    if (!email || !password) return setMsg("Completa email y contraseña.");
+
+    try {
+      const { signInWithEmailAndPassword } = window._fbFns;
+      const cred = await signInWithEmailAndPassword(window._fbAuth, email, password);
+
+      // Bloquear acceso si el email no está verificado
+      if (!cred.user.emailVerified) {
+        await window._fbFns.signOut(window._fbAuth);
+        return setMsg("Debes verificar tu email antes de entrar. Revisa tu bandeja de entrada (también el spam).");
+      }
+
+      window._fbCurrentUser = cred.user;
+      setAuthTop({ email: cred.user.email, username: cred.user.email.split("@")[0] });
+      await cloudLoadAll();
+      showApp();
+    } catch(e) {
+      const msgs = {
+        "auth/invalid-credential": "Email o contraseña incorrectos.",
+        "auth/user-not-found": "No existe esa cuenta.",
+        "auth/wrong-password": "Contraseña incorrecta.",
+        "auth/too-many-requests": "Demasiados intentos. Espera un momento."
+      };
+      setMsg(msgs[e.code] || "Error: " + e.message);
+    }
+  };
+
+  // El onAuthStateChanged del módulo de Firebase maneja el auto-login
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  // Exponer funciones que necesita el módulo Firebase (onAuthStateChanged)
+  window.showLogin    = showLogin;
+  window.setMsg       = setMsg;
+  window.showApp      = showApp;
+  window.cloudLoadAll = cloudLoadAll;
+  initAuth();
 });
 
 </script>
