@@ -1,8 +1,9 @@
 import { PASTEL } from './constants.js';
 
-export function qs(sel, parent = document) { return parent.querySelector(sel); }
-export function qsa(sel, parent = document) { return [...parent.querySelectorAll(sel)]; }
+export { PASTEL };
 
+export function qs(sel, parent = document)  { return parent.querySelector(sel); }
+export function qsa(sel, parent = document) { return [...parent.querySelectorAll(sel)]; }
 export function uid() { return crypto.randomUUID(); }
 
 export function escapeHtml(s) {
@@ -65,8 +66,8 @@ export function gradientFromColorIds(colorIds) {
 
 export function colorToEmojisFromCI(ci) {
   const emojis = { W:'⚪', U:'🔵', B:'⚫', R:'🔴', G:'🟢', C:'🔘' };
-  const order = ['W','U','B','R','G'];
-  const arr = Array.isArray(ci) ? ci.map(x => String(x).toUpperCase()) : [];
+  const order  = ['W','U','B','R','G'];
+  const arr    = Array.isArray(ci) ? ci.map(x => String(x).toUpperCase()) : [];
   if (!arr.length) return '🔘';
   const set = new Set(arr);
   return order.filter(c => set.has(c)).map(c => emojis[c]).join('') || '🔘';
@@ -84,7 +85,7 @@ export function manaToEmojis(manaCost) {
     const special = { S:'❄️',T:'↩️',Q:'↪️',E:'⚡' };
     if (special[c]) return special[c];
     if (c.endsWith('/P')) { const col = c.split('/')[0]; return (base[col]||col)+'/☠️'; }
-    if (c.includes('/')) { const [a,b] = c.split('/'); return (base[a]||a)+'/'+(base[b]||b); }
+    if (c.includes('/'))  { const [a,b] = c.split('/'); return (base[a]||a)+'/'+(base[b]||b); }
     return c;
   }).join('');
 }
@@ -92,12 +93,12 @@ export function manaToEmojis(manaCost) {
 export function manaValueFromCard(card) {
   const mv = card?.mana_value;
   if (typeof mv === 'number' && Number.isFinite(mv)) return mv;
-  const cost = card?.mana_cost || card?.card_faces?.[0]?.mana_cost || '';
+  const cost   = card?.mana_cost || card?.card_faces?.[0]?.mana_cost || '';
   const tokens = String(cost).match(/\{[^}]+\}/g) || [];
   let sum = 0;
   for (const t of tokens) {
     const c = t.replace(/[{}]/g,'').toUpperCase();
-    if (/^\d+$/.test(c)) sum += parseInt(c,10);
+    if (/^\d+$/.test(c)) sum += parseInt(c, 10);
     else if (c==='X'||c==='Y'||c==='Z') sum += 0;
     else sum += 1;
   }
@@ -105,12 +106,12 @@ export function manaValueFromCard(card) {
 }
 
 export function typesEs(typeLine) {
-  const superMap = { Legendary:'legendaria',Basic:'básica',Snow:'nevada',World:'mundial',Token:'ficha',Host:'anfitrión' };
-  const typeMap  = { Creature:'Criatura',Instant:'Instantáneo',Sorcery:'Conjuro',Artifact:'Artefacto',Enchantment:'Encantamiento',Land:'Tierra',Planeswalker:'Planeswalker',Battle:'Batalla' };
-  const subMap   = { Aura:'Aura',Equipment:'Equipo',Vehicle:'Vehículo',Elf:'Elfo',Human:'Humano',Wizard:'Hechicero',Dragon:'Dragón',Angel:'Ángel',Goblin:'Trasgo',Zombie:'Zombi',Vampire:'Vampiro',Spirit:'Espíritu',Knight:'Caballero',Cleric:'Clérigo',Beast:'Bestia',Elemental:'Elemental',Warrior:'Guerrero',Soldier:'Soldado',Cat:'Gato',Dog:'Perro',Island:'Isla',Mountain:'Montaña',Swamp:'Pantano',Forest:'Bosque',Plains:'Llanura' };
-  const parts = String(typeLine || '').split(' — ');
-  const left  = (parts[0] || '').trim().split(/\s+/).filter(Boolean);
-  const right = parts[1] ? parts[1].trim().split(/\s+/).filter(Boolean) : [];
+  const superMap = { Legendary:'legendaria', Basic:'básica', Snow:'nevada', World:'mundial', Token:'ficha', Host:'anfitrión' };
+  const typeMap  = { Creature:'Criatura', Instant:'Instantáneo', Sorcery:'Conjuro', Artifact:'Artefacto', Enchantment:'Encantamiento', Land:'Tierra', Planeswalker:'Planeswalker', Battle:'Batalla' };
+  const subMap   = { Aura:'Aura', Equipment:'Equipo', Vehicle:'Vehículo', Elf:'Elfo', Human:'Humano', Wizard:'Hechicero', Dragon:'Dragón', Angel:'Ángel', Goblin:'Trasgo', Zombie:'Zombi', Vampire:'Vampiro', Spirit:'Espíritu', Knight:'Caballero', Cleric:'Clérigo', Beast:'Bestia', Elemental:'Elemental', Warrior:'Guerrero', Soldier:'Soldado', Cat:'Gato', Dog:'Perro', Island:'Isla', Mountain:'Montaña', Swamp:'Pantano', Forest:'Bosque', Plains:'Llanura' };
+  const parts  = String(typeLine || '').split(' — ');
+  const left   = (parts[0] || '').trim().split(/\s+/).filter(Boolean);
+  const right  = parts[1] ? parts[1].trim().split(/\s+/).filter(Boolean) : [];
   const supers = [], mains = [];
   left.forEach(w => { if (superMap[w]) supers.push(superMap[w]); else if (typeMap[w]) mains.push(typeMap[w]); });
   let main = mains.join(' ');
@@ -121,22 +122,22 @@ export function typesEs(typeLine) {
 
 export function mainTypeBucket(typeEs) {
   const t = String(typeEs || '').toLowerCase();
-  if (t.includes('criatura')) return 'Criatura';
+  if (t.includes('criatura'))     return 'Criatura';
   if (t.includes('planeswalker')) return 'Planeswalker';
-  if (t.includes('instant')) return 'Instantáneo';
-  if (t.includes('conjuro')) return 'Conjuro';
-  if (t.includes('artefact')) return 'Artefacto';
-  if (t.includes('encant')) return 'Encantamiento';
-  if (t.includes('tierra')) return 'Tierra';
-  if (t.includes('batalla')) return 'Batalla';
+  if (t.includes('instant'))      return 'Instantáneo';
+  if (t.includes('conjuro'))      return 'Conjuro';
+  if (t.includes('artefact'))     return 'Artefacto';
+  if (t.includes('encant'))       return 'Encantamiento';
+  if (t.includes('tierra'))       return 'Tierra';
+  if (t.includes('batalla'))      return 'Batalla';
   return 'Otro';
 }
 
 export function rarityClass(r) {
   const s = (r || '').toLowerCase();
-  if (s.includes('mítica')) return 'r-mythic';
-  if (s.includes('rara')) return 'r-rare';
-  if (s.includes('poco')) return 'r-uncommon';
+  if (s.includes('mítica'))   return 'r-mythic';
+  if (s.includes('rara'))     return 'r-rare';
+  if (s.includes('poco'))     return 'r-uncommon';
   if (s.includes('especial')) return 'r-special';
   return 'r-common';
 }
@@ -169,7 +170,7 @@ export function updatePriceHistory(obj, priceText) {
 
 export function fmtHistLine(h) {
   try {
-    const d = new Date(h.t);
+    const d  = new Date(h.t);
     const ds = d.toLocaleDateString('es-ES', { year:'2-digit', month:'2-digit', day:'2-digit' });
     const ts = d.toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' });
     const sym = h.cur === 'USD' ? '$' : '€';
@@ -207,4 +208,25 @@ export function parseCsv(text) {
   }
   row.push(cur); out.push(row);
   return out.filter(r => r.some(x => String(x||'').trim()!==''));
+}
+
+export function sortCards(cards, sortState) {
+  const { key, dir } = sortState;
+  const mult = dir === 'asc' ? 1 : -1;
+  const rarityOrder = { 'Común':1, 'Poco común':2, 'Rara':3, 'Mítica':4, 'Especial':5 };
+  return [...cards].sort((a, b) => {
+    const val = o => {
+      if (key === 'added')  return o._addedAt || 0;
+      if (key === 'name')   return String(o.name || '');
+      if (key === 'set')    return String(o.setCode || '');
+      if (key === 'price')  { const p = parseEuro(o.priceText); return Number.isFinite(p) ? p : -1; }
+      if (key === 'mv')     return Number.isFinite(o.manaValue) ? o.manaValue : -1;
+      if (key === 'rarity') return rarityOrder[o.rarity] || 999;
+      if (key === 'qty')    return o.qty || 1;
+      return 0;
+    };
+    const A = val(a), B = val(b);
+    if (typeof A === 'string') return String(A).localeCompare(String(B), 'es', { sensitivity:'base' }) * mult;
+    return (A === B ? 0 : A < B ? -1 : 1) * mult;
+  });
 }

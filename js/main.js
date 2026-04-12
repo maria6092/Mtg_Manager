@@ -6,11 +6,11 @@ import { initWishlistUI } from './ui/wishlist-ui.js';
 import { initSalesListeners } from './ui/sales-ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+  initAppEvents();         // primero: carga estado, aplica settings, inicia auth
   initCardsTableListeners();
   initCollectionListeners();
   initAddCardButton();
   initDecksUI();
   initWishlistUI();
   initSalesListeners();
-  initAppEvents();
 });

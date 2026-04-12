@@ -2,7 +2,7 @@ import { state } from './state.js';
 import { THEME_PRESETS } from './constants.js';
 
 export function applyThemePreset(key) {
-  const preset = THEME_PRESETS[key] || THEME_PRESETS.pink;
+  const preset = THEME_PRESETS[key] || THEME_PRESETS.cosmic;
   const root = document.documentElement;
   root.style.setProperty('--bg',         preset.bg);
   root.style.setProperty('--card',       preset.card);
@@ -20,7 +20,7 @@ export function applyThemePreset(key) {
 }
 
 export function applySettings() {
-  applyThemePreset(state.settings.theme);
+  applyThemePreset(state.settings.theme || 'cosmic');
   document.documentElement.style.setProperty('--base-font', `${state.settings.fontPx}px`);
   document.body.dataset.density = state.settings.density;
   document.documentElement.dataset.motion = state.settings.motion === 'reduced' ? 'reduced' : 'normal';
