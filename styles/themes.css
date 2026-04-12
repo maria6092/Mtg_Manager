@@ -1,7 +1,35 @@
 /* =============================================
    THEMES.CSS — Temas de color y accesibilidad
    ============================================= */
-
+body[data-theme="cosmic"] {
+  --bg: #2a1535;
+  --card: #351840;
+  --pink: #c9a84c;
+  --pink2: #e8c96a;
+  --soft: #4a2060;
+  --line: #6b3d8a;
+  --text: #f0e6d3;
+  --muted: #b89cc8;
+  --input-bg: #2a1535;
+  --input-text: #f0e6d3;
+  --table-bg: #2a1535;
+  --shadow: 0 10px 40px rgba(0,0,0,.55);
+  background: linear-gradient(180deg, #1a0d25, #2a1535);
+}
+body[data-theme="cosmic"] header { background: rgba(26,13,37,.85); }
+body[data-theme="cosmic"] .panel { background: rgba(53,24,64,.9); }
+body[data-theme="cosmic"] .sidebar { background: rgba(20,10,30,.98); }
+body[data-theme="cosmic"] .appTopbar { background: rgba(26,13,37,.92); }
+body[data-theme="cosmic"] input,
+body[data-theme="cosmic"] select { background: rgba(20,10,30,.9); border-color: rgba(107,61,138,.5); color: #f0e6d3; }
+body[data-theme="cosmic"] thead { background: linear-gradient(180deg, rgba(74,32,96,.95), rgba(42,21,53,.95)); }
+body[data-theme="cosmic"] #authScreen { background: linear-gradient(135deg, #1a0d25, #2a1535); }
+body[data-theme="cosmic"] .auth-card { background: rgba(53,24,64,.96); border-color: rgba(107,61,138,.4); }
+body[data-theme="cosmic"] .tabbtn.active {
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  border-color: rgba(201,168,76,.4);
+  color: #e8c96a;
+}
 /* ── Tema negro ── */
 body[data-theme="black"] {
   --bg: #0b0b10;

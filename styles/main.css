@@ -3,21 +3,21 @@
    ============================================= */
 
 :root {
-  --bg: #fff0f6;
-  --card: #ffffff;
-  --pink: #f06292;
-  --pink2: #d81b60;
-  --soft: #f8bbd0;
-  --line: #f2c5d5;
-  --text: #4a2c37;
-  --muted: #7a4a5a;
-  --shadow: 0 10px 24px rgba(216,27,96,.10);
+  --bg: #2a1535;
+  --card: #351840;
+  --pink: #c9a84c;
+  --pink2: #e8c96a;
+  --soft: #4a2060;
+  --line: #6b3d8a;
+  --text: #f0e6d3;
+  --muted: #b89cc8;
+  --shadow: 0 10px 24px rgba(0,0,0,.40);
   --radius: 16px;
   --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
           "Liberation Mono", "Courier New", monospace;
-  --input-bg: #ffffff;
-  --input-text: #111827;
-  --table-bg: #ffffff;
+  --input-bg: #2a1535;
+  --input-text: #f0e6d3;
+  --table-bg: #2a1535;
   --base-font: 16px;
 }
 
