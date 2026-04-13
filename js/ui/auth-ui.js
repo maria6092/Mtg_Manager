@@ -1,146 +1,195 @@
-import { clearSession } from '../core/storage.js';
-import { cloudLoadAll } from '../services/cloud-service.js';
+/**
+ * auth-ui.js
+ * Controla la pantalla de login/registro.
+ * Depende de window.AuthService (auth-firebase.js).
+ * Se llama desde el DOMContentLoaded del index.
+ */
 
-function showLogin() {
-  const scr = document.getElementById('authScreen');
-  if (!scr) return;
-  scr.style.display = 'flex';
-  scr.classList.remove('is-exit');
-  void scr.offsetWidth;
-  scr.classList.add('is-enter');
-}
+const AuthUI = (() => {
 
-function showApp() {
-  const scr = document.getElementById('authScreen');
-  if (!scr) return;
-  scr.classList.remove('is-enter');
-  scr.classList.add('is-exit');
-  setTimeout(() => { scr.style.display = 'none'; }, 380);
-  document.getElementById('btnSignOutTop')?.style && (document.getElementById('btnSignOutTop').style.display = '');
-  document.getElementById('btnSignOutSidebar')?.style && (document.getElementById('btnSignOutSidebar').style.display = '');
-}
+  /* ── refs DOM ── */
+  const $ = id => document.getElementById(id);
 
-function showAuthView(which) {
-  const login  = document.getElementById('authLoginView');
-  const signup = document.getElementById('authSignupView');
-  if (!login || !signup) return;
-  login.style.display  = which === 'signup' ? 'none' : 'grid';
-  signup.style.display = which === 'signup' ? 'grid' : 'none';
-}
+  /* ── mostrar/ocultar vistas ── */
+  function showView(which) {
+    const login  = $('authLoginView');
+    const signup = $('authSignupView');
+    const forgot = $('authForgotView');
+    const resend = $('authResendView');
 
-function setMsg(text, ok = false) {
-  const el = document.getElementById('authMsg');
-  if (el) { el.style.color = ok ? '#16a34a' : '#ef4444'; el.textContent = text || ''; }
-}
+    [login, signup, forgot, resend].forEach(el => {
+      if (el) el.style.display = 'none';
+    });
 
-function setMsg2(text, ok = false) {
-  const el = document.getElementById('authMsg2');
-  if (el) { el.style.color = ok ? '#16a34a' : '#ef4444'; el.textContent = text || ''; }
-}
+    const target = {
+      login:  login,
+      signup: signup,
+      forgot: forgot,
+      resend: resend,
+    }[which];
 
-function isValidEmail(e)    { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e||'').trim()); }
-function isStrongPassword(p){ return String(p||'').length >= 8 && /[A-Za-z]/.test(p) && /\d/.test(p); }
+    if (target) target.style.display = 'grid';
+    clearMsgs();
+  }
 
-function signOut() {
-  window._fbFns?.signOut?.(window._fbAuth);
-  clearSession();
-  document.getElementById('btnSignOutTop')?.style     && (document.getElementById('btnSignOutTop').style.display = 'none');
-  document.getElementById('btnSignOutSidebar')?.style && (document.getElementById('btnSignOutSidebar').style.display = 'none');
-  showLogin();
-}
+  function clearMsgs() {
+    ['authMsg','authMsg2','authMsgForgot','authMsgResend'].forEach(id => {
+      const el = $(id);
+      if (el) el.textContent = '';
+    });
+  }
 
-export function initAuthUI() {
-  showLogin();
-  showAuthView('login');
+  function setMsg(id, text, ok = false) {
+    const el = $(id);
+    if (!el) return;
+    el.style.color = ok ? '#4ade80' : '#f87171';
+    el.textContent = text || '';
+  }
 
-  document.getElementById('btnBackToLogin')?.addEventListener('click', () => showAuthView('login'));
-
-  document.getElementById('btnSignUp')?.addEventListener('click', () => {
-    setMsg('');
-    showAuthView('signup');
-    const emailEl = document.getElementById('authEmail');
-    const suEmail = document.getElementById('suEmail');
-    if (emailEl?.value && suEmail) suEmail.value = emailEl.value;
-  });
-
-  document.getElementById('btnForgotPass')?.addEventListener('click', async () => {
-    const email = document.getElementById('authEmail')?.value.trim();
-    if (!email) { setMsg('Escribe tu email primero.'); return; }
-    try {
-      const { sendPasswordResetEmail } = window._fbFns;
-      await sendPasswordResetEmail(window._fbAuth, email);
-      setMsg('Email de recuperación enviado ✅', true);
-    } catch(e) {
-      setMsg('Error: ' + (e?.message || e));
+  /* ── pantalla login/app ── */
+  function showLoginScreen() {
+    document.body.classList.add('not-authenticated');
+    document.body.classList.remove('app-enter');
+    const scr = $('authScreen');
+    if (scr) {
+      scr.style.display = 'flex';
+      scr.classList.remove('is-exit');
+      void scr.offsetWidth;
+      scr.classList.add('is-enter');
     }
-  });
+    showView('login');
+  }
 
-  document.getElementById('btnSignOutTop')?.addEventListener('click', signOut);
-  document.getElementById('btnSignOutSidebar')?.addEventListener('click', signOut);
-
-  document.getElementById('btnCreateAccount')?.addEventListener('click', async () => {
-    setMsg2('');
-    const username = document.getElementById('suUsername')?.value.trim();
-    const email1   = document.getElementById('suEmail')?.value.trim();
-    const email2   = document.getElementById('suEmail2')?.value.trim();
-    const pass1    = document.getElementById('suPass')?.value  || '';
-    const pass2    = document.getElementById('suPass2')?.value || '';
-
-    if (!username)                                          return setMsg2('Escribe un nombre de usuario.');
-    if (!email1 || !email2)                                 return setMsg2('Completa y confirma el email.');
-    if (email1.toLowerCase() !== email2.toLowerCase())      return setMsg2('Los emails no coinciden.');
-    if (!isValidEmail(email1))                              return setMsg2('El email no es válido.');
-    if (!pass1 || !pass2)                                   return setMsg2('Completa y repite la contraseña.');
-    if (pass1 !== pass2)                                    return setMsg2('Las contraseñas no coinciden.');
-    if (!isStrongPassword(pass1))                           return setMsg2('Mínimo 8 caracteres, letras y números.');
-
-    try {
-      const { createUserWithEmailAndPassword, doc, setDoc } = window._fbFns;
-      const cred = await createUserWithEmailAndPassword(window._fbAuth, email1, pass1);
-      await setDoc(doc(window._fbDb, 'users', cred.user.uid, 'profile', 'main'), {
-        username, email: email1, createdAt: Date.now(),
-      });
-      showAuthView('login');
-      const emailEl = document.getElementById('authEmail');
-      if (emailEl) emailEl.value = email1;
-      setMsg('Cuenta creada ✅ Ya puedes iniciar sesión.', true);
-    } catch(e) {
-      const msgs = {
-        'auth/email-already-in-use': 'Ya existe una cuenta con ese email.',
-        'auth/weak-password':        'Contraseña demasiado débil.',
-        'auth/invalid-email':        'Email no válido.',
-      };
-      setMsg2(msgs[e.code] || 'Error: ' + e.message);
+  function showAppScreen() {
+    const scr = $('authScreen');
+    if (scr) {
+      scr.classList.remove('is-enter');
+      scr.classList.add('is-exit');
+      setTimeout(() => { scr.style.display = 'none'; }, 380);
     }
-  });
+    document.body.classList.remove('not-authenticated');
+    document.body.classList.add('app-enter');
+    setTimeout(() => document.body.classList.remove('app-enter'), 450);
+  }
 
-  document.getElementById('btnSignIn')?.addEventListener('click', async () => {
-    setMsg('');
-    const email    = document.getElementById('authEmail')?.value.trim();
-    const password = document.getElementById('authPass')?.value || '';
-    if (!email || !password) { setMsg('Completa email y contraseña.'); return; }
-    try {
-      const { signInWithEmailAndPassword } = window._fbFns;
-      const cred = await signInWithEmailAndPassword(window._fbAuth, email, password);
-      window._fbCurrentUser = cred.user;
-      await cloudLoadAll();
-      showApp();
-    } catch(e) {
-      const msgs = {
-        'auth/invalid-credential':  'Email o contraseña incorrectos.',
-        'auth/user-not-found':      'No existe esa cuenta.',
-        'auth/wrong-password':      'Contraseña incorrecta.',
-        'auth/too-many-requests':   'Demasiados intentos. Espera.',
-      };
-      setMsg(msgs[e.code] || 'Error: ' + e.message);
-    }
-  });
+  /* ── setDisabled helper ── */
+  function setBusy(btn, label, busy) {
+    btn.disabled = busy;
+    btn.textContent = busy ? label + '…' : label;
+  }
 
-  window._onAuthReady = async (user) => {
-    if (user) {
-      window._fbCurrentUser = user;
-      await cloudLoadAll();
-      showApp();
+  /* ── init ── */
+  function init() {
+    showView('login');
+
+    /* ── Navegar entre vistas ── */
+    $('btnSignUp')?.addEventListener('click', () => {
+      const email = $('authEmail')?.value.trim();
+      if (email && $('suEmail')) $('suEmail').value = email;
+      showView('signup');
+    });
+    $('btnBackToLogin')?.addEventListener('click', () => showView('login'));
+    $('btnGoForgot')?.addEventListener('click', () => {
+      const email = $('authEmail')?.value.trim();
+      if (email && $('forgotEmail')) $('forgotEmail').value = email;
+      showView('forgot');
+    });
+    $('btnBackFromForgot')?.addEventListener('click', () => showView('login'));
+    $('btnGoResend')?.addEventListener('click', () => {
+      const email = $('authEmail')?.value.trim();
+      if (email && $('resendEmail')) $('resendEmail').value = email;
+      showView('resend');
+    });
+    $('btnBackFromResend')?.addEventListener('click', () => showView('login'));
+
+    /* ── LOGIN ── */
+    async function doLogin() {
+      const btn = $('btnSignIn');
+      const email    = $('authEmail')?.value.trim()  || '';
+      const password = $('authPass')?.value          || '';
+      setBusy(btn, 'Iniciar sesión', true);
+      try {
+        await window.AuthService.login({ email, password });
+        // onAuthStateChanged lo gestiona — no hacemos nada más aquí
+      } catch(err) {
+        setMsg('authMsg', window.AuthService.errMsg(err));
+      } finally {
+        setBusy(btn, 'Iniciar sesión', false);
+      }
     }
-  };
-}
+
+    $('btnSignIn')?.addEventListener('click', doLogin);
+    [$('authEmail'), $('authPass')].forEach(el => {
+      el?.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    });
+
+    /* ── REGISTRO ── */
+    $('btnCreateAccount')?.addEventListener('click', async () => {
+      const btn      = $('btnCreateAccount');
+      const username = $('suUsername')?.value.trim()  || '';
+      const email1   = $('suEmail')?.value.trim()     || '';
+      const email2   = $('suEmail2')?.value.trim()    || '';
+      const pass1    = $('suPass')?.value             || '';
+      const pass2    = $('suPass2')?.value            || '';
+
+      if (!username)                                        return setMsg('authMsg2', 'Escribe un nombre de usuario.');
+      if (!email1 || !email2)                               return setMsg('authMsg2', 'Completa y confirma el email.');
+      if (email1.toLowerCase() !== email2.toLowerCase())    return setMsg('authMsg2', 'Los emails no coinciden.');
+      if (!pass1 || !pass2)                                 return setMsg('authMsg2', 'Completa y repite la contraseña.');
+      if (pass1 !== pass2)                                  return setMsg('authMsg2', 'Las contraseñas no coinciden.');
+
+      setBusy(btn, 'Crear cuenta', true);
+      try {
+        await window.AuthService.register({ username, email: email1, password: pass1 });
+        setMsg('authMsg2', '¡Cuenta creada! Revisa tu email para verificarla. ✅', true);
+        setTimeout(() => showView('login'), 3000);
+      } catch(err) {
+        setMsg('authMsg2', window.AuthService.errMsg(err));
+      } finally {
+        setBusy(btn, 'Crear cuenta', false);
+      }
+    });
+
+    /* ── RECUPERAR CONTRASEÑA ── */
+    $('btnSendReset')?.addEventListener('click', async () => {
+      const btn   = $('btnSendReset');
+      const email = $('forgotEmail')?.value.trim() || '';
+      setBusy(btn, 'Enviar email', true);
+      try {
+        await window.AuthService.sendPasswordReset(email);
+        setMsg('authMsgForgot', `Email enviado a ${email}. Revisa tu bandeja. ✅`, true);
+        setTimeout(() => showView('login'), 3500);
+      } catch(err) {
+        setMsg('authMsgForgot', window.AuthService.errMsg(err));
+      } finally {
+        setBusy(btn, 'Enviar email', false);
+      }
+    });
+
+    /* ── REENVIAR VERIFICACIÓN ── */
+    $('btnSendResend')?.addEventListener('click', async () => {
+      const btn      = $('btnSendResend');
+      const email    = $('resendEmail')?.value.trim()  || '';
+      const password = $('resendPass')?.value          || '';
+      setBusy(btn, 'Reenviar', true);
+      try {
+        await window.AuthService.resendVerification(email, password);
+        setMsg('authMsgResend', 'Email de verificación reenviado. ✅ Revisa tu bandeja.', true);
+        setTimeout(() => showView('login'), 3500);
+      } catch(err) {
+        setMsg('authMsgResend', window.AuthService.errMsg(err));
+      } finally {
+        setBusy(btn, 'Reenviar', false);
+      }
+    });
+
+    /* ── CERRAR SESIÓN ── */
+    $('btnSignOutTop')?.addEventListener('click', async () => {
+      await window.AuthService.logout();
+    });
+  }
+
+  return { init, showLoginScreen, showAppScreen, showView };
+})();
+
+window.AuthUI = AuthUI;
