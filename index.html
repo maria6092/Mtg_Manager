@@ -463,6 +463,7 @@
           <div class="appTopbarTitle">✦ MTG Manager ✦</div>
         </div>
         <div class="appTopbarSpacer"></div>
+        <button class="btn ghost" id="btnSignOutHeader" style="display:none;font-size:.68rem;padding:7px 12px;">Cerrar sesión</button>
         <button class="profileQuickBtn" id="btnTopProfile" aria-label="Ir al perfil">
           <img id="topbarAvatar" src="assets/logo.png" alt="Perfil">
         </button>
@@ -1710,7 +1711,13 @@ function initAppUI(){
 /* ─────────────────────────────────────────────
    AUTH FLOW
 ───────────────────────────────────────────── */
-function setAuthTop(user){ const btn=document.getElementById('btnSignOutTop');if(btn)btn.style.display=user?'':'none';renderFriendsUI();renderSidebarProfile(); }
+function setAuthTop(user){
+  const btn=document.getElementById('btnSignOutTop');
+  const btnH=document.getElementById('btnSignOutHeader');
+  if(btn) btn.style.display=user?'':'none';
+  if(btnH){ btnH.style.display=user?'':'none'; btnH.onclick=()=>window.AuthService.logout(); }
+  renderFriendsUI();renderSidebarProfile();
+}
 
 function _onFirebaseLogin(firebaseUser){
   _fbUser=firebaseUser;

@@ -95,7 +95,10 @@ const AuthService = (() => {
   /* ── RECUPERAR CONTRASEÑA ── */
   async function sendPasswordReset(email) {
     if (!isValidEmail(email)) throw new Error('El email no es válido.');
-    await fbAuth.sendPasswordResetEmail(email);
+    await fbAuth.sendPasswordResetEmail(email, {
+      url: window.location.origin,
+      handleCodeInApp: false,
+    });
   }
 
   /* ── REENVIAR VERIFICACIÓN ── */
