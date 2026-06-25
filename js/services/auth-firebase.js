@@ -98,7 +98,9 @@ const AuthService = (() => {
 
     const cred = await fbAuth.signInWithEmailAndPassword(email, password);
 
-    if (!cred.user.emailVerified) {
+    // ⚠️ DESARROLLO: window.DEV_SKIP_EMAIL_VERIFICATION (definida en index.html)
+    // permite entrar sin verificar el email. Ponla a false antes de publicar.
+    if (!window.DEV_SKIP_EMAIL_VERIFICATION && !cred.user.emailVerified) {
       await fbAuth.signOut();
       const err = new Error('Debes verificar tu email antes de entrar. Revisa tu bandeja.');
       err.code = 'auth/email-not-verified';

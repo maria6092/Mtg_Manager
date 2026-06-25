@@ -14,6 +14,11 @@
 
   <!-- Firebase init (antes que cualquier otro script) -->
   <script>
+    /* ⚠️ MODO DESARROLLO ⚠️
+       true  = puedes entrar SIN verificar el email (cómodo mientras desarrollas)
+       false = se exige email verificado (PONLO A false ANTES DE PUBLICAR) */
+    window.DEV_SKIP_EMAIL_VERIFICATION = true;
+
     const firebaseConfig = {
       apiKey:            "AIzaSyC2CyBcmqd4dhuNtIX2sjUk_dadwriF0x8",
       authDomain:        "mtg-manager-2005.firebaseapp.com",
@@ -31,6 +36,7 @@
   <!-- Servicios Auth y UI Auth -->
   <script src="js/services/auth-firebase.js"></script>
   <script src="js/ui/auth-ui.js"></script>
+  <script src="js/services/auth-action.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1745,7 +1751,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
   fbAuth.onAuthStateChanged(async firebaseUser => {
     if(firebaseUser){
-      if(!firebaseUser.emailVerified){
+      // ⚠️ DESARROLLO: con DEV_SKIP_EMAIL_VERIFICATION = true se permite
+      // entrar sin verificar el email. Ponlo a false antes de publicar la app.
+      if(!window.DEV_SKIP_EMAIL_VERIFICATION && !firebaseUser.emailVerified){
         await fbAuth.signOut();
         window.AuthUI.showLoginScreen();
         window.AuthUI.showView('login');
