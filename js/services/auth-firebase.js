@@ -29,28 +29,39 @@ const AuthService = (() => {
     return String(p || '').length >= 6;
   }
 
-  /* ── username único en Firestore ── */
-  async function isUsernameTaken(username) {
-    const snap = await fbDb
-      .collection('users')
-      .where('username', '==', username.toLowerCase())
-      .limit(1)
-      .get();
-    return !snap.empty;
+  /* ── normaliza el username a un id válido y consistente ── */
+  function normalizeUsername(username) {
+    return String(username || '').trim().toLowerCase();
   }
 
-  /* ── crear perfil público en Firestore ── */
-  async function createFirestoreProfile(user, username) {
-    await fbDb.collection('users').doc(user.uid).set({
-      uid:         user.uid,
-      username:    username.toLowerCase(),
-      displayName: username,
-      email:       user.email.toLowerCase(),
-      avatarUrl:   '',
-      bio:         '',
-      isPublic:    true,
-      createdAt:   firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt:   firebase.firestore.FieldValue.serverTimestamp(),
+  /* ── crear perfil público + reservar username en una transacción ──
+     Garantiza unicidad: si el username ya está reservado, falla y no
+     se crea nada. Las reglas de Firestore impiden sobrescribir un
+     usernames/{name} existente, así que la unicidad es real. */
+  async function createProfileAndReserveUsername(user, rawUsername) {
+    const uname      = normalizeUsername(rawUsername);
+    const usernameRef = fbDb.collection('usernames').doc(uname);
+    const userRef     = fbDb.collection('users').doc(user.uid);
+
+    await fbDb.runTransaction(async (tx) => {
+      const existing = await tx.get(usernameRef);
+      if (existing.exists) {
+        throw new Error('Ese nombre de usuario ya está en uso.');
+      }
+      // Reserva el username
+      tx.set(usernameRef, { uid: user.uid });
+      // Crea el perfil público
+      tx.set(userRef, {
+        uid:         user.uid,
+        username:    uname,
+        displayName: rawUsername.trim(),
+        email:       user.email.toLowerCase(),
+        avatarUrl:   '',
+        bio:         '',
+        isPublic:    true,
+        createdAt:   firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt:   firebase.firestore.FieldValue.serverTimestamp(),
+      });
     });
   }
 
@@ -60,13 +71,23 @@ const AuthService = (() => {
     if (!isValidEmail(email))       throw new Error('El email no es válido.');
     if (!isValidPassword(password)) throw new Error('Contraseña demasiado corta (mínimo 6 caracteres).');
 
-    const taken = await isUsernameTaken(username);
-    if (taken) throw new Error('Ese nombre de usuario ya está en uso.');
-
+    // 1. Crear el usuario en Auth (a partir de aquí ya hay sesión)
     const cred = await fbAuth.createUserWithEmailAndPassword(email, password);
-    await cred.user.updateProfile({ displayName: username });
-    await createFirestoreProfile(cred.user, username);
-    await cred.user.sendEmailVerification();
+
+    try {
+      // 2. Nombre visible en Auth
+      await cred.user.updateProfile({ displayName: username.trim() });
+      // 3. Reservar username + crear perfil (unicidad garantizada por reglas)
+      await createProfileAndReserveUsername(cred.user, username);
+      // 4. Email de verificación
+      await cred.user.sendEmailVerification();
+    } catch (err) {
+      // Si algo falla DESPUÉS de crear el usuario (p.ej. username pillado),
+      // borramos el usuario recién creado para no dejar cuentas a medias.
+      try { await cred.user.delete(); } catch (_) {}
+      throw err;
+    }
+
     return cred.user;
   }
 
