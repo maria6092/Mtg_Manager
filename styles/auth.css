@@ -1,0 +1,95 @@
+/* =============================================
+   AUTH.CSS — Pantalla de login y registro
+   ============================================= */
+
+/* ── Animaciones ── */
+@keyframes slideInUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes slideOutDown {
+  from { transform: translateY(0);    opacity: 1; }
+  to   { transform: translateY(30px); opacity: 0; }
+}
+@keyframes appFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Auth screen ── */
+#authScreen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(135deg, var(--bg), var(--soft));
+  background-color: var(--bg);
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity .35s ease;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transform: translateY(12px) scale(.985);
+  opacity: 0;
+  transition: transform .5s cubic-bezier(.2,.8,.2,1), opacity .5s ease;
+  position: relative;
+}
+
+#authScreen.is-enter .auth-card { opacity: 1; transform: translateY(0) scale(1); }
+#authScreen.is-exit { opacity: 0; }
+#authScreen.is-exit .auth-card { transform: translateY(-8px) scale(.99); opacity: 0; }
+
+/* ── Brand dentro del auth ── */
+.auth-brand { margin-bottom: 8px; text-align: center; }
+.auth-logo-img {
+  width: 64px; height: 64px;
+  object-fit: cover;
+  margin: 0 auto 12px;
+  display: block;
+  border-radius: 50%;
+  border: 2px solid rgba(240,98,146,.4);
+  box-shadow: 0 0 24px rgba(240,98,146,.2);
+  background: var(--card);
+}
+.auth-title    { margin: 0; font-size: 1.4rem; color: var(--pink2); text-align: center; }
+.auth-subtitle { margin: 6px 0 0; font-size: .88rem; color: var(--muted); font-style: italic; text-align: center; }
+
+/* ── Form ── */
+.auth-form { display: grid; gap: 12px; text-align: left; }
+.auth-form input {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  font-size: 15px;
+  background: var(--input-bg);
+  color: var(--input-text);
+}
+.auth-form input:focus { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(240,98,146,.12); }
+.auth-btn { width: 100%; }
+
+.auth-msg {
+  min-height: 18px;
+  font-size: 13px;
+  color: #f87171;
+  text-align: center;
+}
+
+/* ── Ocultar app cuando no hay sesión ── */
+body.not-authenticated .appShell,
+body.not-authenticated main { display: none; }
+
+body.app-enter header,
+body.app-enter main { animation: appFadeIn .35s ease both; }
