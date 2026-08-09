@@ -11,49 +11,55 @@
   padding: 10px 14px;
   border-radius: 12px;
   cursor: pointer;
-  transition: .15s;
+  transition: background .15s, transform .1s;
   font-weight: 600;
   touch-action: manipulation;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
 }
 .btn:hover { background: var(--pink2); }
+.btn:active { transform: translateY(1px); }
 
 .btn.ghost {
-  background: var(--card);
+  background: transparent;
   border: 1px solid var(--line);
   color: var(--text);
   font-weight: 600;
 }
-.btn.ghost:hover { border-color: var(--soft); color: var(--pink2); }
+.btn.ghost:hover { border-color: var(--pink); color: var(--pink2); background: rgba(240,98,146,.05); }
 
 .btn.tiny {
   padding: 6px 10px;
-  border-radius: 999px;
+  border-radius: 8px;
   font-size: .78rem;
 }
 .btn.danger { background: #ef4444; }
 .btn.danger:hover { background: #b91c1c; }
 
+/* ── Icon-only button (para reemplazar botones que solo llevaban un emoji) ── */
+.btn.icon-only { padding: 8px; width: 38px; height: 38px; justify-content: center; }
+
 /* ── Tabs ── */
 .tabbtn {
   flex: 0 0 auto;
   border: 1px solid var(--line);
-  background: var(--card);
+  background: transparent;
   color: var(--text);
   padding: 10px 12px;
-  border-radius: 999px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: .15s;
-  box-shadow: 0 6px 14px rgba(240,98,146,.08);
+  transition: background .15s, border-color .15s, color .15s;
   user-select: none;
   touch-action: manipulation;
   white-space: nowrap;
 }
-.tabbtn:hover { transform: translateY(-1px); }
+.tabbtn:hover { border-color: var(--pink); color: var(--pink2); }
 .tabbtn.active {
-  background: linear-gradient(180deg, var(--card), var(--soft));
-  border-color: var(--soft);
+  background: rgba(240,98,146,.1);
+  border-color: var(--pink);
   color: var(--pink2);
-  box-shadow: var(--shadow);
+  font-weight: 600;
 }
 
 /* ── Pill ── */
@@ -119,17 +125,13 @@
   border-radius: 12px;
   padding: 10px;
   background: var(--card);
-  box-shadow: 0 4px 12px rgba(240,98,146,.06);
   display: flex;
   gap: 12px;
   align-items: flex-start;
   cursor: pointer;
-  transition: border-color .18s, box-shadow .18s;
+  transition: border-color .15s;
 }
-.cardrow:hover {
-  border-color: var(--pink);
-  box-shadow: 0 0 12px rgba(240,98,146,.12);
-}
+.cardrow:hover { border-color: var(--pink); }
 .cardrow b { color: var(--pink2); }
 
 .mini { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; color: var(--muted); font-size: .75rem; }
@@ -147,14 +149,12 @@
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--card);
-  box-shadow: var(--shadow);
   overflow: hidden;
-  transition: border-color .2s, box-shadow .2s, transform .15s;
+  transition: border-color .15s, transform .15s;
   cursor: pointer;
 }
 .cCard:hover {
   border-color: var(--pink);
-  box-shadow: 0 0 20px rgba(240,98,146,.14), var(--shadow);
   transform: translateY(-2px);
 }
 .cTop {
@@ -184,7 +184,6 @@
   width: 100px; height: 140px; border-radius: 8px; object-fit: cover;
   border: 1px solid var(--line);
   background: rgba(240,98,146,.08);
-  box-shadow: 0 8px 20px rgba(0,0,0,.2);
 }
 .collectionThumb.placeholder {
   display: grid; place-items: center; font-size: 10px;
@@ -258,7 +257,7 @@
   display: flex; align-items: center; justify-content: space-between;
   padding: 5px 10px; margin: 0 0 3px;
   border-left: 3px solid var(--pink);
-  background: linear-gradient(90deg, rgba(240,98,146,.12), transparent);
+  background: rgba(240,98,146,.06);
   border-radius: 0 5px 5px 0;
 }
 .deckCmdHeader .typeName { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--pink2); }
@@ -269,7 +268,6 @@
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
   padding: 16px;
 }
 
@@ -292,7 +290,6 @@
 /* ── Commander validation ── */
 #deckCmdWarnings {
   margin: 0 0 12px;
-  box-shadow: none;
 }
 
 /* ── Section transitions ── */
@@ -321,6 +318,29 @@ td.rarity-cell { background: transparent !important; background-image: none !imp
 @media (max-width: 700px) { .moneyGrid { grid-template-columns: 1fr; } }
 .moneyCard { padding: 22px 24px; min-height: 110px; }
 .moneyValue { font-size: 1.7rem; font-weight: 700; color: var(--pink2); margin: 10px 0 4px; }
+
+/* ── Selector de presets (avatar / banner) ── */
+.presetGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+.presetGrid.presetGrid-banner { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+
+.presetItem {
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  border: 2px solid var(--line);
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color .15s, transform .1s;
+}
+.presetGrid-banner .presetItem { aspect-ratio: 16 / 6; border-radius: 8px; }
+.presetItem:hover { transform: scale(1.05); }
+.presetItem.selected { border-color: var(--pink2); box-shadow: 0 0 0 3px rgba(240,98,146,.18); }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
