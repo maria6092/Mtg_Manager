@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>✦ MTG Manager ✦</title>
+  <title>✦MTG Manager✦</title>
 
   <!-- Dependencias externas -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,10 +14,8 @@
 
   <!-- Firebase init (antes que cualquier otro script) -->
   <script>
-    /* ⚠️ MODO DESARROLLO ⚠️
-       true  = puedes entrar SIN verificar el email (cómodo mientras desarrollas)
-       false = se exige email verificado (PONLO A false ANTES DE PUBLICAR) */
-    window.DEV_SKIP_EMAIL_VERIFICATION = true;
+  
+    window.DEV_SKIP_EMAIL_VERIFICATION = false;
 
     const firebaseConfig = {
       apiKey:            "AIzaSyC2CyBcmqd4dhuNtIX2sjUk_dadwriF0x8",
@@ -466,7 +464,7 @@
         <button class="menuToggle" id="menuToggle" aria-label="Abrir menú">☰</button>
         <div class="appTopbarBrand">
           <img class="appTopbarLogo" src="assets/logo.png" alt="Logo">
-          <div class="appTopbarTitle">✦ MTG Manager ✦</div>
+          <div class="appTopbarTitle">✦MTG Manager✦</div>
         </div>
         <div class="appTopbarSpacer"></div>
         <button class="btn ghost" id="btnSignOutHeader" style="display:none;font-size:.68rem;padding:7px 12px;">Cerrar sesión</button>
@@ -484,7 +482,7 @@
           <div class="panel soft" style="box-shadow:none;">
             <h3 class="h3">Modo de uso</h3>
             <p class="hint" style="margin:0;">Para identificar una carta correctamente necesitas el nombre, el código de colección y el número. Si solo tienes el nombre se carga la impresión más antigua.</p>
-            <div class="pillRow"><span class="pill">💾 Guardado local</span><span class="pill">☁️ Sincronización</span><span class="pill">📤 Exportar</span><span class="pill">📥 Importar</span></div>
+            <div class="pillRow"><span class="pill">Guardado local</span><span class="pill">Sincronización</span><span class="pill">Exportar</span><span class="pill">Importar</span></div>
           </div>
           <div class="panel soft" style="box-shadow:none;">
             <h3 class="h3">Ajustes y guardado</h3>
