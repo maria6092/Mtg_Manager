@@ -156,7 +156,12 @@ const AuthService = (() => {
       );
 
       // 6. Enviar correo de verificación.
-      await cred.user.sendEmailVerification();
+      const actionCodeSettings = {
+        url: 'https://maria6092.github.io/MTG-Manager/',
+        handleCodeInApp: false
+      };
+
+      await cred.user.sendEmailVerification(actionCodeSettings);
 
       // Registro terminado correctamente.
       return cred.user;
