@@ -1,0 +1,153 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /* ─────────────────────────────────────────
+       HELPERS
+    ───────────────────────────────────────────── */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Dueño + email verificado: úsalo en todas las escrituras "normales"
+    function canWrite(uid) {
+      return isOwner(uid) && isVerified();
+    }
+
+    /* ─────────────────────────────────────────
+       USERS — perfil público (users/{uid})
+       Campos reales (auth-firebase.js › createProfileAndReserveUsername,
+       index.html › fsSaveProfile):
+         uid, username, displayName, email, avatarUrl, bio,
+         isPublic, createdAt, updatedAt
+       Lectura: cualquier autenticado (fsSearchUser, tienda, amigos)
+       Escritura: solo el dueño, y solo con email verificado
+    ───────────────────────────────────────────── */
+    match /users/{uid} {
+      allow read: if isSignedIn();
+
+      // Creado dentro de la transacción createProfileAndReserveUsername()
+      // junto con usernames/{username}
+      allow create: if canWrite(uid)
+                    && request.resource.data.uid == uid
+                    && request.resource.data.username is string
+                    && request.resource.data.username == request.resource.data.username.lower()
+                    && request.resource.data.email is string;
+
+      // fsSaveProfile() hace set({...}, {merge:true}). El username NO se
+      // toca aquí: no existe ninguna función de cambio de username hoy,
+      // así que cualquier intento de modificarlo se bloquea.
+      allow update: if canWrite(uid)
+                    && request.resource.data.uid == uid
+                    && request.resource.data.username == resource.data.username;
+
+      allow delete: if false; // borrado de cuenta no gestionado desde el cliente
+    }
+
+    /* ─────────────────────────────────────────
+       USERNAMES — reserva de unicidad (usernames/{usernameLowercase})
+       Campos reales: { uid }
+       Se crea UNA VEZ en el registro, dentro de la misma transacción que
+       users/{uid}. No existe fsChangeUsername, así que no se permite
+       tocar una reserva ya existente desde el cliente.
+    ───────────────────────────────────────────── */
+    match /usernames/{username} {
+      allow read: if isSignedIn();
+
+      allow create: if isVerified()
+                    && request.resource.data.uid == request.auth.uid
+                    && username == username.lower()
+                    && request.resource.data.keys().hasOnly(['uid']);
+
+      allow update: if false; // no hay función de cambio de username
+      allow delete: if false; // no hay función de liberación de username
+    }
+
+    /* ─────────────────────────────────────────
+       FRIEND_REQUESTS (friend_requests/{id})
+       id = [uidA, uidB].sort().join('__')   ← ojo: ordenado, no from__to
+       Campos reales: from, to, status ('pending' | 'accepted'), createdAt
+    ───────────────────────────────────────────── */
+    match /friend_requests/{requestId} {
+      allow read: if isSignedIn()
+                  && (resource.data.from == request.auth.uid
+                      || resource.data.to == request.auth.uid);
+
+      // fsSendFriendRequest(): solo quien envía, verificado,
+      // no puede enviarse la solicitud a sí mismo
+      allow create: if isVerified()
+                    && request.resource.data.from == request.auth.uid
+                    && request.resource.data.to != request.auth.uid
+                    && request.resource.data.status == 'pending';
+
+      // fsAcceptFriendRequest(): solo el destinatario, y solo
+      // pending -> accepted (from/to no cambian)
+      allow update: if isVerified()
+                    && resource.data.to == request.auth.uid
+                    && resource.data.status == 'pending'
+                    && request.resource.data.status == 'accepted'
+                    && request.resource.data.from == resource.data.from
+                    && request.resource.data.to == resource.data.to;
+
+      // fsDeclineFriendRequest(): cualquiera de los dos implicados
+      allow delete: if isSignedIn()
+                    && (resource.data.from == request.auth.uid
+                        || resource.data.to == request.auth.uid);
+    }
+
+    /* ─────────────────────────────────────────
+       FRIENDSHIPS (friendships/{id})
+       id = [uidA, uidB].sort().join('__')
+       Campos reales: users (array de 2 uids), createdAt
+    ───────────────────────────────────────────── */
+    match /friendships/{friendshipId} {
+      allow read: if isSignedIn() && request.auth.uid in resource.data.users;
+
+      // Se crea dentro del batch de fsAcceptFriendRequest()
+      allow create: if isVerified()
+                    && request.auth.uid in request.resource.data.users
+                    && request.resource.data.users.size() == 2;
+
+      allow update: if false; // las amistades no se editan, solo se crean/borran
+
+      // fsRemoveFriend()
+      allow delete: if isSignedIn() && request.auth.uid in resource.data.users;
+    }
+
+    /* ─────────────────────────────────────────
+       LISTINGS — mercado (listings/{sellerId__cardId})
+       Campos reales (fsPublishSaleCard): sellerId, sellerName, sellerAvatar,
+         cardId, name, setCode, collectorNumber, qty, priceText, bestSell,
+         foil, lang, imgUrl, isActive, updatedAt
+    ───────────────────────────────────────────── */
+    match /listings/{listingId} {
+      // fsLoadMarket(): cualquier autenticado puede ver la tienda
+      allow read: if isSignedIn();
+
+      allow create: if canWrite(request.resource.data.sellerId)
+                    && listingId == request.resource.data.sellerId + '__' + request.resource.data.cardId;
+
+      allow update: if canWrite(resource.data.sellerId)
+                    && request.resource.data.sellerId == resource.data.sellerId;
+
+      // fsSyncAllSaleCards() borra los listings que ya no están en venta
+      allow delete: if canWrite(resource.data.sellerId);
+    }
+
+    /* ─────────────────────────────────────────
+       Todo lo demás: denegado por defecto
+    ───────────────────────────────────────────── */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
