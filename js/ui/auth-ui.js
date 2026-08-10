@@ -112,8 +112,11 @@ const AuthUI = (() => {
         await window.AuthService.login({ email, password });
         // onAuthStateChanged lo gestiona — no hacemos nada más aquí
       } catch(err) {
-        setMsg('authMsg', window.AuthService.errMsg(err));
-      } finally {
+      const message = typeof window.AuthService?.errMsg === 'function'
+        ? window.AuthService.errMsg(err)
+        : (err?.message || err?.code || 'No se pudo crear la cuenta.');
+      setMsg('authMsg2', message);
+    } finally {
         setBusy(btn, 'Iniciar sesión', false);
       }
     }
@@ -160,7 +163,10 @@ const AuthUI = (() => {
         setMsg('authMsgForgot', `Email enviado a ${email}. Revisa tu bandeja. ✅`, true);
         setTimeout(() => showView('login'), 3500);
       } catch(err) {
-        setMsg('authMsgForgot', window.AuthService.errMsg(err));
+        const message = typeof window.AuthService?.errMsg === 'function'
+          ? window.AuthService.errMsg(err)
+          : (err?.message || err?.code || 'No se pudo enviar el email.');
+        setMsg('authMsgForgot', message);
       } finally {
         setBusy(btn, 'Enviar email', false);
       }
@@ -177,7 +183,10 @@ const AuthUI = (() => {
         setMsg('authMsgResend', 'Email de verificación reenviado. ✅ Revisa tu bandeja.', true);
         setTimeout(() => showView('login'), 3500);
       } catch(err) {
-        setMsg('authMsgResend', window.AuthService.errMsg(err));
+        const message = typeof window.AuthService?.errMsg === 'function'
+          ? window.AuthService.errMsg(err)
+          : (err?.message || err?.code || 'No se pudo reenviar el email.');
+        setMsg('authMsgResend', message);
       } finally {
         setBusy(btn, 'Reenviar', false);
       }
