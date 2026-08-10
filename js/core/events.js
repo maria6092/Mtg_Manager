@@ -14,6 +14,7 @@ import { renderSearchResults, ensureSearchOptions, loadSearchStateToUI } from '.
 import { initSettingsUI } from '../ui/settings-ui.js';
 import { loadIntroSets } from '../ui/intro-ui.js';
 import { cloudSaveAll, cloudLoadAll } from '../services/cloud-service.js';
+import { initChatUI } from '../ui/chat-ui.js';
 
 export function initAppEvents() {
   loadCards(); loadDecks(); loadWishlist(); loadSettings(); loadSortState();
@@ -23,6 +24,7 @@ export function initAppEvents() {
   initAuthUI();
   ensureSearchOptions();
   loadSearchStateToUI();
+  initChatUI();
 
   const colFavSel = document.getElementById('colFavFilter');
   if (colFavSel) {

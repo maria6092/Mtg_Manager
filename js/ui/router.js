@@ -8,6 +8,8 @@ import { renderDecks } from './decks-ui.js';
 import { renderWishlist } from './wishlist-ui.js';
 import { renderSalesTable } from './sales-ui.js';
 import { initSettingsUI } from './settings-ui.js';
+import { renderMensajes } from './chat-ui.js';
+
 
 export function setSectionVisibility(tabName) {
   TABS.forEach(t => {
@@ -33,6 +35,7 @@ export function showPage(id) {
     if (id === 'deseos')       renderWishlist();
     if (id === 'ventas')       renderSalesTable();
     if (id === 'ajustes')      initSettingsUI();
+    if (id === 'mensajes') renderMensajes();
   } catch(e) { console.error('Error al renderizar', id, e); }
 }
 

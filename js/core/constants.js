@@ -16,7 +16,7 @@ export const REMEMBER_KEY = 'mtg_rosita_remember_v1';
 export const TABS = [
   'intro', 'cartas', 'stats_colores', 'stats_tipos',
   'coleccion', 'buscador', 'mazos', 'deck_view',
-  'deseos', 'mis_ventas', 'tienda', 'usuario', 'ajustes'
+  'deseos', 'mis_ventas', 'tienda', 'usuario', 'ajustes', 'mensajes'
 ];
 
 export const RARITY_MAP = {

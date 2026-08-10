@@ -5,6 +5,8 @@ import { escapeHtml, gradientFromColorIds } from '../core/utils.js';
 import { PASTEL } from '../core/constants.js';
 import { renderCardsTable, updateCardsMetrics } from './cards-ui.js';
 import { updateInvestmentUI } from './stats-ui.js';
+import { openChatWithUser } from './chat-ui.js';
+btn.onclick = () => openChatWithUser(listing.sellerId, listing.sellerName, { listingId: listing.id, cardName: listing.cardName });
 
 export function renderSalesTable() {
   const tbody = document.querySelector('#tblSales tbody');
