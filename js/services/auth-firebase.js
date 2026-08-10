@@ -150,11 +150,13 @@ const AuthService = (() => {
 
 
       // 5. Reservar username y crear perfil en Firestore.
-      await createProfileAndReserveUsername(
+     await createProfileAndReserveUsername(
         cred.user,
         username
       );
 
+      // 6. Enviar correo de verificación.
+      await cred.user.sendEmailVerification();
 
       // Registro terminado correctamente.
       return cred.user;
