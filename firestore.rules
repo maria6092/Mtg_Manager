@@ -35,9 +35,13 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if isSignedIn();
 
-      // Creado dentro de la transacción createProfileAndReserveUsername()
-      // junto con usernames/{username}
-      allow create: if canWrite(uid)
+      // Creado dentro de la transacción createProfileAndReserveUsername(),
+      // justo después de crear la cuenta en Auth y ANTES de poder verificar
+      // el email (sendEmailVerification() se llama después). Por eso aquí
+      // NO se exige isVerified() — solo que sea el propio usuario. La
+      // protección real llega después: update/delete sí exigen verificación,
+      // y el resto de colecciones (listings, friend_requests...) también.
+      allow create: if isOwner(uid)
                     && request.resource.data.uid == uid
                     && request.resource.data.username is string
                     && request.resource.data.username == request.resource.data.username.lower()
@@ -63,7 +67,9 @@ service cloud.firestore {
     match /usernames/{username} {
       allow read: if isSignedIn();
 
-      allow create: if isVerified()
+      // Misma razón que en users/{uid}: esta reserva se crea en la misma
+      // transacción de registro, antes de que exista verificación posible.
+      allow create: if isSignedIn()
                     && request.resource.data.uid == request.auth.uid
                     && username == username.lower()
                     && request.resource.data.keys().hasOnly(['uid']);
