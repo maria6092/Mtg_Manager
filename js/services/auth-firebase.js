@@ -1,3 +1,4 @@
+
 /**
  * auth-firebase.js
  * Toda la lógica de autenticación Firebase centralizada.
@@ -7,18 +8,38 @@
 const AuthService = (() => {
 
   /* ── helpers de mensaje ── */
+
   function errMsg(err) {
     const map = {
-      'auth/user-not-found':         'No existe una cuenta con ese email.',
-      'auth/wrong-password':         'Contraseña incorrecta.',
-      'auth/invalid-credential':     'Email o contraseña incorrectos.',
-      'auth/email-already-in-use':   'Ya existe una cuenta con ese email.',
-      'auth/weak-password':          'Contraseña demasiado débil (mínimo 6 caracteres).',
-      'auth/invalid-email':          'El email no es válido.',
-      'auth/too-many-requests':      'Demasiados intentos. Espera un momento.',
-      'auth/network-request-failed': 'Sin conexión. Revisa tu red.',
-      'auth/email-not-verified':     'Debes verificar tu email antes de entrar. Revisa tu bandeja.',
-      'auth/permission-denied':      'No tienes permisos para realizar esta operación.',
+      'auth/user-not-found':
+        'No existe una cuenta con ese email.',
+
+      'auth/wrong-password':
+        'Contraseña incorrecta.',
+
+      'auth/invalid-credential':
+        'Email o contraseña incorrectos.',
+
+      'auth/email-already-in-use':
+        'Ya existe una cuenta con ese email.',
+
+      'auth/weak-password':
+        'Contraseña demasiado débil (mínimo 6 caracteres).',
+
+      'auth/invalid-email':
+        'El email no es válido.',
+
+      'auth/too-many-requests':
+        'Demasiados intentos. Espera un momento.',
+
+      'auth/network-request-failed':
+        'Sin conexión. Revisa tu red.',
+
+      'auth/email-not-verified':
+        'Debes verificar tu email antes de entrar. Revisa tu bandeja.',
+
+      'auth/permission-denied':
+        'No tienes permisos para realizar esta operación.',
     };
 
     return map[err?.code] || err?.message || 'Error desconocido.';
@@ -37,22 +58,26 @@ const AuthService = (() => {
   }
 
 
-  /* ── normaliza el username a un id válido y consistente ── */
+  /* ── normaliza username ── */
+
   function normalizeUsername(username) {
     return String(username || '').trim().toLowerCase();
   }
 
 
-  /* ── crear perfil público + reservar username en una transacción ──
-     Garantiza unicidad: si el username ya está reservado, falla y no
-     se crea nada.
-  */
-  async function createProfileAndReserveUsername(user, rawUsername) {
+  /* ── crear perfil + reservar username ── */
+
+  async function createProfileAndReserveUsername(
+    user,
+    rawUsername
+  ) {
 
     const uname = normalizeUsername(rawUsername);
 
     if (!uname) {
-      throw new Error('El nombre de usuario no es válido.');
+      throw new Error(
+        'El nombre de usuario no es válido.'
+      );
     }
 
     const usernameRef = fbDb
@@ -66,33 +91,44 @@ const AuthService = (() => {
 
     await fbDb.runTransaction(async (tx) => {
 
-      // Comprobar si el username ya existe
       const existing = await tx.get(usernameRef);
 
       if (existing.exists) {
-        throw new Error('Ese nombre de usuario ya está en uso.');
+        throw new Error(
+          'Ese nombre de usuario ya está en uso.'
+        );
       }
 
 
-      // Reservar el username
       tx.set(usernameRef, {
         uid: user.uid
       });
 
 
-      // Crear el perfil público
       tx.set(userRef, {
+
         uid: user.uid,
+
         username: uname,
+
         displayName: rawUsername.trim(),
+
         email: user.email
           ? user.email.toLowerCase()
           : '',
+
         avatarUrl: '',
+
         bio: '',
+
         isPublic: true,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+
+        createdAt:
+          firebase.firestore.FieldValue.serverTimestamp(),
+
+        updatedAt:
+          firebase.firestore.FieldValue.serverTimestamp(),
+
       });
 
     });
@@ -100,14 +136,23 @@ const AuthService = (() => {
 
 
   /* ── REGISTRO ── */
-  async function register({ username, email, password }) {
+
+  async function register({
+    username,
+    email,
+    password
+  }) {
 
     if (!username) {
-      throw new Error('Escribe un nombre de usuario.');
+      throw new Error(
+        'Escribe un nombre de usuario.'
+      );
     }
 
     if (!isValidEmail(email)) {
-      throw new Error('El email no es válido.');
+      throw new Error(
+        'El email no es válido.'
+      );
     }
 
     if (!isValidPassword(password)) {
@@ -117,70 +162,93 @@ const AuthService = (() => {
     }
 
 
-    // 1. Crear el usuario en Firebase Authentication.
-    // Desde este momento debería existir request.auth en Firestore.
-    const cred = await fbAuth.createUserWithEmailAndPassword(
-      email.trim(),
-      password
-    );
+    // 1. Crear usuario en Firebase Authentication.
+
+    const cred =
+      await fbAuth.createUserWithEmailAndPassword(
+        email.trim(),
+        password
+      );
 
 
     try {
 
-      // 2. Asegurar que tenemos un token actualizado.
-      // Esto ayuda a evitar problemas de sincronización Auth -> Firestore.
+      // 2. Obtener token actualizado.
+
       await cred.user.getIdToken(true);
 
 
-      // 3. Comprobar que el usuario creado es el usuario actualmente autenticado.
+      // 3. Comprobar sesión.
+
       if (
         !fbAuth.currentUser ||
         fbAuth.currentUser.uid !== cred.user.uid
       ) {
+
         throw new Error(
           'No se pudo establecer la sesión de Firebase.'
         );
+
       }
 
 
-      // 4. Guardar el nombre visible en Firebase Authentication.
+      // 4. Guardar nombre visible.
+
       await cred.user.updateProfile({
         displayName: username.trim()
       });
 
 
-      // 5. Reservar username y crear perfil en Firestore.
-     await createProfileAndReserveUsername(
+      // 5. Crear perfil y reservar username.
+
+      await createProfileAndReserveUsername(
         cred.user,
         username
       );
 
-      // 6. Enviar correo de verificación.
-      const actionCodeSettings = {
-        url: 'https://maria6092.github.io/MTG-Manager/',
-        handleCodeInApp: false
-      };
 
-      await cred.user.sendEmailVerification(actionCodeSettings);
+      // 6. ENVIAR VERIFICACIÓN DIRECTAMENTE CON FIREBASE.
+      //
+      // NO usamos ActionCodeSettings aquí.
+      // Firebase utilizará su propio manejador de
+      // verificación de correo.
 
-      // Registro terminado correctamente.
+      console.log(
+        'Enviando verificación a:',
+        cred.user.email
+      );
+
+      await cred.user.sendEmailVerification();
+
+      console.log(
+        'Correo de verificación aceptado por Firebase.'
+      );
+
+
+      // 7. Registro terminado.
+
       return cred.user;
+
 
     } catch (err) {
 
       /*
-       * IMPORTANTE:
-       * Si Firebase Auth creó la cuenta pero Firestore falló,
-       * eliminamos la cuenta Auth para no dejar un usuario
-       * creado a medias.
+       * Si algo falla después de crear Auth,
+       * intentamos eliminar la cuenta para no
+       * dejar un usuario incompleto.
        */
+
       try {
+
         await cred.user.delete();
+
       } catch (deleteErr) {
+
         console.error(
           'No se pudo eliminar la cuenta Auth después del error:',
           deleteErr
         );
+
       }
 
       throw err;
@@ -189,30 +257,37 @@ const AuthService = (() => {
 
 
   /* ── LOGIN ── */
-  async function login({ email, password }) {
+
+  async function login({
+    email,
+    password
+  }) {
 
     if (!isValidEmail(email)) {
-      throw new Error('El email no es válido.');
+      throw new Error(
+        'El email no es válido.'
+      );
     }
 
     if (!password) {
-      throw new Error('Escribe tu contraseña.');
+      throw new Error(
+        'Escribe tu contraseña.'
+      );
     }
 
 
-    const cred = await fbAuth.signInWithEmailAndPassword(
-      email.trim(),
-      password
-    );
+    const cred =
+      await fbAuth.signInWithEmailAndPassword(
+        email.trim(),
+        password
+      );
 
 
     /*
      * DESARROLLO:
-     * window.DEV_SKIP_EMAIL_VERIFICATION permite entrar
-     * sin verificar el email.
-     *
-     * Pon esta variable a false antes de publicar.
+     * permite entrar sin verificar.
      */
+
     if (
       !window.DEV_SKIP_EMAIL_VERIFICATION &&
       !cred.user.emailVerified
@@ -224,7 +299,8 @@ const AuthService = (() => {
         'Debes verificar tu email antes de entrar. Revisa tu bandeja.'
       );
 
-      err.code = 'auth/email-not-verified';
+      err.code =
+        'auth/email-not-verified';
 
       throw err;
     }
@@ -235,21 +311,28 @@ const AuthService = (() => {
 
 
   /* ── LOGOUT ── */
+
   async function logout() {
     await fbAuth.signOut();
   }
 
 
   /* ── RECUPERAR CONTRASEÑA ── */
+
   async function sendPasswordReset(email) {
 
     if (!isValidEmail(email)) {
-      throw new Error('El email no es válido.');
+      throw new Error(
+        'El email no es válido.'
+      );
     }
 
-    const fn = fbFunctions.httpsCallable(
-      'sendPasswordResetEmail'
-    );
+
+    const fn =
+      fbFunctions.httpsCallable(
+        'sendPasswordResetEmail'
+      );
+
 
     await fn({
       email
@@ -258,10 +341,16 @@ const AuthService = (() => {
 
 
   /* ── REENVIAR VERIFICACIÓN ── */
-  async function resendVerification(email, password) {
+
+  async function resendVerification(
+    email,
+    password
+  ) {
 
     if (!isValidEmail(email)) {
-      throw new Error('El email no es válido.');
+      throw new Error(
+        'El email no es válido.'
+      );
     }
 
     if (!password) {
@@ -271,10 +360,11 @@ const AuthService = (() => {
     }
 
 
-    const cred = await fbAuth.signInWithEmailAndPassword(
-      email.trim(),
-      password
-    );
+    const cred =
+      await fbAuth.signInWithEmailAndPassword(
+        email.trim(),
+        password
+      );
 
 
     if (cred.user.emailVerified) {
@@ -287,13 +377,15 @@ const AuthService = (() => {
     }
 
 
-    const fn = fbFunctions.httpsCallable(
-      'resendVerificationEmail'
-    );
+    /*
+     * Para el reenvío usamos directamente Firebase,
+     * igual que en el registro.
+     *
+     * Esto evita depender de Resend para la
+     * verificación estándar.
+     */
 
-    await fn({
-      email
-    });
+    await cred.user.sendEmailVerification();
 
 
     await fbAuth.signOut();
@@ -301,20 +393,30 @@ const AuthService = (() => {
 
 
   /* ── API pública ── */
+
   return {
+
     register,
+
     login,
+
     logout,
+
     sendPasswordReset,
+
     resendVerification,
+
     errMsg,
+
     isValidEmail
+
   };
 
 })();
 
 
 /*
- * Exponer el servicio globalmente para auth-ui.js
+ * Exponer globalmente para auth-ui.js
  */
+
 window.AuthService = AuthService;
