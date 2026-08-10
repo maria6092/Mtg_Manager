@@ -31,6 +31,14 @@
         { "fieldPath": "members",        "arrayConfig": "CONTAINS" },
         { "fieldPath": "lastMessageAt",  "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "notifications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "to",        "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

@@ -224,10 +224,6 @@
     .ownBadge.bad{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);color:#f87171}
     .deckListScrollFix{max-height:480px;overflow-y:auto;overflow-x:hidden;padding:6px;position:relative;contain:paint;-webkit-mask-image:linear-gradient(to bottom,black 92%,transparent 100%);mask-image:linear-gradient(to bottom,black 92%,transparent 100%)}
     .saleItem{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid rgba(201,150,58,.15);border-radius:8px;background:rgba(33,20,61,.4);margin-bottom:8px;flex-wrap:wrap}
-    .chatBubbleRow{display:flex;margin-bottom:8px}
-    .chatBubbleRow.mine{justify-content:flex-end}
-    .chatBubble{max-width:70%;padding:8px 12px;border-radius:12px;background:rgba(201,150,58,.12);border:1px solid rgba(201,150,58,.2);color:var(--text);font-size:.88rem}
-    .chatBubble.mine{background:linear-gradient(135deg,rgba(201,150,58,.35),rgba(139,94,26,.28));border-color:rgba(201,150,58,.5)}
     .starBtn{border:0;background:transparent;cursor:pointer;font-size:16px;line-height:1;padding:2px 5px;color:var(--gold);transition:transform .15s,color .15s}
     .starBtn:hover{transform:scale(1.2);color:var(--gold2)}
     .cardrow{border:1px solid rgba(201,150,58,.15);border-radius:8px;background:rgba(33,20,61,.5);padding:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;transition:all .18s ease}
@@ -374,6 +370,85 @@
     ::-webkit-scrollbar-track{background:rgba(18,10,34,.5)}
     ::-webkit-scrollbar-thumb{background:rgba(201,150,58,.3);border-radius:3px}
     ::-webkit-scrollbar-thumb:hover{background:rgba(201,150,58,.5)}
+
+    /* ── Perfil v2 (mockup) ── */
+    .profileBannerV2{
+      position:relative;min-height:170px;border-radius:16px;overflow:hidden;
+      border:1px solid rgba(201,150,58,.25);box-shadow:var(--shadow);
+      background:linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.45)),var(--profile-banner,linear-gradient(135deg,#3d2060,#1a0f2e,#2d1854));
+      background-size:cover;background-position:center;
+    }
+    .profileLayoutV2{display:grid;grid-template-columns:220px 1fr;gap:16px;margin-top:-52px;align-items:start;padding:0 4px;}
+    @media(max-width:820px){.profileLayoutV2{grid-template-columns:1fr;margin-top:10px;}}
+
+    .profileSidebarV2{
+      position:relative;padding:60px 14px 16px;text-align:center;
+      border:1px solid rgba(201,150,58,.22);border-radius:14px;
+      background:rgba(33,20,61,.85);backdrop-filter:blur(10px);
+      box-shadow:var(--shadow);
+    }
+    .profileSidebarAvatarV2{
+      position:absolute;top:-48px;left:50%;transform:translateX(-50%);
+      width:96px;height:96px;border-radius:999px;object-fit:cover;
+      border:3px solid rgba(201,150,58,.7);background:var(--card);
+      box-shadow:0 0 20px rgba(201,150,58,.28);
+    }
+    .profileSidebarNameV2{font-family:'Cinzel',serif;font-weight:700;color:var(--gold2);font-size:1.05rem;letter-spacing:.03em;}
+    .profileSidebarStatsV2{display:flex;justify-content:center;gap:18px;margin-top:10px;}
+    .profileSidebarStatsV2 div{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+    .profileSidebarStatsV2 b{display:block;color:var(--gold2);font-size:1.1rem;font-family:'Cinzel',serif;}
+    .profileSidebarBioV2{margin-top:12px;font-size:.8rem;color:var(--muted);font-style:italic;line-height:1.5;min-height:18px;}
+    .profileSidebarLogrosV2{margin-top:16px;text-align:left;}
+    .profileSidebarLogrosV2 h4{font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);margin:0 0 8px;}
+    .logrosGridV2{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+    .logroSlotV2{aspect-ratio:1;border:1px dashed rgba(201,150,58,.3);border-radius:8px;display:grid;place-items:center;font-size:15px;color:var(--muted);background:rgba(201,150,58,.04);}
+    .logroSlotV2.unlocked{border-style:solid;border-color:rgba(201,150,58,.6);background:rgba(201,150,58,.14);}
+
+    .profileMainV2{display:flex;flex-direction:column;gap:14px;padding-top:8px;}
+    .profileMainTopActionsV2{display:flex;justify-content:flex-end;gap:8px;position:relative;}
+    .profileIconBtnV2{
+      width:38px;height:38px;border-radius:8px;border:1px solid rgba(201,150,58,.3);
+      background:rgba(45,24,84,.55);color:var(--gold2);display:grid;place-items:center;
+      cursor:pointer;font-size:16px;transition:.2s;position:relative;
+    }
+    .profileIconBtnV2:hover{border-color:rgba(201,150,58,.6);background:rgba(201,150,58,.12);}
+    .profileIconBtnV2 .badgeDotV2{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:999px;background:#ef4444;display:none;}
+    .profileIconBtnV2.hasNotifV2 .badgeDotV2{display:block;}
+    .profileIconBtnV2.wide{width:auto;padding:0 14px;gap:8px;font-size:.68rem;font-family:'Cinzel',serif;letter-spacing:.06em;text-transform:uppercase;}
+
+    .notifPanelV2{
+      position:absolute;top:46px;right:0;width:280px;max-height:320px;overflow-y:auto;
+      background:rgba(26,15,46,.98);border:1px solid rgba(201,150,58,.3);border-radius:10px;
+      box-shadow:0 20px 50px rgba(0,0,0,.5);padding:10px;z-index:30;display:none;
+    }
+    .notifPanelV2.open{display:block;}
+    .notifItemV2{padding:8px 10px;border-radius:8px;font-size:.78rem;color:var(--text);}
+    .notifItemV2+.notifItemV2{margin-top:4px;}
+    .notifItemV2:hover{background:rgba(201,150,58,.08);}
+
+    .profileSectionV2{border:1px solid rgba(201,150,58,.18);border-radius:14px;background:rgba(33,20,61,.55);padding:14px 16px;}
+    .profileSectionV2 .secHeadV2{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+    .profileSectionV2 h3{margin:0;font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:.05em;text-transform:uppercase;color:var(--gold);}
+
+    .saleScrollV2, .collectionScrollV2{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;}
+    .saleCardV2{
+      flex:0 0 auto;width:150px;border:1px solid rgba(201,150,58,.2);border-radius:10px;
+      background:var(--card);overflow:hidden;display:flex;flex-direction:column;
+    }
+    .saleCardV2 img{width:100%;aspect-ratio:63/88;object-fit:cover;background:rgba(45,24,84,.4);display:block;}
+    .saleCardV2 .infoV2{padding:8px;font-size:.72rem;flex:1;display:flex;flex-direction:column;gap:3px;}
+    .saleCardV2 .infoV2 b{color:var(--gold2);font-size:.76rem;line-height:1.2;}
+    .saleCardV2 .priceV2{color:var(--gold);font-family:var(--mono);}
+    .saleCardV2 .actionsV2{display:flex;gap:4px;padding:0 8px 8px;}
+    .saleCardV2 .actionsV2 button{flex:1;font-size:.58rem;padding:6px 4px;}
+
+    .collectionThumbV2{
+      flex:0 0 auto;width:74px;height:104px;border-radius:8px;object-fit:cover;
+      border:1px solid rgba(201,150,58,.25);background:rgba(45,24,84,.4);cursor:pointer;transition:.15s;
+    }
+    .collectionThumbV2:hover{transform:translateY(-3px);border-color:rgba(201,150,58,.6);}
+    .collectionThumbV2.placeholderV2{display:grid;place-items:center;font-size:9px;color:var(--muted);text-align:center;padding:4px;font-style:italic;}
+    .emptyRowV2{padding:14px;color:var(--muted);font-style:italic;font-size:.8rem;}
   </style>
 </head>
 
@@ -745,25 +820,6 @@
         </div>
       </section>
 
-      <!-- MENSAJES -->
-      <section class="panel is-hidden" data-page="mensajes" style="display:none;">
-        <div class="pageHeader"><h2>Mensajes</h2><p>Habla con compradores y vendedores.</p></div>
-        <div class="two" style="align-items:stretch;height:calc(100vh - 260px);">
-          <div class="panel soft" style="box-shadow:none;display:flex;flex-direction:column;overflow:hidden;">
-            <h3 class="h3">Conversaciones</h3>
-            <div id="chatList" class="list" style="flex:1;overflow-y:auto;"></div>
-          </div>
-          <div class="panel soft" style="box-shadow:none;display:flex;flex-direction:column;overflow:hidden;">
-            <h3 class="h3" id="chatThreadTitle">Selecciona una conversación</h3>
-            <div id="chatThread" style="flex:1;overflow-y:auto;padding:8px 4px;"></div>
-            <form id="chatInputRow" class="row" style="display:none;gap:8px;margin-top:10px;">
-              <input id="chatInput" placeholder="Escribe un mensaje…" style="flex:1;" autocomplete="off"/>
-              <button class="btn" type="submit">Enviar</button>
-            </form>
-          </div>
-        </div>
-      </section>
-
       <!-- PERFIL -->
       <section class="panel is-hidden" data-page="usuario" style="display:none;">
         <div class="pageHeader">
@@ -776,17 +832,39 @@
             </div>
           </div>
         </div>
-        <div class="profileHero" id="profileHero">
-          <div class="profileHeroOverlay"></div>
-          <div class="profileHeroContent">
-            <img id="profileAvatarLarge" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar">
-            <div class="profileMeta">
-              <h2 id="profileDisplayName">Usuario</h2>
-              <div class="profileEmail" id="profileDisplayEmail"></div>
-              <div class="profileMini"><span class="pill">Colección: <b id="profileCardsCount">0</b></span><span class="pill">Mazos: <b id="profileDecksCount">0</b></span><span class="pill">Deseos: <b id="profileWishCount">0</b></span></div>
+
+        <div class="profileBannerV2" id="profileHero"></div>
+
+        <div class="profileLayoutV2">
+          <aside class="profileSidebarV2">
+            <img id="profileAvatarLarge" class="profileSidebarAvatarV2" src="assets/logo.png" alt="Avatar">
+            <h2 id="profileDisplayName" class="profileSidebarNameV2">Usuario</h2>
+            <div class="profileSidebarStatsV2">
+              <div>Cartas<b id="profileCardsCount">0</b></div>
+              <div>Mazos<b id="profileDecksCount">0</b></div>
+            </div>
+            <div class="profileSidebarBioV2" id="profilePublicBio">Sin bio todavía.</div>
+            <div class="profileSidebarLogrosV2">
+              <h4>Logros</h4>
+              <div class="logrosGridV2" id="profileLogrosGridV2"></div>
+            </div>
+          </aside>
+
+          <div class="profileMainV2">
+            <div class="profileMainTopActionsV2" id="profileMainTopActionsV2"></div>
+
+            <div class="profileSectionV2">
+              <div class="secHeadV2"><h3>En venta</h3></div>
+              <div class="saleScrollV2" id="profileSaleGridV2"></div>
+            </div>
+
+            <div class="profileSectionV2">
+              <div class="secHeadV2"><h3 id="profileCollectionTitleV2">Colección</h3></div>
+              <div class="collectionScrollV2" id="profileCollectionGridV2"></div>
             </div>
           </div>
         </div>
+
         <div class="profileTabs" id="profileTabs">
           <button class="profileTabBtn active" data-profile-tab="resumen">Resumen</button>
           <button class="profileTabBtn" data-profile-tab="amigos">Amigos</button>
@@ -801,7 +879,7 @@
               <h3 class="h3">Sobre</h3>
               <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
                 <img id="profileAvatarPreview" class="profileSmallAvatar" src="assets/logo.png" alt="Avatar preview">
-                <div><div><b id="profilePublicName">Usuario</b></div><div class="hint" id="profilePublicBio">Sin bio todavía.</div></div>
+                <div><div><b id="profilePublicName">Usuario</b></div><div class="hint" id="profilePublicBio2">Sin bio todavía.</div></div>
               </div>
               <div class="profileAboutList">
                 <div class="profileAboutItem"><span class="label">Nombre visible</span><span id="profileAboutName">Usuario</span></div>
@@ -811,23 +889,19 @@
                 <div class="profileAboutItem"><span class="label">Valor estimado</span><span id="profileStatValue">0.00€</span></div>
               </div>
             </div>
-            <div class="panel soft" style="box-shadow:none;">
-              <h3 class="h3">Insignias</h3>
-              <div class="profileBadgeBox"><div><div style="font-size:42px;line-height:1;">🏵️</div><div style="font-weight:800;margin-top:10px;">Sin insignias desbloqueadas</div><div class="hint" style="margin-top:6px;">Las insignias se añadirán próximamente.</div></div></div>
-            </div>
-          </div>
-          <div class="panel soft profileRanking" style="box-shadow:none;">
-            <h3 class="h3">Estadísticas</h3>
-            <div class="profileRankingTop">
-              <div class="rankCard"><div class="rankIcon">🥉</div><div style="font-weight:800;">Deseos</div><div class="rankPts" id="rankWishValue">0</div></div>
-              <div class="rankCard big"><div class="rankIcon">🥇</div><div style="font-weight:800;">Colección</div><div class="rankPts" id="rankCollectionValue">0</div></div>
-              <div class="rankCard"><div class="rankIcon">🥈</div><div style="font-weight:800;">Mazos</div><div class="rankPts" id="rankDeckValue">0</div></div>
-            </div>
-            <div class="rankList">
-              <div class="rankListItem"><span>#1</span><span>Cartas (total)</span><span id="rankTotalCards">0</span></div>
-              <div class="rankListItem"><span>#2</span><span>Copias guardadas</span><span id="rankTotalCopies">0</span></div>
-              <div class="rankListItem"><span>#3</span><span>Items en deseos</span><span id="rankWishlistTotal">0</span></div>
-              <div class="rankListItem"><span>#4</span><span>En venta</span><span id="rankSalesTotal">0</span></div>
+            <div class="panel soft profileRanking" style="box-shadow:none;">
+              <h3 class="h3">Estadísticas</h3>
+              <div class="profileRankingTop">
+                <div class="rankCard"><div class="rankIcon">🥉</div><div style="font-weight:800;">Deseos</div><div class="rankPts" id="rankWishValue">0</div></div>
+                <div class="rankCard big"><div class="rankIcon">🥇</div><div style="font-weight:800;">Colección</div><div class="rankPts" id="rankCollectionValue">0</div></div>
+                <div class="rankCard"><div class="rankIcon">🥈</div><div style="font-weight:800;">Mazos</div><div class="rankPts" id="rankDeckValue">0</div></div>
+              </div>
+              <div class="rankList">
+                <div class="rankListItem"><span>#1</span><span>Cartas (total)</span><span id="rankTotalCards">0</span></div>
+                <div class="rankListItem"><span>#2</span><span>Copias guardadas</span><span id="rankTotalCopies">0</span></div>
+                <div class="rankListItem"><span>#3</span><span>Items en deseos</span><span id="rankWishlistTotal">0</span></div>
+                <div class="rankListItem"><span>#4</span><span>En venta</span><span id="rankSalesTotal">0</span></div>
+              </div>
             </div>
           </div>
         </div>
@@ -888,6 +962,7 @@
             <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Tamaño de letra</h3><label>Tamaño: <span class="mono" id="fontPxLabel">16</span>px</label><input id="setFontSize" type="range" min="12" max="20" step="1"/></div>
             <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Comodidad</h3><div class="toggleRow" style="margin-top:8px;"><input id="setCompact" type="checkbox" class="chk"/><div><b>Modo compacto</b></div></div><div class="toggleRow" style="margin-top:10px;"><input id="setReducedMotion" type="checkbox" class="chk"/><div><b>Reducir animaciones</b></div></div></div>
             <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Precios</h3><label>Preferencia de moneda</label><select id="setCurrency"><option value="EUR">Mostrar € primero</option><option value="USD">Mostrar $ primero</option></select></div>
+            <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Privacidad de colección</h3><label>Qué mostrar en tu perfil público</label><select id="setProfileCollectionMode"><option value="all">Colección completa</option><option value="fav">Solo favoritos</option></select></div>
           </div>
           <div class="panel soft" style="box-shadow:none;margin-top:14px;">
             <h3 class="h3">Sesión</h3>
@@ -1043,140 +1118,26 @@ async function fsLoadMarket(){
 }
 
 /* ─────────────────────────────────────────────
-   CHAT (compra/venta)
+   NOTIFICACIONES
 ───────────────────────────────────────────── */
-function chatIdFor(a, b) { return [a, b].sort().join('__'); }
-
-async function fsGetOrCreateChat(otherUid, otherName, context = null) {
-  const uid = currentUserId();
-  if (!uid) throw new Error('Debes iniciar sesión.');
-  const chatId = chatIdFor(uid, otherUid);
-  const ref = fbDb.collection('chats').doc(chatId);
-  const snap = await ref.get();
-  if (!snap.exists) {
-    await ref.set({
-      members: [uid, otherUid].sort(),
-      participantNames: { [uid]: getProfileName(), [otherUid]: otherName || 'Usuario' },
-      lastMessage: '',
-      lastMessageAt: Date.now(),
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      context: context || null,
-    });
-  }
-  return chatId;
-}
-
-async function fsSendChatMessage(chatId, text) {
-  const uid = currentUserId();
-  if (!uid || !text.trim()) return;
-  await fbDb.collection('chats').doc(chatId).collection('messages').add({
-    uid,
-    text: text.trim(),
+async function fsCreateNotification(toUid, type, title, body, data={}){
+  if(!toUid) return;
+  await fbDb.collection('notifications').add({
+    to: toUid, type, title, body, data,
+    read: false,
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
   });
-  await fbDb.collection('chats').doc(chatId).update({
-    lastMessage: text.trim().slice(0, 120),
-    lastMessageAt: Date.now(),
-  });
 }
-
-function fsListenMyChats(cb) {
-  const uid = currentUserId();
-  if (!uid) return () => {};
-  return fbDb.collection('chats')
-    .where('members', 'array-contains', uid)
-    .orderBy('lastMessageAt', 'desc')
-    .onSnapshot(
-      snap => { const out = []; snap.forEach(d => out.push({ id: d.id, ...d.data() })); cb(out); },
-      err => console.warn('fsListenMyChats:', err)
-    );
+async function fsLoadNotifications(){
+  const uid = currentUserId(); if(!uid) return [];
+  const snap = await fbDb.collection('notifications').where('to','==',uid).orderBy('createdAt','desc').limit(30).get();
+  return snap.docs.map(d=>({ id:d.id, ...d.data(), createdAt:d.data().createdAt?.toMillis?.()||0 }));
 }
-
-function fsListenChatMessages(chatId, cb) {
-  return fbDb.collection('chats').doc(chatId).collection('messages')
-    .orderBy('createdAt', 'asc')
-    .onSnapshot(
-      snap => { const out = []; snap.forEach(d => out.push({ id: d.id, ...d.data() })); cb(out); },
-      err => console.warn('fsListenChatMessages:', err)
-    );
-}
-
-/* ─────────────────────────────────────────────
-   MENSAJES UI
-───────────────────────────────────────────── */
-let chatUnsubChats = null, chatUnsubMessages = null, chatActiveId = null, chatListCache = [];
-
-function renderChatList(chats) {
-  const box = document.getElementById('chatList'); if (!box) return;
-  const uid = currentUserId();
-  if (!chats.length) {
-    box.innerHTML = '<div class="hint" style="padding:16px;">Aún no tienes conversaciones.</div>';
-    return;
-  }
-  box.innerHTML = chats.map(c => {
-    const otherUid = c.members.find(p => p !== uid);
-    const otherName = c.participantNames?.[otherUid] || 'Usuario';
-    return `<div class="cardrow" data-chat-id="${c.id}" style="cursor:pointer;${c.id === chatActiveId ? 'border-color:var(--pink2);' : ''}">
-      <div><b>${escapeHtml(otherName)}</b><div class="small">${escapeHtml(c.lastMessage || 'Sin mensajes')}</div></div>
-    </div>`;
-  }).join('');
-  box.querySelectorAll('[data-chat-id]').forEach(row => {
-    row.onclick = () => openChat(row.dataset.chatId);
-  });
-}
-
-function renderChatThread(messages) {
-  const box = document.getElementById('chatThread'); if (!box) return;
-  const uid = currentUserId();
-  box.innerHTML = messages.map(m => `
-    <div class="chatBubbleRow ${m.uid === uid ? 'mine' : ''}">
-      <div class="chatBubble ${m.uid === uid ? 'mine' : ''}">${escapeHtml(m.text)}</div>
-    </div>`).join('');
-  box.scrollTop = box.scrollHeight;
-}
-
-function openChat(chatId) {
-  chatActiveId = chatId;
-  renderChatList(chatListCache);
-  const chat = chatListCache.find(c => c.id === chatId);
-  const uid = currentUserId();
-  const otherUid = chat?.members?.find(p => p !== uid);
-  const otherName = chat?.participantNames?.[otherUid] || 'Usuario';
-  const title = document.getElementById('chatThreadTitle');
-  if (title) title.textContent = otherName;
-  if (chatUnsubMessages) chatUnsubMessages();
-  chatUnsubMessages = fsListenChatMessages(chatId, renderChatThread);
-  const form = document.getElementById('chatInputRow');
-  if (form) form.style.display = 'flex';
-}
-
-async function openChatWithUser(otherUid, otherName, context) {
-  try {
-    const chatId = await fsGetOrCreateChat(otherUid, otherName, context);
-    showPage('mensajes');
-    openChat(chatId);
-  } catch (e) {
-    alert(e?.message || e);
-  }
-}
-
-function initChatUI() {
-  const form = document.getElementById('chatInputRow'), input = document.getElementById('chatInput');
-  if (form && !form.dataset.bound) {
-    form.dataset.bound = '1';
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      if (!chatActiveId || !input.value.trim()) return;
-      await fsSendChatMessage(chatActiveId, input.value);
-      input.value = '';
-    });
-  }
-}
-
-function renderMensajes() {
-  if (chatUnsubChats) chatUnsubChats();
-  chatUnsubChats = fsListenMyChats(chats => { chatListCache = chats; renderChatList(chats); });
-  initChatUI();
+async function fsMarkAllNotificationsRead(list){
+  const pending = list.filter(n=>!n.read); if(!pending.length) return;
+  const batch = fbDb.batch();
+  pending.forEach(n=>batch.update(fbDb.collection('notifications').doc(n.id),{read:true}));
+  await batch.commit();
 }
 
 /* ─────────────────────────────────────────────
@@ -1232,7 +1193,7 @@ const THEME_PRESETS={
   black:{bg:'#080808',card:'#101010',pink:'#888',pink2:'#aaa',soft:'#1a1a1a',line:'#2a2a2a',text:'#d0d0d0',muted:'#606060',inputBg:'#060606',inputText:'#d0d0d0',tableBg:'#0c0c0c',shadow:'0 10px 40px rgba(0,0,0,.7)'},
   cosmic:{bg:'#1a0f2e',card:'#21143d',pink:'#c9963a',pink2:'#e8b84b',soft:'#3d2060',line:'#4a2d6f',text:'#e8d5b0',muted:'#9e86c2',inputBg:'#180e2a',inputText:'#e8d5b0',tableBg:'#1e1236',shadow:'0 10px 40px rgba(0,0,0,.55)'},
 };
-const DEFAULT_SETTINGS={theme:'cosmic',fontPx:16,density:'normal',motion:'normal',currency:'EUR',autoBackupEnabled:false,autoBackupEveryMin:'30',colFavFilter:'all'};
+const DEFAULT_SETTINGS={theme:'cosmic',fontPx:16,density:'normal',motion:'normal',currency:'EUR',autoBackupEnabled:false,autoBackupEveryMin:'30',colFavFilter:'all',profileCollectionMode:'all'};
 let settings=(() => { try{const r=userLoad(LS_SETTINGS,null);return r?{...DEFAULT_SETTINGS,...r}:{...DEFAULT_SETTINGS};}catch{return{...DEFAULT_SETTINGS};} })();
 function saveSettings(){ userSave(LS_SETTINGS,settings); }
 function applyThemePreset(key){
@@ -1357,7 +1318,6 @@ const pages=[
   {id:'intro',label:'Introducción'},{id:'cartas',label:'Cartas'},{id:'stats',label:'Stats'},
   {id:'buscador',label:'Buscador'},{id:'coleccion',label:'Colección'},{id:'mazos',label:'Mazos'},
   {id:'deseos',label:'Deseos'},{id:'tienda',label:'Tienda'},{id:'mis_ventas',label:'Ventas'},
-  {id:'mensajes',label:'💬 Mensajes'},
 ];
 function getLastTab(){ try{return localStorage.getItem(LAST_TAB_KEY)||'intro';}catch{return 'intro';} }
 function showPage(id){
@@ -1374,10 +1334,9 @@ function showPage(id){
     if(id==='usuario'){renderUserProfilePage();initSettingsUI();}
     if(id==='coleccion'){const sel=document.getElementById('colFavFilter');if(sel)sel.value=settings.colFavFilter||'all';renderColeccion();}
     if(id==='tienda'||id==='mis_ventas') renderSalesTable();
-    if(id==='mensajes') renderMensajes();
     closeSidebar();
   }catch(err){
-    console.error('Error al renderizar pestaña:',id,err);
+    console.error('Error al renderizar tabla:',id,err);
     const box=document.getElementById('globalErrorBox');
     if(box){box.style.display='';box.textContent=`⚠️ Error al abrir "${id}": ${err?.message||err}`;}
   }
@@ -1669,7 +1628,22 @@ function renderWishlist(){
   }
   const el=id=>document.getElementById(id);if(el('wishCount'))el('wishCount').textContent=String(view.length);if(el('wishMissingCount'))el('wishMissingCount').textContent=String(mis);if(el('wishCoveredCount'))el('wishCoveredCount').textContent=String(cov);
 }
-async function refreshWishlistPrices(){ for(const w of wishlist){try{const card=w.set&&w.cn?await fetchCardExact(w.set,w.cn):await fetchOldestPrintingByName(w.name);w.priceText=priceTextFromPrices(card?.prices);updatePriceHistory(w,w.priceText);}catch{}}saveWishlist();renderWishlist(); }
+async function refreshWishlistPrices(){
+  const uid = currentUserId();
+  for(const w of wishlist){
+    try{
+      const oldEur = parseEuro(w.priceText);
+      const card = w.set && w.cn ? await fetchCardExact(w.set,w.cn) : await fetchOldestPrintingByName(w.name);
+      w.priceText = priceTextFromPrices(card?.prices);
+      updatePriceHistory(w, w.priceText);
+      const newEur = parseEuro(w.priceText);
+      if(uid && Number.isFinite(oldEur) && Number.isFinite(newEur) && newEur < oldEur){
+        fsCreateNotification(uid,'price_drop',`Bajada de precio: ${w.name}`,`${oldEur.toFixed(2)}€ → ${newEur.toFixed(2)}€`).catch(()=>{});
+      }
+    }catch{}
+  }
+  saveWishlist(); renderWishlist();
+}
 function addWishFromInputs(){ const name=document.getElementById('wishName').value.trim(),set=document.getElementById('wishSet').value.trim().toUpperCase(),cn=document.getElementById('wishCn').value.trim(),qty=Math.max(1,parseInt(document.getElementById('wishQty').value||'1',10));if(!name&&!(set&&cn)){showErr('Escribe un nombre o pon SetCode + Nº.');return;}wishlist.unshift({id:crypto.randomUUID(),_addedAt:Date.now(),name,set,cn,qty,priceText:'',priceHist:[]});saveWishlist();document.getElementById('wishName').value='';document.getElementById('wishSet').value='';document.getElementById('wishCn').value='';document.getElementById('wishQty').value='1';renderWishlist();refreshWishlistPrices(); }
 function addMissingDeckToWishlist(d){
   if(!d)return;const added=[];
@@ -1679,7 +1653,7 @@ function addMissingDeckToWishlist(d){
     if(have>=need)continue;const mq=Math.max(1,need-have);const ex=wishlist.find(w=>String(w.name||'').toLowerCase()===nk&&String(w.set||'').toUpperCase()===sk&&String(w.cn||'').trim()===ck);
     if(ex){ex.qty=(ex.qty||1)+mq;}else wishlist.unshift({id:crypto.randomUUID(),_addedAt:Date.now(),name:it.name,set:sk,cn:ck,qty:mq,priceText:'',priceHist:[]});added.push(`${mq}x ${it.name}`);
   }
-  saveWishlist();renderWishlist();if(added.length){showPage('deseos');refreshWishlistPrices();}else showErr('No hay cartas faltantes para añadir a Deseos.');
+  saveWishlist();renderWishlist();if(added.length){showPage('deseos');refreshWishlistPrices();}else alert('No hay cartas faltantes para añadir a Deseos.');
 }
 
 /* ─────────────────────────────────────────────
@@ -1694,7 +1668,7 @@ function renderIntroSets(sets){ const tbody=document.querySelector('#tblIntroSet
 /* ─────────────────────────────────────────────
    CSV MANABOX
 ───────────────────────────────────────────── */
-function parseCsv(text){ const out=[];let row=[],cur='',inQ=false;const s=String(text||'').replace(/\r/g,'');for(let i=0;i<s.length;i++){const ch=s[i],nx=s[i+1];if(inQ){if(ch==='"'&&nx==='"'){cur+='"';i++;continue;}if(ch==='"'){inQ=false;continue;}cur+=ch;continue;}if(ch==='"'){inQ=true;continue;}if(ch===','){row.push(cur);cur='';continue;}if(ch==='\n'){row.push(cur);out.push(row);row=[];cur='';continue;}cur+=ch;}row.push(cur);out.push(row);return out.filter(r=>r.some(x=>String(x||'').trim()!=='')); }
+function parseCsv(text){ const out=[];let row=[],cur='',inQ=false;const s=String(text||'').replace(/\r/g,'');for(let i=0;i<s.length;i++){const ch=s[i],nx=s[i+1];if(inQ){if(ch==='"'&&nx==='"'){cur+='"';i++;continue;}if(ch==='"'){inQ=false;continue;}cur+=ch;continue;}if(ch==='"'){inQ=true;continue;}if(ch===','){row.push(cur);cur='';continue;}if(ch==='\n'){row.push(cur);out.push(row);row=[];cur='';continue;}cur+=ch;}row.push(cur);out.push(row);return out.filter(r=>r.some(x=>String(x||'').trim()!==''));}
 
 /* ─────────────────────────────────────────────
    AJUSTES UI
@@ -1708,6 +1682,17 @@ function initSettingsUI(){
   compactChk.onchange=()=>{settings.density=compactChk.checked?'compact':'normal';saveSettings();applySettings();};
   motionChk.onchange=()=>{settings.motion=motionChk.checked?'reduced':'normal';saveSettings();applySettings();};
   currencySel.onchange=()=>{settings.currency=currencySel.value;saveSettings();renderCardsTableFull();updateInvestmentUI();renderSalesTable();};
+
+  const profColSel = document.getElementById('setProfileCollectionMode');
+  if(profColSel){
+    profColSel.value = settings.profileCollectionMode || 'all';
+    profColSel.onchange = () => {
+      settings.profileCollectionMode = profColSel.value;
+      saveSettings();
+      renderProfileCollectionGridV2();
+    };
+  }
+
   document.getElementById('btnResetSettings')?.addEventListener('click',()=>{if(!confirm('¿Resetear todos los ajustes?'))return;settings={...DEFAULT_SETTINGS};saveSettings();applySettings();initSettingsUI();renderCardsTableFull();renderDecks();renderColorStats();renderTypeStats();updateInvestmentUI();renderSalesTable();});
   initBackupUI();
 }
@@ -1788,8 +1773,35 @@ function getFriendsData(){
   const sent=social.requests.filter(r=>r.from===uid).map(r=>({...r,user:getPublicProfileByUserId(r.to)})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   return{social,friends,received,sent};
 }
-async function sendFriendRequest(query){ const uid=currentUserId();if(!uid)throw new Error('Debes iniciar sesión.');const q=String(query||'').trim().toLowerCase();if(!q)throw new Error('Escribe un usuario o email.');const target=await fsSearchUser(q);if(!target)throw new Error('No se encontró ese usuario.');if(target.uid===uid)throw new Error('No puedes enviarte a ti mismo.');const social=loadSocial();if(social.friendships.some(f=>socialPairKey(f.a,f.b)===socialPairKey(uid,target.uid)))throw new Error('Ya sois amigos.');const ex=social.requests.find(r=>(r.from===uid&&r.to===target.uid)||(r.from===target.uid&&r.to===uid));if(ex){if(ex.from===target.uid&&ex.to===uid){await fsAcceptFriendRequest(ex.id);await fsLoadSocialData();return{autoAccepted:true,target};}throw new Error('Ya hay una solicitud pendiente.');}await fsSendFriendRequest(target.uid);await fsLoadSocialData();return{autoAccepted:false,target}; }
-async function acceptFriendRequest(id){ await fsAcceptFriendRequest(id);await fsLoadSocialData(); }
+async function sendFriendRequest(query){
+  const uid=currentUserId(); if(!uid)throw new Error('Debes iniciar sesión.');
+  const q=String(query||'').trim().toLowerCase(); if(!q)throw new Error('Escribe un usuario o email.');
+  const target=await fsSearchUser(q); if(!target)throw new Error('No se encontró ese usuario.');
+  if(target.uid===uid)throw new Error('No puedes enviarte a ti mismo.');
+  const social=loadSocial();
+  if(social.friendships.some(f=>socialPairKey(f.a,f.b)===socialPairKey(uid,target.uid)))throw new Error('Ya sois amigos.');
+  const ex=social.requests.find(r=>(r.from===uid&&r.to===target.uid)||(r.from===target.uid&&r.to===uid));
+  if(ex){
+    if(ex.from===target.uid&&ex.to===uid){
+      await fsAcceptFriendRequest(ex.id);
+      await fsLoadSocialData();
+      fsCreateNotification(target.uid,'friend_accepted','Solicitud aceptada',`${getProfileName()} aceptó tu solicitud de amistad.`).catch(()=>{});
+      return{autoAccepted:true,target};
+    }
+    throw new Error('Ya hay una solicitud pendiente.');
+  }
+  await fsSendFriendRequest(target.uid);
+  await fsLoadSocialData();
+  fsCreateNotification(target.uid,'friend_request','Nueva solicitud de amistad',`${getProfileName()} quiere ser tu amigo.`).catch(()=>{});
+  return{autoAccepted:false,target};
+}
+async function acceptFriendRequest(id){
+  let fromUid = null;
+  try{ const snap = await fbDb.collection('friend_requests').doc(id).get(); fromUid = snap.exists ? snap.data()?.from : null; }catch{}
+  await fsAcceptFriendRequest(id);
+  await fsLoadSocialData();
+  if(fromUid) fsCreateNotification(fromUid,'friend_accepted','Solicitud aceptada',`${getProfileName()} aceptó tu solicitud de amistad.`).catch(()=>{});
+}
 async function declineFriendRequest(id){ await fsDeclineFriendRequest(id);await fsLoadSocialData(); }
 async function removeFriend(id){ await fsRemoveFriend(id);await fsLoadSocialData(); }
 function friendRowHtml(user,actions){ return`<div class="saleItem" style="align-items:center;"><div style="display:flex;align-items:center;gap:10px;min-width:0;"><img src="${escapeHtml(user.avatar||'assets/logo.png')}" alt="avatar" class="sidebarAvatar"><div style="min-width:0;"><div style="font-weight:700;">${escapeHtml(user.displayName||'Usuario')}</div><div class="small mono">@${escapeHtml(user.username||'user')}</div><div class="small">${escapeHtml(user.bio||'Sin bio')}</div></div></div><div class="row" style="gap:8px;flex-wrap:wrap;">${actions}</div></div>`; }
@@ -1801,6 +1813,161 @@ function renderFriendsUI(){
   rl.innerHTML=received.length?received.map(r=>friendRowHtml(r.user,`<button class="btn tiny" data-accept-friend="${escapeHtml(r.id)}">Aceptar</button><button class="btn ghost tiny" data-decline-friend="${escapeHtml(r.id)}">Rechazar</button>`)).join(''):'<div class="hint">No tienes solicitudes recibidas.</div>';
   sl.innerHTML=sent.length?sent.map(r=>friendRowHtml(r.user,`<button class="btn ghost tiny" data-cancel-friend="${escapeHtml(r.id)}">Cancelar</button>`)).join(''):'<div class="hint">No has enviado solicitudes.</div>';
 }
+
+/* ── Perfil v2 (mockup): logros ── */
+const ACHIEVEMENTS_DEFS = [
+  { id:'collector_10',  icon:'📦', title:'Coleccionista novato', desc:'Registra 10 cartas.',            check:s=>s.totalCopies>=10  },
+  { id:'collector_100', icon:'🗃️', title:'Coleccionista',        desc:'Registra 100 cartas.',           check:s=>s.totalCopies>=100 },
+  { id:'collector_500', icon:'🏛️', title:'Archivo viviente',     desc:'Registra 500 cartas.',           check:s=>s.totalCopies>=500 },
+  { id:'deckbuilder_1', icon:'🃏', title:'Primer mazo',          desc:'Crea tu primer mazo.',           check:s=>s.decks>=1         },
+  { id:'deckbuilder_5', icon:'🎴', title:'Constructor de mazos', desc:'Crea 5 mazos.',                  check:s=>s.decks>=5         },
+  { id:'wisher_1',      icon:'⭐', title:'Deseo pendiente',      desc:'Añade una carta a deseos.',      check:s=>s.wishlist>=1      },
+  { id:'seller_1',      icon:'💰', title:'Primer vendedor',      desc:'Pon una carta en venta.',        check:s=>s.sales>=1         },
+  { id:'friend_1',      icon:'🤝', title:'Sociable',             desc:'Añade a tu primer amigo.',       check:s=>s.friends>=1       },
+];
+function computeAchievementStatsV2(){
+  return {
+    totalCopies: cards.reduce((n,c)=>n+(Number(c.qty||1)),0),
+    decks: decks.length,
+    wishlist: wishlist.length,
+    sales: cards.filter(c=>!!c.sale).length,
+    friends: getFriendsData().friends.length,
+  };
+}
+function getUnlockedAchievementIdsV2(){
+  const stats = computeAchievementStatsV2();
+  return new Set(ACHIEVEMENTS_DEFS.filter(a=>a.check(stats)).map(a=>a.id));
+}
+function achievementsSeenKeyV2(){ return scopedKey('mtg_achievements_seen_v1'); }
+function getSeenAchievementsV2(){ try{return new Set(JSON.parse(localStorage.getItem(achievementsSeenKeyV2())||'[]'));}catch{return new Set();} }
+function saveSeenAchievementsV2(set){ try{localStorage.setItem(achievementsSeenKeyV2(), JSON.stringify([...set]));}catch{} }
+async function checkAndNotifyNewAchievementsV2(unlockedSet){
+  const uid = currentUserId(); if(!uid) return;
+  const seen = getSeenAchievementsV2();
+  const newly = [...unlockedSet].filter(id=>!seen.has(id));
+  if(!newly.length) return;
+  for(const id of newly){
+    const def = ACHIEVEMENTS_DEFS.find(a=>a.id===id);
+    if(!def) continue;
+    seen.add(id);
+    try{ await fsCreateNotification(uid,'achievement_unlocked', `Logro desbloqueado: ${def.title}`, def.desc); }
+    catch(e){ console.warn('notify achievement:',e); }
+  }
+  saveSeenAchievementsV2(seen);
+  refreshNotifBadgeV2();
+}
+function renderProfileLogrosV2(){
+  const grid = document.getElementById('profileLogrosGridV2');
+  if(!grid) return;
+  const unlocked = getUnlockedAchievementIdsV2();
+  grid.innerHTML = ACHIEVEMENTS_DEFS.map(a=>{
+    const ok = unlocked.has(a.id);
+    return `<div class="logroSlotV2 ${ok?'unlocked':''}" title="${escapeHtml(a.title)}: ${escapeHtml(a.desc)}${ok?'':' (bloqueado)'}">${ok?a.icon:'🔒'}</div>`;
+  }).join('');
+  checkAndNotifyNewAchievementsV2(unlocked);
+}
+
+/* ── Perfil v2 (mockup): en venta / colección ── */
+function renderProfileSaleGridV2(){
+  const box = document.getElementById('profileSaleGridV2');
+  if(!box) return;
+  const forSale = cards.filter(c=>!!c.sale);
+  if(!forSale.length){ box.innerHTML = `<div class="emptyRowV2">No tienes cartas en venta.</div>`; return; }
+  box.innerHTML = forSale.map(c=>`
+    <div class="saleCardV2" data-id="${escapeHtml(c.id)}">
+      ${c.imgUrl?`<img src="${escapeHtml(c.imgUrl)}" alt="">`:`<div class="collectionThumbV2 placeholderV2" style="width:100%;height:auto;aspect-ratio:63/88;">Sin imagen</div>`}
+      <div class="infoV2">
+        <b>${escapeHtml(c.name)}</b>
+        <span class="mono">${escapeHtml(c.setCode||'')} #${escapeHtml(c.collectorNumber||'')}</span>
+        <span class="priceV2">${escapeHtml(c.priceText||'')}</span>
+      </div>
+      <div class="actionsV2">
+        <button class="btn ghost" data-offer="${escapeHtml(c.id)}">Oferta</button>
+        <button class="btn ghost" data-msg="${escapeHtml(c.id)}">Mensaje</button>
+      </div>
+    </div>
+  `).join('');
+  box.querySelectorAll('[data-offer]').forEach(b=>b.onclick=()=>alert('Sistema de ofertas: próximamente.'));
+  box.querySelectorAll('[data-msg]').forEach(b=>b.onclick=()=>alert('Chat: próximamente (Fase 7 del roadmap).'));
+}
+function renderProfileCollectionGridV2(){
+  const box   = document.getElementById('profileCollectionGridV2');
+  const title = document.getElementById('profileCollectionTitleV2');
+  if(!box) return;
+  const mode = settings.profileCollectionMode || 'all';
+  if(title) title.textContent = mode==='fav' ? 'Colección (favoritos)' : 'Colección';
+  let view = cards.slice();
+  if(mode==='fav') view = view.filter(c=>isFav(c));
+  view.sort((a,b)=>(b._addedAt||0)-(a._addedAt||0));
+  if(!view.length){ box.innerHTML = `<div class="emptyRowV2">${mode==='fav'?'Sin favoritos todavía.':'Colección vacía.'}</div>`; return; }
+  box.innerHTML = view.slice(0,40).map(c => c.imgUrl
+    ? `<img class="collectionThumbV2" src="${escapeHtml(c.imgUrl)}" alt="${escapeHtml(c.name)}" title="${escapeHtml(c.name)}">`
+    : `<div class="collectionThumbV2 placeholderV2" title="${escapeHtml(c.name)}">${escapeHtml(c.name)}</div>`
+  ).join('');
+}
+
+/* ── Perfil v2 (mockup): notificaciones ── */
+let _notifCacheV2 = [];
+async function refreshNotifBadgeV2(){
+  try{ _notifCacheV2 = await fsLoadNotifications(); }
+  catch(e){ console.warn('fsLoadNotifications:',e); _notifCacheV2 = []; }
+  const btn = document.getElementById('btnProfileNotifV2');
+  if(btn) btn.classList.toggle('hasNotifV2', _notifCacheV2.some(n=>!n.read));
+}
+function notifIconV2(type){
+  return { friend_request:'👤', friend_accepted:'🤝', price_drop:'📉', achievement_unlocked:'🏆' }[type] || '🔔';
+}
+async function toggleNotifPanelV2(){
+  let panel = document.getElementById('notifPanelV2');
+  if(!panel){
+    panel = document.createElement('div');
+    panel.id = 'notifPanelV2'; panel.className = 'notifPanelV2';
+    document.getElementById('profileMainTopActionsV2')?.appendChild(panel);
+  }
+  const willOpen = !panel.classList.contains('open');
+  panel.classList.toggle('open', willOpen);
+  if(!willOpen) return;
+
+  panel.innerHTML = `<div class="notifItemV2" style="color:var(--muted);font-style:italic;">Cargando…</div>`;
+  try{ _notifCacheV2 = await fsLoadNotifications(); } catch{ _notifCacheV2 = []; }
+
+  if(!_notifCacheV2.length){
+    panel.innerHTML = `<div class="notifItemV2" style="color:var(--muted);font-style:italic;">No hay notificaciones.</div>`;
+  } else {
+    panel.innerHTML = _notifCacheV2.map(n=>`
+      <div class="notifItemV2" style="${n.read?'opacity:.6;':'font-weight:600;'}">
+        <div>${notifIconV2(n.type)} ${escapeHtml(n.title||'')}</div>
+        <div style="font-weight:400;opacity:.8;margin-top:2px;">${escapeHtml(n.body||'')}</div>
+      </div>
+    `).join('');
+    fsMarkAllNotificationsRead(_notifCacheV2).catch(()=>{});
+  }
+  refreshNotifBadgeV2();
+}
+function renderProfileTopActionsV2(isOwnProfile){
+  const box = document.getElementById('profileMainTopActionsV2');
+  if(!box) return;
+  box.innerHTML = '';
+  if(isOwnProfile){
+    box.innerHTML = `
+      <button class="profileIconBtnV2" id="btnProfileNotifV2" title="Notificaciones">🔔<span class="badgeDotV2"></span></button>
+      <button class="profileIconBtnV2" id="btnProfileSettingsV2" title="Ajustes">⚙️</button>
+    `;
+    document.getElementById('btnProfileNotifV2')?.addEventListener('click', toggleNotifPanelV2);
+    document.getElementById('btnProfileSettingsV2')?.addEventListener('click', ()=>openProfileTab('ajustes'));
+    refreshNotifBadgeV2();
+  } else {
+    box.innerHTML = `
+      <button class="profileIconBtnV2 wide" id="btnProfileMsgV2">✉️ Mensaje</button>
+      <button class="profileIconBtnV2 wide" id="btnProfileAddFriendV2">➕ Amigo</button>
+    `;
+    document.getElementById('btnProfileMsgV2')?.addEventListener('click', ()=>alert('Chat: próximamente (Fase 7 del roadmap).'));
+    document.getElementById('btnProfileAddFriendV2')?.addEventListener('click', ()=>{
+      alert('Añadir amigo desde aquí requiere la vista de perfil ajeno (pendiente).');
+    });
+  }
+}
+
 function renderUserProfilePage(){
   const hero=document.getElementById('profileHero'),heroEdit=document.getElementById('profileHeroEditPreview'),bannerCss=getProfileBannerCss();
   if(hero)hero.style.setProperty('--profile-banner',bannerCss);if(heroEdit)heroEdit.style.setProperty('--profile-banner',bannerCss);
@@ -1808,10 +1975,19 @@ function renderUserProfilePage(){
   const displayName=getProfileName();
   ['profileDisplayName','profilePublicName','profileEditDisplayName'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=displayName;});
   ['profileDisplayEmail','profileEditDisplayEmail'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=getProfileEmail();});
-  const el=id=>document.getElementById(id);if(el('profilePublicBio'))el('profilePublicBio').textContent=profile.bio?.trim()||'Sin bio.';if(el('profileNameInput'))el('profileNameInput').value=profile.displayName||'';if(el('profileBioInput'))el('profileBioInput').value=profile.bio||'';
+  const el=id=>document.getElementById(id);
+  if(el('profilePublicBio'))el('profilePublicBio').textContent=profile.bio?.trim()||'Sin bio todavía.';
+  if(el('profilePublicBio2'))el('profilePublicBio2').textContent=profile.bio?.trim()||'Sin bio todavía.';
+  if(el('profileNameInput'))el('profileNameInput').value=profile.displayName||'';if(el('profileBioInput'))el('profileBioInput').value=profile.bio||'';
   const cc=cards.length,dc=decks.length,wc=wishlist.length,inv=computeInvestmentTotals(),tc=cards.reduce((n,c)=>n+(Number(c.qty||1)),0),ms=cards.filter(c=>!!c.sale).length;
   const ids={profileCardsCount:cc,profileDecksCount:dc,profileWishCount:wc,profileStatCards:cc,profileStatDecks:dc,profileStatWishes:wc,profileStatValue:`${inv.invAll.toFixed(2)}€`,profileAboutName:displayName,rankCollectionValue:cc,rankDeckValue:dc,rankWishValue:wc,rankTotalCards:cc,rankTotalCopies:tc,rankWishlistTotal:wishlist.length,rankSalesTotal:ms};
   Object.entries(ids).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=String(v);});
+
+  renderProfileTopActionsV2(true);
+  renderProfileSaleGridV2();
+  renderProfileCollectionGridV2();
+  renderProfileLogrosV2();
+
   renderFriendsUI();renderSidebarProfile();openProfileTab(getSavedProfileTab());
 }
 function initUserProfilePage(){
@@ -1847,12 +2023,7 @@ function renderSalesTable(){
 function _renderOtherSales(otherTbody,otherPill,marketSearch){
   const sess=getSession(),q=(marketSearch?.value||'').trim().toLowerCase();let market=loadMarketOffers().filter(x=>x.sellerId&&x.qty>0);if(sess?.id)market=market.filter(x=>x.sellerId!==sess.id);if(q)market=market.filter(x=>String(x.name||'').toLowerCase().includes(q)||String(x.sellerName||'').toLowerCase().includes(q));
   if(otherPill)otherPill.textContent='Otros usuarios: '+market.reduce((a,c)=>a+(c.qty||1),0);otherTbody.innerHTML='';
-  for(const item of market){
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td><div class="row" style="gap:8px;flex-wrap:nowrap;"><img src="${escapeHtml(item.sellerAvatar||'assets/logo.png')}" alt="" class="sidebarAvatar" style="width:34px;height:34px;"><div><b>${escapeHtml(item.sellerName||'Usuario')}</b></div></div></td><td><b>${escapeHtml(item.name)}</b></td><td class="mono">${escapeHtml(item.setCode||'')}</td><td class="mono">${escapeHtml(item.collectorNumber||'')}</td><td class="right mono">${item.qty||1}</td><td class="right mono">${escapeHtml(item.priceText||'')}</td><td class="right mono">${escapeHtml(item.bestSell||'')}</td><td><div class="row" style="gap:6px;"><span class="pill">Disponible</span><button class="btn ghost tiny" data-contact="1">💬 Contactar</button></div></td>`;
-    tr.querySelector('[data-contact]').onclick=()=>openChatWithUser(item.sellerId, item.sellerName, { listingId:item.marketId||'', cardName:item.name||'' });
-    otherTbody.appendChild(tr);
-  }
+  for(const item of market){const tr=document.createElement('tr');tr.innerHTML=`<td><div class="row" style="gap:8px;flex-wrap:nowrap;"><img src="${escapeHtml(item.sellerAvatar||'assets/logo.png')}" alt="" class="sidebarAvatar" style="width:34px;height:34px;"><div><b>${escapeHtml(item.sellerName||'Usuario')}</b></div></div></td><td><b>${escapeHtml(item.name)}</b></td><td class="mono">${escapeHtml(item.setCode||'')}</td><td class="mono">${escapeHtml(item.collectorNumber||'')}</td><td class="right mono">${item.qty||1}</td><td class="right mono">${escapeHtml(item.priceText||'')}</td><td class="right mono">${escapeHtml(item.bestSell||'')}</td><td><span class="pill">Disponible</span></td>`;otherTbody.appendChild(tr);}
   if(!market.length){const tr=document.createElement('tr');tr.innerHTML=`<td colspan="8"><div class="marketEmpty">Sin anuncios activos.</div></td>`;otherTbody.appendChild(tr);}
 }
 
@@ -1907,6 +2078,7 @@ function _onFirebaseLogin(firebaseUser){
   fsSaveProfile().catch(()=>{});
   fsLoadSocialData().then(()=>renderUserProfilePage()).catch(()=>{});
   fsSyncAllSaleCards().catch(()=>{});
+  refreshNotifBadgeV2().catch(()=>{});
 }
 
 /* ─────────────────────────────────────────────
