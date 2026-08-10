@@ -74,14 +74,14 @@ const AuthService = (() => {
     // 1. Crear el usuario en Auth (a partir de aquí ya hay sesión)
     const cred = await fbAuth.createUserWithEmailAndPassword(email, password);
 
-    try {
+   try {
       // 2. Nombre visible en Auth
       await cred.user.updateProfile({ displayName: username.trim() });
       // 3. Reservar username + crear perfil (unicidad garantizada por reglas)
       await createProfileAndReserveUsername(cred.user, username);
-      // 4. Email de verificación
-      await cred.user.sendEmailVerification();
-    } catch (err) {
+      // 4. ❌ Ya NO llamamos a cred.user.sendEmailVerification()
+      //    ✅ La Cloud Function onUserCreated lo envía automáticamente al crearse el usuario
+    } catch (err) { {
       // Si algo falla DESPUÉS de crear el usuario (p.ej. username pillado),
       // borramos el usuario recién creado para no dejar cuentas a medias.
       try { await cred.user.delete(); } catch (_) {}
@@ -118,10 +118,8 @@ const AuthService = (() => {
   /* ── RECUPERAR CONTRASEÑA ── */
   async function sendPasswordReset(email) {
     if (!isValidEmail(email)) throw new Error('El email no es válido.');
-    await fbAuth.sendPasswordResetEmail(email, {
-      url: window.location.origin,
-      handleCodeInApp: false,
-    });
+    const fn = fbFunctions.httpsCallable('sendPasswordResetEmail');
+    await fn({ email });
   }
 
   /* ── REENVIAR VERIFICACIÓN ── */
@@ -131,9 +129,11 @@ const AuthService = (() => {
 
     const cred = await fbAuth.signInWithEmailAndPassword(email, password);
     if (cred.user.emailVerified) {
+      await fbAuth.signOut();
       throw new Error('Este email ya está verificado. Puedes iniciar sesión.');
     }
-    await cred.user.sendEmailVerification();
+    const fn = fbFunctions.httpsCallable('resendVerificationEmail');
+    await fn({ email });
     await fbAuth.signOut();
   }
 
