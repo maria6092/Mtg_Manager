@@ -81,7 +81,7 @@ const AuthService = (() => {
       await createProfileAndReserveUsername(cred.user, username);
       // 4. ❌ Ya NO llamamos a cred.user.sendEmailVerification()
       //    ✅ La Cloud Function onUserCreated lo envía automáticamente al crearse el usuario
-    } catch (err) { {
+    } catch (err)  {
       // Si algo falla DESPUÉS de crear el usuario (p.ej. username pillado),
       // borramos el usuario recién creado para no dejar cuentas a medias.
       try { await cred.user.delete(); } catch (_) {}
