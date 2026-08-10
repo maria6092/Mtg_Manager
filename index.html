@@ -535,6 +535,18 @@
     section[data-page="ajustes"] .settingsGrid{
       margin-top:4px;
     }
+    .settingsProfileGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px;}
+    .settingsProfileCard{min-width:0;}
+    .settingsProfileCard textarea{width:100%;resize:vertical;min-height:90px;padding:10px 12px;border-radius:6px;border:1px solid rgba(201,150,58,.2);outline:none;font-size:.9rem;font-family:'Raleway',sans-serif;background:var(--input-bg);color:var(--input-text);}
+    .settingsProfileCard textarea:focus{border-color:rgba(201,150,58,.6);box-shadow:0 0 0 3px rgba(201,150,58,.1),var(--glow);}
+    .settingsAvatarEditor{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+    .settingsAvatarPreview{width:92px;height:92px;border-radius:999px;object-fit:cover;border:3px solid rgba(201,150,58,.55);background:var(--card);box-shadow:0 0 18px rgba(201,150,58,.18);flex:0 0 auto;}
+    .settingsProfilePreview{position:relative;min-height:220px;margin-top:16px;border-radius:14px;overflow:hidden;border:1px solid rgba(201,150,58,.25);box-shadow:var(--shadow);background:linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.45)),var(--profile-banner,linear-gradient(135deg,#3d2060,#1a0f2e,#2d1854));background-size:cover;background-position:center;}
+    .settingsProfilePreview .profileHeroContent{min-height:220px;padding:16px;}
+    .settingsProfilePreview .profileAvatarLarge{width:100px;height:100px;}
+    .topFriendsBtn{font-size:.68rem;padding:7px 12px;white-space:nowrap;}
+    @media(max-width:900px){.settingsProfileGrid{grid-template-columns:1fr;}}
+
 
   </style>
 </head>
@@ -636,6 +648,7 @@
         </div>
         <div class="appTopbarSpacer"></div>
         <button class="btn ghost" id="btnSignOutHeader" style="display:none;font-size:.68rem;padding:7px 12px;">Cerrar sesión</button>
+        <button class="btn ghost topFriendsBtn" id="btnTopFriends" aria-label="Ver tus amigos" title="Ver tus amigos">👥 Amigos</button>
         <button class="profileQuickBtn" id="btnTopProfile" aria-label="Ir al perfil">
           <img id="topbarAvatar" src="assets/logo.png" alt="Perfil">
         </button>
@@ -956,129 +969,103 @@
           <button class="profileTabBtn active" data-profile-tab="resumen">Resumen</button>
           <button class="profileTabBtn" data-profile-tab="amigos">Amigos</button>
           <button class="profileTabBtn" data-profile-tab="solicitudes">Solicitudes</button>
-          <button class="profileTabBtn" data-profile-tab="editar">Editar perfil</button>
         </div>
 
-        <div class="profileTabPane is-active" data-profile-pane="resumen">
-          <div class="profileAboutGrid">
-            <div class="panel soft" style="box-shadow:none;">
-              <h3 class="h3">Sobre</h3>
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-                <img id="profileAvatarPreview" class="profileSmallAvatar" src="assets/logo.png" alt="Avatar preview">
-                <div><div><b id="profilePublicName">Usuario</b></div><div class="hint" id="profilePublicBio2">Sin bio todavía.</div></div>
-              </div>
-              <div class="profileAboutList">
-                <div class="profileAboutItem"><span class="label">Nombre visible</span><span id="profileAboutName">Usuario</span></div>
-                <div class="profileAboutItem"><span class="label">Cartas distintas</span><span id="profileStatCards">0</span></div>
-                <div class="profileAboutItem"><span class="label">Mazos</span><span id="profileStatDecks">0</span></div>
-                <div class="profileAboutItem"><span class="label">Deseos</span><span id="profileStatWishes">0</span></div>
-                <div class="profileAboutItem"><span class="label">Valor estimado</span><span id="profileStatValue">0.00€</span></div>
-              </div>
-            </div>
-            <div class="panel soft profileRanking" style="box-shadow:none;">
-              <h3 class="h3">Estadísticas</h3>
-              <div class="profileRankingTop">
-                <div class="rankCard"><div class="rankIcon">🥉</div><div style="font-weight:800;">Deseos</div><div class="rankPts" id="rankWishValue">0</div></div>
-                <div class="rankCard big"><div class="rankIcon">🥇</div><div style="font-weight:800;">Colección</div><div class="rankPts" id="rankCollectionValue">0</div></div>
-                <div class="rankCard"><div class="rankIcon">🥈</div><div style="font-weight:800;">Mazos</div><div class="rankPts" id="rankDeckValue">0</div></div>
-              </div>
-              <div class="rankList">
-                <div class="rankListItem"><span>#1</span><span>Cartas (total)</span><span id="rankTotalCards">0</span></div>
-                <div class="rankListItem"><span>#2</span><span>Copias guardadas</span><span id="rankTotalCopies">0</span></div>
-                <div class="rankListItem"><span>#3</span><span>Items en deseos</span><span id="rankWishlistTotal">0</span></div>
-                <div class="rankListItem"><span>#4</span><span>En venta</span><span id="rankSalesTotal">0</span></div>
-              </div>
-            </div>
+
+
+
+
+</section>
+
+              <section class="panel is-hidden" data-page="ajustes" style="display:none;">
+        <div class="pageHeader">
+          <div class="row" style="align-items:flex-start;gap:12px;">
+            <div><h2>Ajustes</h2><p>Configura tu perfil, privacidad, apariencia, moneda y copias de seguridad.</p></div>
+            <div class="spacer"></div>
+            <button class="btn ghost" id="btnBackFromSettingsPage">← Volver al perfil</button>
           </div>
         </div>
 
-        <div class="profileTabPane" data-profile-pane="amigos">
-          <div class="panel soft" style="box-shadow:none;">
-            <h3 class="h3">Amigos</h3>
-            <div class="row mt12" style="gap:8px;align-items:center;"><input id="friendSearchInput" placeholder="Usuario o email"><button class="btn" id="btnSendFriendRequest">Añadir amigo</button></div>
-            <div class="row mt10" style="gap:8px;flex-wrap:wrap;"><span class="pill">Amigos: <b id="friendCount">0</b></span><span class="pill">Recibidas: <b id="friendReceivedCount">0</b></span><span class="pill">Enviadas: <b id="friendSentCount">0</b></span></div>
-            <div id="friendsList" style="margin-top:12px;"></div>
-          </div>
-        </div>
-
-        <div class="profileTabPane" data-profile-pane="solicitudes">
-          <div class="panel soft" style="box-shadow:none;">
-            <h3 class="h3">Solicitudes pendientes</h3>
-            <h4 class="h3" style="font-size:.85rem;margin-top:14px;">Recibidas</h4>
-            <div id="friendRequestsReceived" style="margin-top:8px;"></div>
+        <div class="settingsProfileGrid">
+          <div class="panel soft settingsProfileCard" style="box-shadow:none;">
+            <h3 class="h3">Editar perfil</h3>
+            <div class="settingsAvatarEditor">
+              <img id="settingsAvatarPreview" class="settingsAvatarPreview" src="assets/logo.png" alt="Foto de perfil">
+              <div>
+                <div class="small" style="margin-bottom:8px;">Foto de perfil</div>
+                <div class="row" style="gap:8px;">
+                  <label class="btn uploadBtn" for="settingsAvatarInput">Subir foto</label>
+                  <button class="btn ghost" id="btnSettingsResetAvatar">Restablecer</button>
+                </div>
+              </div>
+            </div>
+            <input class="fileInput" id="settingsAvatarInput" type="file" accept="image/*">
             <hr class="hr">
-            <h4 class="h3" style="font-size:.85rem;">Enviadas</h4>
-            <div id="friendRequestsSent" style="margin-top:8px;"></div>
+            <label>Nombre visible</label>
+            <input id="settingsProfileName" placeholder="Nombre visible" maxlength="40">
+            <label class="mt10">Biografía corta</label>
+            <textarea id="settingsProfileBio" placeholder="Cuéntanos algo sobre ti..." maxlength="180" rows="4"></textarea>
+            <div class="row mt12"><button class="btn" id="btnSettingsSaveProfile">Guardar cambios del perfil</button></div>
           </div>
-        </div>
 
-        <div class="profileTabPane" data-profile-pane="editar">
-          <div class="profileGrid">
-            <div class="panel soft" style="box-shadow:none;">
-              <h3 class="h3">Imagen de perfil</h3>
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;"><img id="profileEditAvatarPreview" class="profileSmallAvatar" src="assets/logo.png" alt="Preview"><div class="row" style="gap:8px;"><label class="btn uploadBtn" for="profileAvatarInput">Subir foto</label><button class="btn ghost" id="btnResetAvatar">Restablecer</button></div></div>
-              <input class="fileInput" id="profileAvatarInput" type="file" accept="image/*">
-              <hr class="hr">
-              <h3 class="h3">Datos del perfil</h3>
-              <label>Nombre visible</label><input id="profileNameInput" placeholder="Nombre visible">
-              <label class="mt10">Biografía corta</label><input id="profileBioInput" placeholder="Descripción breve">
-              <div class="row mt12"><button class="btn" id="btnSaveProfileText">Guardar perfil</button></div>
+          <div class="panel soft settingsProfileCard" style="box-shadow:none;">
+            <h3 class="h3">Banner de perfil</h3>
+            <div class="row" style="gap:8px;margin-bottom:10px;">
+              <label class="btn uploadBtn" for="settingsBannerInput">Subir banner</label>
+              <button class="btn ghost" id="btnSettingsResetBanner">Restablecer</button>
             </div>
-            <div class="panel soft" style="box-shadow:none;">
-              <h3 class="h3">Banner de fondo</h3>
-              <div class="row" style="gap:8px;margin-bottom:10px;"><label class="btn uploadBtn" for="profileBannerInput">Subir banner</label><button class="btn ghost" id="btnResetBanner">Restablecer</button></div>
-              <input class="fileInput" id="profileBannerInput" type="file" accept="image/*">
-              <hr class="hr">
-              <h3 class="h3">Vista previa</h3>
-              <div class="profileHero" id="profileHeroEditPreview">
-                <div class="profileHeroOverlay"></div>
-                <div class="profileHeroContent">
-                  <img id="profileEditAvatarLarge" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar">
-                  <div class="profileMeta"><h2 id="profileEditDisplayName">Usuario</h2><div class="profileEmail" id="profileEditDisplayEmail"></div></div>
+            <input class="fileInput" id="settingsBannerInput" type="file" accept="image/*">
+            <div class="hint">El banner se mostrará en la parte superior de tu perfil.</div>
+            <div class="settingsProfilePreview" id="settingsProfilePreview">
+              <div class="profileHeroOverlay"></div>
+              <div class="profileHeroContent">
+                <img id="settingsPreviewAvatar" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar">
+                <div class="profileMeta">
+                  <h2 id="settingsPreviewName">Usuario</h2>
+                  <div class="profileEmail" id="settingsPreviewEmail"></div>
+                  <div class="profileMini"><span class="pill" id="settingsPreviewBio">Sin bio todavía.</span></div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <section class="panel is-hidden" data-page="ajustes" style="display:none;">
-        <div class="pageHeader">
-          <div class="row" style="align-items:flex-start;gap:12px;">
-            <div><h2>Ajustes</h2><p>Configura la apariencia, privacidad, moneda y copias de seguridad.</p></div>
-            <div class="spacer"></div>
-            <button class="btn ghost" id="btnBackFromSettingsPage">← Volver al perfil</button>
+        <div class="row mb10 mt12">
+          <h2 class="h2" style="margin:0;">Preferencias</h2>
+          <div class="spacer"></div>
+          <button class="btn ghost" id="btnResetSettings">Reset ajustes</button>
+        </div>
+        <div class="settingsGrid">
+          <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Tema</h3><label>Elige tema</label><select id="setTheme"><option value="cosmic">Cósmico (morado/dorado)</option><option value="red">♂ Sangre</option><option value="green">☽ Esmeralda</option><option value="yellow">☀ Sol Dorado</option><option value="blue">☿ Zafiro</option><option value="black">◉ Ónix</option></select></div>
+          <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Tamaño de letra</h3><label>Tamaño: <span class="mono" id="fontPxLabel">16</span>px</label><input id="setFontSize" type="range" min="12" max="20" step="1"/></div>
+          <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Comodidad</h3><div class="toggleRow" style="margin-top:8px;"><input id="setCompact" type="checkbox" class="chk"/><div><b>Modo compacto</b></div></div><div class="toggleRow" style="margin-top:10px;"><input id="setReducedMotion" type="checkbox" class="chk"/><div><b>Reducir animaciones</b></div></div></div>
+          <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Precios</h3><label>Preferencia de moneda</label><select id="setCurrency"><option value="EUR">Mostrar € primero</option><option value="USD">Mostrar $ primero</option></select></div>
+          <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Privacidad de colección</h3><label>Qué mostrar en tu perfil público</label><select id="setProfileCollectionMode"><option value="all">Colección completa</option><option value="fav">Solo favoritos</option></select></div>
+        </div>
+
+        <div class="panel soft" style="box-shadow:none;margin-top:14px;">
+          <h3 class="h3">Sesión</h3>
+          <div class="row" style="gap:10px;flex-wrap:wrap;">
+            <button class="btn ghost" id="btnSignOutTop" style="display:none;">Cerrar sesión</button>
+            <button class="btn ghost" id="btnBackFromProfileSettings">Volver al resumen</button>
           </div>
         </div>
 
-          <div class="row mb10"><h2 class="h2" style="margin:0;">Ajustes</h2><div class="spacer"></div><button class="btn ghost" id="btnResetSettings">Reset ajustes</button></div>
-          <div class="settingsGrid">
-            <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Tema</h3><label>Elige tema</label><select id="setTheme"><option value="cosmic">Cósmico (morado/dorado)</option><option value="red">♂ Sangre</option><option value="green">☽ Esmeralda</option><option value="yellow">☀ Sol Dorado</option><option value="blue">☿ Zafiro</option><option value="black">◉ Ónix</option></select></div>
-            <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Tamaño de letra</h3><label>Tamaño: <span class="mono" id="fontPxLabel">16</span>px</label><input id="setFontSize" type="range" min="12" max="20" step="1"/></div>
-            <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Comodidad</h3><div class="toggleRow" style="margin-top:8px;"><input id="setCompact" type="checkbox" class="chk"/><div><b>Modo compacto</b></div></div><div class="toggleRow" style="margin-top:10px;"><input id="setReducedMotion" type="checkbox" class="chk"/><div><b>Reducir animaciones</b></div></div></div>
-            <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Precios</h3><label>Preferencia de moneda</label><select id="setCurrency"><option value="EUR">Mostrar € primero</option><option value="USD">Mostrar $ primero</option></select></div>
-            <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Privacidad de colección</h3><label>Qué mostrar en tu perfil público</label><select id="setProfileCollectionMode"><option value="all">Colección completa</option><option value="fav">Solo favoritos</option></select></div>
+        <div class="panel soft" style="box-shadow:none;margin-top:14px;">
+          <h3 class="h3">Backup automático</h3>
+          <div class="toggleRow" style="margin-bottom:10px;"><input id="setAutoBackup" type="checkbox" class="chk"/><div><b>Activar backup automático</b></div></div>
+          <label>Frecuencia</label>
+          <select id="setAutoBackupEvery"><option value="5">Cada 5 min</option><option value="15">Cada 15 min</option><option value="30" selected>Cada 30 min</option><option value="60">Cada hora</option></select>
+          <div class="hint" id="backupInfo" style="margin-top:8px;">No hay backups aún.</div>
+          <div class="row mt10" style="gap:8px;flex-wrap:wrap;">
+            <button class="btn ghost" id="btnBackupNow">Hacer backup ahora</button>
+            <button class="btn ghost" id="btnBackupDownload">Descargar backup</button>
+            <button class="btn ghost" id="btnBackupRestore">Restaurar último backup</button>
           </div>
-          <div class="panel soft" style="box-shadow:none;margin-top:14px;">
-            <h3 class="h3">Sesión</h3>
-            <div class="row" style="gap:10px;flex-wrap:wrap;">
-              <button class="btn ghost" id="btnSignOutTop" style="display:none;">Cerrar sesión</button>
-              <button class="btn ghost" id="btnBackFromProfileSettings">Volver al resumen</button>
-            </div>
-          </div>
-          <div class="panel soft" style="box-shadow:none;margin-top:14px;">
-            <h3 class="h3">Backup automático</h3>
-            <div class="toggleRow" style="margin-bottom:10px;"><input id="setAutoBackup" type="checkbox" class="chk"/><div><b>Activar backup automático</b></div></div>
-            <label>Frecuencia</label>
-            <select id="setAutoBackupEvery"><option value="5">Cada 5 min</option><option value="15">Cada 15 min</option><option value="30" selected>Cada 30 min</option><option value="60">Cada hora</option></select>
-            <div class="hint" id="backupInfo" style="margin-top:8px;">No hay backups aún.</div>
-            <div class="row mt10" style="gap:8px;flex-wrap:wrap;">
-              <button class="btn ghost" id="btnBackupNow">Hacer backup ahora</button>
-              <button class="btn ghost" id="btnBackupDownload">Descargar backup</button>
-              <button class="btn ghost" id="btnBackupRestore">Restaurar último backup</button>
-            </div>
-          </div>
-        
+        </div>
       </section>
+
+
 
     </div><!-- /contentWrap -->
   </main>
@@ -1427,7 +1414,7 @@ function showPage(id){
     if(id==='buscador'){ensureSearchOptions();loadSearchStateToUI();renderSearchResults();}
     if(id==='mazos') renderDecks();
     if(id==='usuario'){renderUserProfilePage();}
-    if(id==='ajustes'){initSettingsUI();}
+    if(id==='ajustes'){initSettingsUI();renderSettingsProfileUI();}
     if(id==='coleccion'){const sel=document.getElementById('colFavFilter');if(sel)sel.value=settings.colFavFilter||'all';renderColeccion();}
     if(id==='tienda'||id==='mis_ventas') renderSalesTable();
     closeSidebar();
@@ -1769,6 +1756,44 @@ function parseCsv(text){ const out=[];let row=[],cur='',inQ=false;const s=String
 /* ─────────────────────────────────────────────
    AJUSTES UI
 ───────────────────────────────────────────── */
+function renderSettingsProfileUI(){
+  const avatar=getProfileAvatar(),name=getProfileName(),bio=profile.bio?.trim()||'',banner=getProfileBannerCss();
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
+  const txt=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const img=(id,v)=>{const el=document.getElementById(id);if(el)el.src=v;};
+  img('settingsAvatarPreview',avatar);img('settingsPreviewAvatar',avatar);
+  set('settingsProfileName',profile.displayName||'');set('settingsProfileBio',profile.bio||'');
+  txt('settingsPreviewName',name);txt('settingsPreviewEmail',getProfileEmail());txt('settingsPreviewBio',bio||'Sin bio todavía.');
+  const preview=document.getElementById('settingsProfilePreview');if(preview)preview.style.setProperty('--profile-banner',banner);
+}
+function initSettingsProfileUI(){
+  const nameInput=document.getElementById('settingsProfileName'),bioInput=document.getElementById('settingsProfileBio');
+  if(!nameInput||!bioInput)return;
+  renderSettingsProfileUI();
+  nameInput.oninput=()=>{const el=document.getElementById('settingsPreviewName');if(el)el.textContent=nameInput.value.trim()||getSession()?.username||'Usuario';};
+  bioInput.oninput=()=>{const el=document.getElementById('settingsPreviewBio');if(el)el.textContent=bioInput.value.trim()||'Sin bio todavía.';};
+  const saveBtn=document.getElementById('btnSettingsSaveProfile');
+  if(saveBtn)saveBtn.onclick=()=>{profile.displayName=nameInput.value.trim();profile.bio=bioInput.value.trim();saveProfile();renderSettingsProfileUI();renderUserProfilePage();renderSalesTable();alert('Perfil guardado.');};
+  const avatarInput=document.getElementById('settingsAvatarInput');
+  if(avatarInput)avatarInput.onchange=async e=>{
+    const file=e.target.files?.[0];if(!file)return;const btn=document.querySelector('label[for="settingsAvatarInput"]');if(btn)btn.textContent='Subiendo…';
+    try{if(currentUserId())await fsUploadAvatar(file);else{profile.avatar=await fileToDataUrl(file);saveProfile();}renderSettingsProfileUI();renderUserProfilePage();renderSalesTable();}
+    catch(err){alert('No se pudo subir la foto: '+(err?.message||err));}
+    finally{if(btn)btn.textContent='Subir foto';e.target.value='';}
+  };
+  const bannerInput=document.getElementById('settingsBannerInput');
+  if(bannerInput)bannerInput.onchange=async e=>{
+    const file=e.target.files?.[0];if(!file)return;const btn=document.querySelector('label[for="settingsBannerInput"]');if(btn)btn.textContent='Subiendo…';
+    try{if(currentUserId())await fsUploadBanner(file);else{profile.banner=await fileToDataUrl(file);saveProfile();}renderSettingsProfileUI();renderUserProfilePage();}
+    catch(err){alert('No se pudo subir el banner: '+(err?.message||err));}
+    finally{if(btn)btn.textContent='Subir banner';e.target.value='';}
+  };
+  const resetAvatar=document.getElementById('btnSettingsResetAvatar');
+  if(resetAvatar)resetAvatar.onclick=()=>{profile.avatar='';saveProfile();renderSettingsProfileUI();renderUserProfilePage();renderSalesTable();};
+  const resetBanner=document.getElementById('btnSettingsResetBanner');
+  if(resetBanner)resetBanner.onclick=()=>{profile.banner='';saveProfile();renderSettingsProfileUI();renderUserProfilePage();};
+}
+
 function initSettingsUI(){
   const themeSel=document.getElementById('setTheme'),fontRange=document.getElementById('setFontSize'),fontLabel=document.getElementById('fontPxLabel'),compactChk=document.getElementById('setCompact'),motionChk=document.getElementById('setReducedMotion'),currencySel=document.getElementById('setCurrency');
   if(!themeSel)return;
@@ -1789,7 +1814,10 @@ function initSettingsUI(){
     };
   }
 
-  document.getElementById('btnResetSettings')?.addEventListener('click',()=>{if(!confirm('¿Resetear todos los ajustes?'))return;settings={...DEFAULT_SETTINGS};saveSettings();applySettings();initSettingsUI();renderCardsTableFull();renderDecks();renderColorStats();renderTypeStats();updateInvestmentUI();renderSalesTable();});
+  initSettingsProfileUI();
+
+  const resetSettingsBtn=document.getElementById('btnResetSettings');
+  if(resetSettingsBtn)resetSettingsBtn.onclick=()=>{if(!confirm('¿Resetear todos los ajustes?'))return;settings={...DEFAULT_SETTINGS};saveSettings();applySettings();initSettingsUI();renderCardsTableFull();renderDecks();renderColorStats();renderTypeStats();updateInvestmentUI();renderSalesTable();};
   initBackupUI();
 }
 
@@ -2047,9 +2075,11 @@ function renderProfileTopActionsV2(isOwnProfile){
   if(isOwnProfile){
     box.innerHTML = `
       <button class="profileIconBtnV2" id="btnProfileNotifV2" title="Notificaciones">🔔<span class="badgeDotV2"></span></button>
-      <button class="profileIconBtnV2" id="btnProfileSettingsV2" title="Ajustes">⚙️</button>
+        <button class="profileIconBtnV2" id="btnProfileFriendsV2" title="Ver tus amigos">👥</button>
+        <button class="profileIconBtnV2" id="btnProfileSettingsV2" title="Ajustes">⚙️</button>
     `;
     document.getElementById('btnProfileNotifV2')?.addEventListener('click', toggleNotifPanelV2);
+        document.getElementById('btnProfileFriendsV2')?.addEventListener('click', ()=>{showPage('usuario');openProfileTab('amigos');});
     document.getElementById('btnProfileSettingsV2')?.addEventListener('click', ()=>showPage('ajustes'));
     refreshNotifBadgeV2();
   } else {
@@ -2087,19 +2117,16 @@ function renderUserProfilePage(){
   renderFriendsUI();renderSidebarProfile();openProfileTab('resumen');
 }
 function initUserProfilePage(){
-  document.getElementById('btnBackFromSettingsPage')?.addEventListener('click',()=>showPage('usuario'));
+  document.getElementById('btnBackFromSettingsPage')?.addEventListener('click',()=>{showPage('usuario');openProfileTab('resumen');});
 
   const el=id=>document.getElementById(id);
   el('btnTopProfile')?.addEventListener('click',()=>{showPage('usuario');openProfileTab('resumen');});
+  el('btnTopFriends')?.addEventListener('click',()=>{showPage('usuario');openProfileTab('amigos');});
   el('btnProfileGoCollection')?.addEventListener('click',()=>showPage('coleccion'));
   el('btnProfileGoStore')?.addEventListener('click',()=>showPage('tienda'));
   el('btnBackFromProfileSettings')?.addEventListener('click',()=>openProfileTab('resumen'));
   document.querySelectorAll('[data-profile-tab]').forEach(b=>b.addEventListener('click',()=>openProfileTab(b.dataset.profileTab)));
-  el('profileAvatarInput')?.addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;const btn=document.querySelector('label[for="profileAvatarInput"]');if(btn)btn.textContent='Subiendo…';try{if(currentUserId())await fsUploadAvatar(file);else{profile.avatar=await fileToDataUrl(file);saveProfile();}renderUserProfilePage();renderSalesTable();}catch(err){alert('No se pudo subir: '+(err?.message||err));}finally{if(btn)btn.textContent='Subir foto';e.target.value='';}});
-  el('profileBannerInput')?.addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;const btn=document.querySelector('label[for="profileBannerInput"]');if(btn)btn.textContent='Subiendo…';try{if(currentUserId())await fsUploadBanner(file);else{profile.banner=await fileToDataUrl(file);saveProfile();}renderUserProfilePage();}catch(err){alert('No se pudo subir: '+(err?.message||err));}finally{if(btn)btn.textContent='Subir banner';e.target.value='';}});
-  el('btnResetAvatar')?.addEventListener('click',()=>{profile.avatar='';saveProfile();renderUserProfilePage();renderSalesTable();});
-  el('btnResetBanner')?.addEventListener('click',()=>{profile.banner='';saveProfile();renderUserProfilePage();});
-  el('btnSaveProfileText')?.addEventListener('click',()=>{profile.displayName=el('profileNameInput')?.value?.trim()||'';profile.bio=el('profileBioInput')?.value?.trim()||'';saveProfile();renderUserProfilePage();renderSalesTable();openProfileTab('resumen');alert('Perfil guardado.');});
+
   el('btnSendFriendRequest')?.addEventListener('click',async()=>{const btn=el('btnSendFriendRequest'),qi=el('friendSearchInput');btn.disabled=true;btn.textContent='Buscando…';try{const res=await sendFriendRequest(qi?.value||'');if(qi)qi.value='';renderUserProfilePage();openProfileTab('amigos');alert(res.autoAccepted?'Ya sois amigos.':'Solicitud enviada.');}catch(err){alert(err?.message||err);}finally{btn.disabled=false;btn.textContent='Añadir amigo';}});
   el('friendSearchInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')el('btnSendFriendRequest')?.click();});
   if(!window.__friendsDelegated){window.__friendsDelegated=true;document.addEventListener('click',async e=>{
