@@ -72,21 +72,25 @@ const AuthService = (() => {
     if (!isValidPassword(password)) throw new Error('Contraseña demasiado corta (mínimo 6 caracteres).');
 
     // 1. Crear el usuario en Auth (a partir de aquí ya hay sesión)
-    const cred = await fbAuth.createUserWithEmailAndPassword(email, password);
+   const cred = await fbAuth.createUserWithEmailAndPassword(
+  email.trim(),
+  password
+);
 
-   try {
-      // 2. Nombre visible en Auth
-      await cred.user.updateProfile({ displayName: username.trim() });
-      // 3. Reservar username + crear perfil (unicidad garantizada por reglas)
-      await createProfileAndReserveUsername(cred.user, username);
-      // 4. ❌ Ya NO llamamos a cred.user.sendEmailVerification()
-      //    ✅ La Cloud Function onUserCreated lo envía automáticamente al crearse el usuario
-    } catch (err)  {
-      // Si algo falla DESPUÉS de crear el usuario (p.ej. username pillado),
-      // borramos el usuario recién creado para no dejar cuentas a medias.
-      try { await cred.user.delete(); } catch (_) {}
-      throw err;
-    }
+try {
+  // Asegurar que Firestore recibe un token de autenticación válido
+  await cred.user.getIdToken(true);
+
+  // Comprobar que el usuario creado es el usuario actualmente autenticado
+  if (!fbAuth.currentUser || fbAuth.currentUser.uid !== cred.user.uid) {
+    throw new Error('No se pudo establecer la sesión de Firebase.');
+  }
+
+  await cred.user.updateProfile({
+    displayName: username.trim()
+  });
+
+  await createProfileAndReserveUsername(cred.user, username);
 
     return cred.user;
   }
