@@ -155,21 +155,17 @@ const AuthService = (() => {
         username
       );
 
-            // Crear perfil y reservar username
-      await createProfileAndReserveUsername(
-        cred.user,
-        username
-      );
+      // 6. Enviar correo de verificación.
+      const actionCodeSettings = {
+        url: 'https://maria6092.github.io/MTG-Manager/',
+        handleCodeInApp: false
+      };
 
-      // Enviar correo de verificación directamente con Firebase
-      await cred.user.sendEmailVerification();
+      await cred.user.sendEmailVerification(actionCodeSettings);
 
-      console.log(
-        'VERIFICACIÓN: correo solicitado para',
-        cred.user.email
-      );
-
+      // Registro terminado correctamente.
       return cred.user;
+
     } catch (err) {
 
       /*
