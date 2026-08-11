@@ -1785,7 +1785,7 @@ cardsTbody.addEventListener('click',e=>{
   if(e.target.closest('[data-star]')){const tr=e.target.closest('tr[data-id]');if(tr){const item=cards.find(x=>x.id===tr.dataset.id);if(item){item.fav=!item.fav;saveCards();renderCardsTableFull();renderSalesTable();}}return;}
   if(e.target.closest('[data-del]')){const tr=e.target.closest('tr[data-id]');if(!tr)return;cards=cards.filter(x=>x.id!==tr.dataset.id);saveCards();tr.remove();updateCardsMetrics();updateInvestmentUI();renderSalesTable();}
 });
-
+}
 /* listeners ventas */
 const salesTbody=document.querySelector('#tblSales tbody');
 if(salesTbody){
