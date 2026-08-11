@@ -1050,7 +1050,7 @@
       <section class="panel is-hidden" data-page="usuario" style="display:none;">
         <div class="pageHeader">
           <div class="row" style="align-items:flex-start;gap:12px;">
-            <div><h2>Mi perfil</h2><p>Tu perfil y estadísticas de colección.</p></div>
+        
             <div class="spacer"></div>
             <div class="profileHeaderActions">
               <button class="btn ghost" id="btnProfileGoCollection">Ver colección</button>
@@ -1063,7 +1063,7 @@
 
         <div class="profileLayoutV2">
           <aside class="profileSidebarV2">
-            <img id="profileAvatarLarge" class="profileSidebarAvatarV2" src="assets/logo.png" alt="Avatar">
+            <img id="profileAvatarLarge" class="profileSidebarAvatarV2" src="assets/User.jpg" alt="Avatar">
             <h2 id="profileDisplayName" class="profileSidebarNameV2">Usuario</h2>
             <div class="profileSidebarStatsV2">
               <div>Cartas<b id="profileCardsCount">0</b></div>
@@ -1091,22 +1091,16 @@
           </div>
         </div>
 
-        <div class="profileTabs" id="profileTabs">
-          <button class="profileTabBtn active" data-profile-tab="resumen">Resumen</button>
-          <button class="profileTabBtn" data-profile-tab="amigos">Amigos</button>
-          <button class="profileTabBtn" data-profile-tab="solicitudes">Solicitudes</button>
-        </div>
-
 
 
 
 
 </section>
+<!-- ajestes -->
 
               <section class="panel is-hidden" data-page="ajustes" style="display:none;">
         <div class="pageHeader">
           <div class="row" style="align-items:flex-start;gap:12px;">
-            <div><h2>Ajustes</h2><p>Configura tu perfil, privacidad, apariencia, moneda y copias de seguridad.</p></div>
             <div class="spacer"></div>
             <button class="btn ghost" id="btnBackFromSettingsPage">← Volver al perfil</button>
           </div>
@@ -1116,7 +1110,7 @@
           <div class="panel soft settingsProfileCard" style="box-shadow:none;">
             <h3 class="h3">Editar perfil</h3>
             <div class="settingsAvatarEditor">
-              <img id="settingsAvatarPreview" class="settingsAvatarPreview" src="assets/logo.png" alt="Foto de perfil">
+              <img id="settingsAvatarPreview" class="settingsAvatarPreview" src="assets/User.jpg" alt="Foto de perfil">
               <div>
                 <div class="small" style="margin-bottom:8px;">Foto de perfil</div>
                 <div class="row" style="gap:8px;">
@@ -1141,15 +1135,12 @@
               <button class="btn ghost" id="btnSettingsResetBanner">Restablecer</button>
             </div>
             <input class="fileInput" id="settingsBannerInput" type="file" accept="image/*">
-            <div class="hint">El banner se mostrará en la parte superior de tu perfil.</div>
             <div class="settingsProfilePreview" id="settingsProfilePreview">
               <div class="profileHeroOverlay"></div>
               <div class="profileHeroContent">
-                <img id="settingsPreviewAvatar" class="profileAvatarLarge" src="assets/logo.png" alt="Avatar">
+                <img id="settingsPreviewAvatar" class="profileAvatarLarge" src="assets/User.jpg" alt="Avatar">
                 <div class="profileMeta">
                   <h2 id="settingsPreviewName">Usuario</h2>
-                  <div class="profileEmail" id="settingsPreviewEmail"></div>
-                  <div class="profileMini"><span class="pill" id="settingsPreviewBio">Sin bio todavía.</span></div>
                 </div>
               </div>
             </div>
@@ -1162,20 +1153,13 @@
           <button class="btn ghost" id="btnResetSettings">Reset ajustes</button>
         </div>
         <div class="settingsGrid">
-          <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Tema</h3><label>Elige tema</label><select id="setTheme"><option value="cosmic">Cósmico (morado/dorado)</option><option value="red">♂ Sangre</option><option value="green">☽ Esmeralda</option><option value="yellow">☀ Sol Dorado</option><option value="blue">☿ Zafiro</option><option value="black">◉ Ónix</option></select></div>
+          <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Tema</h3><select id="setTheme"><option value="cosmic">Predefinido</option><option value="red">Rojo</option><option value="green">Verde</option><option value="yellow">Amarillo</option><option value="blue">Azul</option><option value="black">Negro</option></select></div>
           <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Tamaño de letra</h3><label>Tamaño: <span class="mono" id="fontPxLabel">16</span>px</label><input id="setFontSize" type="range" min="12" max="20" step="1"/></div>
           <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Comodidad</h3><div class="toggleRow" style="margin-top:8px;"><input id="setCompact" type="checkbox" class="chk"/><div><b>Modo compacto</b></div></div><div class="toggleRow" style="margin-top:10px;"><input id="setReducedMotion" type="checkbox" class="chk"/><div><b>Reducir animaciones</b></div></div></div>
           <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Precios</h3><label>Preferencia de moneda</label><select id="setCurrency"><option value="EUR">Mostrar € primero</option><option value="USD">Mostrar $ primero</option></select></div>
           <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Privacidad de colección</h3><label>Qué mostrar en tu perfil público</label><select id="setProfileCollectionMode"><option value="all">Colección completa</option><option value="fav">Solo favoritos</option></select></div>
-        </div>
+        <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Idioma</h3><label for="setLanguage">Idioma de la página</label><select id="setLanguage"><option value="es">Español</option><option value="en">Inglés</option><option value="fr">Francés</option><option value="de">Alemán</option><option value="it">Italiano</option><option value="pt">Portugués</option><option value="ja">Japonés</option><option value="ko">Coreano</option><option value="zhs">Chino (Simpl.)</option><option value="zht">Chino (Trad.)</option></select></div></div>
 
-        <div class="panel soft" style="box-shadow:none;margin-top:14px;">
-          <h3 class="h3">Sesión</h3>
-          <div class="row" style="gap:10px;flex-wrap:wrap;">
-            <button class="btn ghost" id="btnSignOutTop" style="display:none;">Cerrar sesión</button>
-            <button class="btn ghost" id="btnBackFromProfileSettings">Volver al resumen</button>
-          </div>
-        </div>
 
         <div class="panel soft" style="box-shadow:none;margin-top:14px;">
           <h3 class="h3">Backup automático</h3>
@@ -1189,6 +1173,14 @@
             <button class="btn ghost" id="btnBackupRestore">Restaurar último backup</button>
           </div>
         </div>
+
+        <div class="panel soft" style="box-shadow:none;margin-top:14px;">
+          <h3 class="h3">Sesión</h3>
+          <div class="row" style="gap:10px;flex-wrap:wrap;">
+            <button class="btn ghost" id="btnSignOutTop" style="display:none;">Cerrar sesión</button>
+          </div>
+        </div>
+
       </section>
 
 
@@ -1400,7 +1392,7 @@ const THEME_PRESETS={
   black:{bg:'#080808',card:'#101010',pink:'#888',pink2:'#aaa',soft:'#1a1a1a',line:'#2a2a2a',text:'#d0d0d0',muted:'#606060',inputBg:'#060606',inputText:'#d0d0d0',tableBg:'#0c0c0c',shadow:'0 10px 40px rgba(0,0,0,.7)'},
   cosmic:{bg:'#1a0f2e',card:'#21143d',pink:'#c9963a',pink2:'#e8b84b',soft:'#3d2060',line:'#4a2d6f',text:'#e8d5b0',muted:'#9e86c2',inputBg:'#180e2a',inputText:'#e8d5b0',tableBg:'#1e1236',shadow:'0 10px 40px rgba(0,0,0,.55)'},
 };
-const DEFAULT_SETTINGS={theme:'cosmic',fontPx:16,density:'normal',motion:'normal',currency:'EUR',autoBackupEnabled:false,autoBackupEveryMin:'30',colFavFilter:'all',profileCollectionMode:'all'};
+const DEFAULT_SETTINGS={theme:'cosmic',fontPx:16,density:'normal',motion:'normal',currency:'EUR',autoBackupEnabled:false,autoBackupEveryMin:'30',colFavFilter:'all',profileCollectionMode:'all', language: 'es'};
 let settings=(() => { try{const r=userLoad(LS_SETTINGS,null);return r?{...DEFAULT_SETTINGS,...r}:{...DEFAULT_SETTINGS};}catch{return{...DEFAULT_SETTINGS};} })();
 function saveSettings(){
   userSave(LS_SETTINGS,settings);
@@ -1952,21 +1944,253 @@ function renderSettingsProfileUI(){
   txt('settingsPreviewName',name);txt('settingsPreviewEmail',getProfileEmail());txt('settingsPreviewBio',bio||'Sin bio todavía.');
   const preview=document.getElementById('settingsProfilePreview');if(preview)preview.style.setProperty('--profile-banner',banner);
 }
-function initSettingsProfileUI(){
-  const nameInput=document.getElementById('settingsProfileName'),bioInput=document.getElementById('settingsProfileBio');
-  if(!nameInput||!bioInput)return;
-  renderSettingsProfileUI();
-  nameInput.oninput=()=>{const el=document.getElementById('settingsPreviewName');if(el)el.textContent=nameInput.value.trim()||getSession()?.username||'Usuario';};
-  bioInput.oninput=()=>{const el=document.getElementById('settingsPreviewBio');if(el)el.textContent=bioInput.value.trim()||'Sin bio todavía.';};
-  const saveBtn=document.getElementById('btnSettingsSaveProfile');
-  if(saveBtn)saveBtn.onclick=()=>{profile.displayName=nameInput.value.trim();profile.bio=bioInput.value.trim();saveProfile();renderSettingsProfileUI();renderUserProfilePage();renderSalesTable();alert('Perfil guardado.');};
-  const avatarInput=document.getElementById('settingsAvatarInput');
-  if(avatarInput)avatarInput.onchange=async e=>{
-    const file=e.target.files?.[0];if(!file)return;const btn=document.querySelector('label[for="settingsAvatarInput"]');if(btn)btn.textContent='Subiendo…';
-    try{if(currentUserId())await fsUploadAvatar(file);else{profile.avatar=await fileToDataUrl(file);saveProfile();}renderSettingsProfileUI();renderUserProfilePage();renderSalesTable();}
-    catch(err){alert('No se pudo subir la foto: '+(err?.message||err));}
-    finally{if(btn)btn.textContent='Subir foto';e.target.value='';}
+function changePageLanguage(lang) {
+
+  const langMap = {
+    es: 'es',
+    en: 'en',
+    fr: 'fr',
+    de: 'de',
+    it: 'it',
+    pt: 'pt',
+    ja: 'ja',
+    ko: 'ko',
+    zhs: 'zh-CN',
+    zht: 'zh-TW'
   };
+
+  const targetLang = langMap[lang] || 'es';
+
+  /*
+   * Google Translate crea una cookie llamada googtrans.
+   * La usamos para indicar el idioma seleccionado.
+   */
+  document.cookie =
+    'googtrans=/es/' + targetLang +
+    ';path=/';
+
+  /*
+   * También se establece para el dominio actual.
+   * Esto ayuda cuando la web está publicada en GitHub Pages.
+   */
+  document.cookie =
+    'googtrans=/es/' + targetLang +
+    ';path=/;' +
+    'domain=' + window.location.hostname;
+
+  /*
+   * Si ya estamos en el idioma seleccionado no hace falta
+   * volver a recargar.
+   */
+  if (targetLang === 'es') {
+
+    document.cookie =
+      'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+
+    document.cookie =
+      'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;' +
+      'domain=' + window.location.hostname;
+  }
+
+  /*
+   * Recargamos para que Google Translate aplique
+   * la traducción desde el principio.
+   */
+  window.location.reload();
+}
+function initSettingsUI(){
+
+  const themeSel=document.getElementById('setTheme'),
+        fontRange=document.getElementById('setFontSize'),
+        fontLabel=document.getElementById('fontPxLabel'),
+        compactChk=document.getElementById('setCompact'),
+        motionChk=document.getElementById('setReducedMotion'),
+        currencySel=document.getElementById('setCurrency'),
+        languageSel=document.getElementById('setLanguage');
+
+  if(!themeSel)return;
+
+  themeSel.value=settings.theme;
+
+  fontRange.value=settings.fontPx;
+
+  if(fontLabel)
+    fontLabel.textContent=String(settings.fontPx);
+
+  compactChk.checked=settings.density==='compact';
+
+  motionChk.checked=settings.motion==='reduced';
+
+  currencySel.value=settings.currency;
+
+
+  /* ─────────────────────────────
+     IDIOMA
+  ───────────────────────────── */
+
+  if(languageSel){
+
+    languageSel.value=settings.language || 'es';
+
+    languageSel.onchange=()=>{
+
+      const lang=languageSel.value;
+
+      settings.language=lang;
+
+      saveSettings();
+
+      changePageLanguage(lang);
+
+    };
+  }
+
+
+  /* ─────────────────────────────
+     TEMA
+  ───────────────────────────── */
+
+  themeSel.onchange=()=>{
+    settings.theme=themeSel.value;
+    saveSettings();
+    applySettings();
+  };
+
+
+  /* ─────────────────────────────
+     TAMAÑO DE LETRA
+  ───────────────────────────── */
+
+  fontRange.oninput=()=>{
+
+    const v=parseInt(fontRange.value,10);
+
+    settings.fontPx=v;
+
+    if(fontLabel)
+      fontLabel.textContent=String(v);
+
+    saveSettings();
+    applySettings();
+  };
+
+
+  /* ─────────────────────────────
+     MODO COMPACTO
+  ───────────────────────────── */
+
+  compactChk.onchange=()=>{
+
+    settings.density=
+      compactChk.checked?'compact':'normal';
+
+    saveSettings();
+    applySettings();
+  };
+
+
+  /* ─────────────────────────────
+     ANIMACIONES
+  ───────────────────────────── */
+
+  motionChk.onchange=()=>{
+
+    settings.motion=
+      motionChk.checked?'reduced':'normal';
+
+    saveSettings();
+    applySettings();
+  };
+
+
+  /* ─────────────────────────────
+     MONEDA
+  ───────────────────────────── */
+
+  currencySel.onchange=()=>{
+
+    settings.currency=currencySel.value;
+
+    saveSettings();
+
+    renderCardsTableFull();
+    updateInvestmentUI();
+    renderSalesTable();
+  };
+
+
+  /* ─────────────────────────────
+     PRIVACIDAD COLECCIÓN
+  ───────────────────────────── */
+
+  const profColSel =
+    document.getElementById('setProfileCollectionMode');
+
+  if(profColSel){
+
+    profColSel.value =
+      settings.profileCollectionMode || 'all';
+
+    profColSel.onchange=()=>{
+
+      settings.profileCollectionMode =
+        profColSel.value;
+
+      saveSettings();
+
+      renderProfileCollectionGridV2();
+    };
+  }
+
+
+  /* ─────────────────────────────
+     PERFIL
+  ───────────────────────────── */
+
+  initSettingsProfileUI();
+
+
+  /* ─────────────────────────────
+     RESET
+  ───────────────────────────── */
+
+  const resetSettingsBtn =
+    document.getElementById('btnResetSettings');
+
+  if(resetSettingsBtn){
+
+    resetSettingsBtn.onclick=()=>{
+
+      if(!confirm('¿Resetear todos los ajustes?'))
+        return;
+
+      settings={
+        ...DEFAULT_SETTINGS
+      };
+
+      saveSettings();
+
+      applySettings();
+
+      initSettingsUI();
+
+      renderCardsTableFull();
+      renderDecks();
+      renderColorStats();
+      renderTypeStats();
+      updateInvestmentUI();
+      renderSalesTable();
+    };
+  }
+
+
+  /* ─────────────────────────────
+     BACKUP
+  ───────────────────────────── */
+
+  initBackupUI();
+}
+
   const bannerInput=document.getElementById('settingsBannerInput');
   if(bannerInput)bannerInput.onchange=async e=>{
     const file=e.target.files?.[0];if(!file)return;const btn=document.querySelector('label[for="settingsBannerInput"]');if(btn)btn.textContent='Subiendo…';
@@ -2532,6 +2756,20 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+<!-- GOOGLE TRANSLATE -->
+<div id="google_translate_element" style="display:none;"></div>
+
+<script>
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'es',
+    includedLanguages: 'es,en,fr,de,it,pt,ja,ko,zh-CN,zh-TW',
+    autoDisplay: false
+  }, 'google_translate_element');
+}
+</script>
+
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 </body>
 </html>
