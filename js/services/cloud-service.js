@@ -27,6 +27,5 @@ window.CloudService = (function () {
       return { exists: false };
     }
   }
-
   return { saveAll, loadAll };
 })();
