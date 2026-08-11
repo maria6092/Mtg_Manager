@@ -548,6 +548,84 @@
     .topFriendsBtn{font-size:.68rem;padding:7px 12px;white-space:nowrap;}
     @media(max-width:900px){.settingsProfileGrid{grid-template-columns:1fr;}}
 
+    /* ─────────────────────────────
+      ICONOS DE AYUDA
+      ───────────────────────────── */
+
+    .field-help {
+      position: relative;
+    }
+
+    .help-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      width: 17px;
+      height: 17px;
+
+      margin-left: 5px;
+
+      border-radius: 50%;
+
+      background: #777;
+      color: #fff;
+
+      font-size: 11px;
+      font-weight: bold;
+
+      cursor: help;
+
+      position: relative;
+      vertical-align: middle;
+
+      transition: background .15s ease, transform .15s ease;
+    }
+
+    .help-icon:hover {
+      background: #aaa;
+      transform: scale(1.08);
+    }
+
+    /* Imagen oculta */
+    .help-image {
+      display: none;
+
+      position: absolute;
+
+      left: 25px;
+      top: -10px;
+
+      z-index: 99999;
+
+      background: #111;
+
+      padding: 6px;
+
+      border-radius: 8px;
+
+      box-shadow: 0 5px 20px rgba(0,0,0,.55);
+
+      pointer-events: none;
+    }
+
+    /* Mostrar imagen al pasar el ratón */
+    .help-icon:hover .help-image {
+      display: block;
+    }
+
+    /* Imagen */
+    .help-image img {
+      display: block;
+
+      width: 320px;
+      max-width: 60vw;
+
+      height: auto;
+
+      border-radius: 5px;
+    }
+
 
   </style>
 </head>
@@ -648,7 +726,6 @@
           <div class="appTopbarTitle">✦MTG Manager✦</div>
         </div>
         <div class="appTopbarSpacer"></div>
-        <button class="btn ghost" id="btnSignOutHeader" style="display:none;font-size:.68rem;padding:7px 12px;">Cerrar sesión</button>
         <button class="btn ghost topFriendsBtn" id="btnTopFriends" aria-label="Ver tus amigos" title="Ver tus amigos">👥 Amigos</button>
         <button class="profileQuickBtn" id="btnTopProfile" aria-label="Ir al perfil">
           <img id="topbarAvatar" src="assets/logo.png" alt="Perfil">
@@ -693,19 +770,25 @@
           <button class="btn ghost" id="btnImportManaBox">Importar ManaBox (CSV)</button>
           <button class="btn ghost" id="btnClear">Borrar todo</button>
         </div>
+
         <div class="grid">
-          <div><label>Nombre (ES o EN)</label><input id="inName" placeholder="Sol Ring / Anillo solar"/><div class="hint">Sin SetCode y Nº se carga la impresión más antigua.</div></div>
-          <div><label>SetCode (opcional)</label><input id="inSet" placeholder="cmm" class="mono"/></div>
-          <div><label>Nº colección (opcional)</label><input id="inCn" placeholder="001" class="mono"/></div>
+          <div>
+            <label>Nombre (ES o EN)</label>
+            <input id="inName" placeholder="Sol Ring / Anillo solar"/>
+            <div class="hint">Sin SetCode y Nº se carga la impresión más antigua.</div>
+          </div>
+          <div class="field-help">
+            <label>SetCode (opcional)<span class="help-icon">?<span class="help-image"><img src="assets/setcode.png" alt="Dónde encontrar el SetCode"></span></span></label><input id="inSet" placeholder="cmm" class="mono"/>
+          </div>
+          <div class="field-help"><label>Nº colección (opcional)<span class="help-icon">?<span class="help-image"><img src="assets/ncode.png" alt="Dónde encontrar el número de colección"></span></span></label><input id="inCn" placeholder="001" class="mono"/>
+          </div>
           <div style="display:flex;align-items:end;gap:10px;"><button class="btn" id="btnAdd" style="width:100%;">Añadir carta</button></div>
-          <div><label>Idioma</label>
-            <select id="inLang">
-              <option value="es">Español</option><option value="en">Inglés</option><option value="fr">Francés</option>
-              <option value="de">Alemán</option><option value="it">Italiano</option><option value="pt">Portugués</option>
-              <option value="ja">Japonés</option><option value="ko">Coreano</option><option value="zhs">Chino (Simpl.)</option><option value="zht">Chino (Trad.)</option>
+          <div>
+            <label>Idioma</label>
+            <select id="inLang"><option value="es">Español</option><option value="en">Inglés</option><option value="fr">Francés</option><option value="de">Alemán</option><option value="it">Italiano</option><option value="pt">Portugués</option><option value="ja">Japonés</option><option value="ko">Coreano</option><option value="zhs">Chino (Simpl.)</option><option value="zht">Chino (Trad.)</option>
             </select>
           </div>
-          <div><label>Cantidad</label><input id="inQty" type="number" min="1" value="1"/></div>
+          <div><label>Cantidad</label> <input id="inQty" type="number" min="1" value="1"/></div>
           <div><label>Proxy</label><input id="inProxy" type="checkbox" class="chk"/></div>
           <div><label>Foil</label><input id="inFoil" type="checkbox" class="chk"/></div>
           <div><label>Promo</label><input id="inPromo" type="checkbox" class="chk"/></div>
@@ -714,29 +797,71 @@
         </div>
         <div id="errBox" class="err"></div>
         <div class="footerbar">
-          <span class="pill">Total cartas: <b id="countCards">0</b></span>
-          <span class="pill">Total unidades: <b id="countUnits">0</b></span>
-          <span class="pill">Valor estimado (€): <b id="sumEur">0.00</b></span>
+          <span class="pill">
+            Total cartas: <b id="countCards">0</b>
+          </span>
+          <span class="pill">
+            Total unidades: <b id="countUnits">0</b>
+          </span>
+          <span class="pill">
+            Valor estimado (€): <b id="sumEur">0.00</b>
+          </span>
           <div class="spacer"></div>
-          <label style="margin:0;"><span class="small">Ordenar</span>
+          <label style="margin:0;">
+            <span class="small">Ordenar</span>
             <select id="sortKey" style="width:auto;min-width:180px;">
-              <option value="added">Añadidas (reciente primero)</option><option value="name">Nombre</option>
-              <option value="set">SetCode</option><option value="price">Precio</option>
-              <option value="mv">MV/CMC</option><option value="rarity">Rareza</option><option value="qty">Cantidad</option>
+              <option value="added">Añadidas (reciente primero)</option>
+              <option value="name">Nombre</option>
+              <option value="set">SetCode</option>
+              <option value="price">Precio</option>
+              <option value="mv">MV/CMC</option>
+              <option value="rarity">Rareza</option>
+              <option value="qty">Cantidad</option>
             </select>
           </label>
-          <select id="sortDir" style="width:auto;min-width:140px;"><option value="desc">Desc</option><option value="asc">Asc</option></select>
-          <button class="btn ghost" id="btnApplySort">Aplicar</button>
-          <button class="btn ghost" id="btnRefreshPrices">Refrescar precios</button>
+
+          <select id="sortDir" style="width:auto;min-width:140px;">
+            <option value="desc">Desc</option>
+            <option value="asc">Asc</option>
+          </select>
+
+          <button class="btn ghost" id="btnApplySort">
+            Aplicar
+          </button>
+
+          <button class="btn ghost" id="btnRefreshPrices">
+            Refrescar precios
+          </button>
         </div>
+
         <div class="tablewrap">
           <table id="tbl">
-            <thead><tr>
-              <th>★</th><th>Carta</th><th>Colección</th><th>Nº</th><th>Tipo</th><th>Subtipo</th>
-              <th>Color</th><th>Maná</th><th>MV</th><th>Rareza</th><th>Logo</th>
-              <th class="right">Precio</th><th>Proxy</th><th>Foil</th><th>Promo</th><th>Pre</th>
-              <th>Idioma</th><th class="right">Cant.</th><th class="right">Mejor venta</th><th>Venta</th><th></th>
-            </tr></thead>
+            <thead>
+              <tr>
+                <th>★</th>
+                <th>Carta</th>
+                <th>Colección</th>
+                <th>Nº</th>
+                <th>Tipo</th>
+                <th>Subtipo</th>
+                <th>Color</th>
+                <th>Maná</th>
+                <th>MV</th>
+                <th>Rareza</th>
+                <th>Logo</th>
+                <th class="right">Precio</th>
+                <th>Proxy</th>
+                <th>Foil</th>
+                <th>Promo</th>
+                <th>Pre</th>
+                <th>Idioma</th>
+                <th class="right">Cant.</th>
+                <th class="right">Mejor venta</th>
+                <th>Venta</th>
+                <th></th>
+              </tr>
+            </thead>
+
             <tbody></tbody>
           </table>
         </div>
