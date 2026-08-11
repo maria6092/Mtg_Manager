@@ -1175,9 +1175,10 @@
         </div>
 
         <div class="panel soft" style="box-shadow:none;margin-top:14px;">
-          <h3 class="h3">Sesión</h3>
+          <h3 class="h3">Cuenta</h3>
           <div class="row" style="gap:10px;flex-wrap:wrap;">
             <button class="btn ghost" id="btnSignOutTop" style="display:none;">Cerrar sesión</button>
+            <button class="btn" id="btnDeleteAccount" style="background:#b42318;color:#fff;border-color:#b42318;">Borrar mi cuenta</button>
           </div>
         </div>
 
@@ -1934,17 +1935,78 @@ function parseCsv(text){ const out=[];let row=[],cur='',inQ=false;const s=String
 /* ─────────────────────────────────────────────
    AJUSTES UI
 ───────────────────────────────────────────── */
+
+/* ─────────────────────────────────────────────
+   AJUSTES UI - PERFIL
+───────────────────────────────────────────── */
+
 function renderSettingsProfileUI(){
-  const avatar=getProfileAvatar(),name=getProfileName(),bio=profile.bio?.trim()||'',banner=getProfileBannerCss();
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
-  const txt=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  const img=(id,v)=>{const el=document.getElementById(id);if(el)el.src=v;};
-  img('settingsAvatarPreview',avatar);img('settingsPreviewAvatar',avatar);
-  set('settingsProfileName',profile.displayName||'');set('settingsProfileBio',profile.bio||'');
-  txt('settingsPreviewName',name);txt('settingsPreviewEmail',getProfileEmail());txt('settingsPreviewBio',bio||'Sin bio todavía.');
-  const preview=document.getElementById('settingsProfilePreview');if(preview)preview.style.setProperty('--profile-banner',banner);
+
+  const avatar = getProfileAvatar();
+  const name = getProfileName();
+  const bio = profile.bio?.trim() || '';
+  const banner = getProfileBannerCss();
+
+  const set = (id,v) => {
+    const el = document.getElementById(id);
+    if(el) el.value = v;
+  };
+
+  const txt = (id,v) => {
+    const el = document.getElementById(id);
+    if(el) el.textContent = v;
+  };
+
+  const img = (id,v) => {
+    const el = document.getElementById(id);
+    if(el) el.src = v;
+  };
+
+  img('settingsAvatarPreview', avatar);
+  img('settingsPreviewAvatar', avatar);
+
+  set(
+    'settingsProfileName',
+    profile.displayName || ''
+  );
+
+  set(
+    'settingsProfileBio',
+    profile.bio || ''
+  );
+
+  txt(
+    'settingsPreviewName',
+    name
+  );
+
+  txt(
+    'settingsPreviewEmail',
+    getProfileEmail()
+  );
+
+  txt(
+    'settingsPreviewBio',
+    bio || 'Sin bio todavía.'
+  );
+
+  const preview =
+    document.getElementById('settingsProfilePreview');
+
+  if(preview){
+    preview.style.setProperty(
+      '--profile-banner',
+      banner
+    );
+  }
 }
-function changePageLanguage(lang) {
+
+
+/* ─────────────────────────────────────────────
+   CAMBIO DE IDIOMA
+───────────────────────────────────────────── */
+
+function changePageLanguage(lang){
 
   const langMap = {
     es: 'es',
@@ -1959,30 +2021,16 @@ function changePageLanguage(lang) {
     zht: 'zh-TW'
   };
 
-  const targetLang = langMap[lang] || 'es';
+  const targetLang =
+    langMap[lang] || 'es';
+
 
   /*
-   * Google Translate crea una cookie llamada googtrans.
-   * La usamos para indicar el idioma seleccionado.
+   * Google Translate utiliza esta cookie
+   * para determinar el idioma.
    */
-  document.cookie =
-    'googtrans=/es/' + targetLang +
-    ';path=/';
 
-  /*
-   * También se establece para el dominio actual.
-   * Esto ayuda cuando la web está publicada en GitHub Pages.
-   */
-  document.cookie =
-    'googtrans=/es/' + targetLang +
-    ';path=/;' +
-    'domain=' + window.location.hostname;
-
-  /*
-   * Si ya estamos en el idioma seleccionado no hace falta
-   * volver a recargar.
-   */
-  if (targetLang === 'es') {
+  if(targetLang === 'es'){
 
     document.cookie =
       'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
@@ -1990,38 +2038,427 @@ function changePageLanguage(lang) {
     document.cookie =
       'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;' +
       'domain=' + window.location.hostname;
+
+  }else{
+
+    document.cookie =
+      'googtrans=/es/' + targetLang +
+      ';path=/';
+
+    document.cookie =
+      'googtrans=/es/' + targetLang +
+      ';path=/;' +
+      'domain=' + window.location.hostname;
   }
 
+
   /*
-   * Recargamos para que Google Translate aplique
-   * la traducción desde el principio.
+   * Guardamos también el idioma en los ajustes.
    */
+
+  if(typeof settings !== 'undefined'){
+
+    settings.language = lang;
+
+    if(typeof saveSettings === 'function'){
+      saveSettings();
+    }
+  }
+
+
+  /*
+   * Recargamos para que Google Translate
+   * aplique el idioma desde el inicio.
+   */
+
   window.location.reload();
 }
+
+
+/* ─────────────────────────────────────────────
+   BORRAR CUENTA
+───────────────────────────────────────────── */
+
+async function deleteAccount(){
+
+  /*
+   * Obtener usuario actualmente autenticado.
+   */
+
+  let user = null;
+
+  try{
+
+    if(
+      typeof firebase !== 'undefined' &&
+      firebase.auth
+    ){
+      user = firebase.auth().currentUser;
+    }
+
+  }catch(err){
+
+    console.error(
+      'No se pudo obtener el usuario:',
+      err
+    );
+  }
+
+
+  if(!user){
+
+    throw new Error(
+      'No hay ninguna sesión iniciada.'
+    );
+  }
+
+
+  /*
+   * Firebase puede exigir una autenticación
+   * reciente para eliminar una cuenta.
+   */
+
+  try{
+
+    await user.delete();
+
+  }catch(err){
+
+    console.error(
+      'Error eliminando cuenta:',
+      err
+    );
+
+    /*
+     * Error específico de Firebase:
+     * la sesión ya no es suficientemente reciente.
+     */
+
+    if(
+      err?.code === 'auth/requires-recent-login'
+    ){
+
+      throw new Error(
+        'Por seguridad, Firebase necesita que vuelvas a iniciar sesión antes de poder borrar la cuenta.'
+      );
+    }
+
+    throw err;
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   PERFIL DE AJUSTES
+───────────────────────────────────────────── */
+
+function initSettingsProfileUI(){
+
+  const nameInput =
+    document.getElementById('settingsProfileName');
+
+  const bioInput =
+    document.getElementById('settingsProfileBio');
+
+  if(!nameInput || !bioInput)
+    return;
+
+
+  renderSettingsProfileUI();
+
+
+  /* Nombre */
+
+  nameInput.oninput = () => {
+
+    const el =
+      document.getElementById('settingsPreviewName');
+
+    if(el){
+
+      el.textContent =
+        nameInput.value.trim() ||
+        getSession()?.username ||
+        'Usuario';
+
+    }
+  };
+
+
+  /* Bio */
+
+  bioInput.oninput = () => {
+
+    const el =
+      document.getElementById('settingsPreviewBio');
+
+    if(el){
+
+      el.textContent =
+        bioInput.value.trim() ||
+        'Sin bio todavía.';
+
+    }
+  };
+
+
+  /* Guardar perfil */
+
+  const saveBtn =
+    document.getElementById(
+      'btnSettingsSaveProfile'
+    );
+
+  if(saveBtn){
+
+    saveBtn.onclick = () => {
+
+      profile.displayName =
+        nameInput.value.trim();
+
+      profile.bio =
+        bioInput.value.trim();
+
+      saveProfile();
+
+      renderSettingsProfileUI();
+      renderUserProfilePage();
+      renderSalesTable();
+
+      alert('Perfil guardado.');
+    };
+  }
+
+
+  /* Avatar */
+
+  const avatarInput =
+    document.getElementById(
+      'settingsAvatarInput'
+    );
+
+  if(avatarInput){
+
+    avatarInput.onchange = async e => {
+
+      const file =
+        e.target.files?.[0];
+
+      if(!file)
+        return;
+
+      const btn =
+        document.querySelector(
+          'label[for="settingsAvatarInput"]'
+        );
+
+      if(btn)
+        btn.textContent = 'Subiendo…';
+
+
+      try{
+
+        if(currentUserId()){
+
+          await fsUploadAvatar(file);
+
+        }else{
+
+          profile.avatar =
+            await fileToDataUrl(file);
+
+          saveProfile();
+        }
+
+
+        renderSettingsProfileUI();
+        renderUserProfilePage();
+        renderSalesTable();
+
+      }catch(err){
+
+        console.error(err);
+
+        alert(
+          'No se pudo subir la foto: ' +
+          (err?.message || err)
+        );
+
+      }finally{
+
+        if(btn)
+          btn.textContent = 'Subir foto';
+
+        e.target.value = '';
+      }
+    };
+  }
+
+
+  /* Banner */
+
+  const bannerInput =
+    document.getElementById(
+      'settingsBannerInput'
+    );
+
+  if(bannerInput){
+
+    bannerInput.onchange = async e => {
+
+      const file =
+        e.target.files?.[0];
+
+      if(!file)
+        return;
+
+      const btn =
+        document.querySelector(
+          'label[for="settingsBannerInput"]'
+        );
+
+      if(btn)
+        btn.textContent = 'Subiendo…';
+
+
+      try{
+
+        if(currentUserId()){
+
+          await fsUploadBanner(file);
+
+        }else{
+
+          profile.banner =
+            await fileToDataUrl(file);
+
+          saveProfile();
+        }
+
+
+        renderSettingsProfileUI();
+        renderUserProfilePage();
+
+      }catch(err){
+
+        console.error(err);
+
+        alert(
+          'No se pudo subir el banner: ' +
+          (err?.message || err)
+        );
+
+      }finally{
+
+        if(btn)
+          btn.textContent = 'Subir banner';
+
+        e.target.value = '';
+      }
+    };
+  }
+
+
+  /* Restablecer avatar */
+
+  const resetAvatar =
+    document.getElementById(
+      'btnSettingsResetAvatar'
+    );
+
+  if(resetAvatar){
+
+    resetAvatar.onclick = () => {
+
+      profile.avatar = '';
+
+      saveProfile();
+
+      renderSettingsProfileUI();
+      renderUserProfilePage();
+      renderSalesTable();
+    };
+  }
+
+
+  /* Restablecer banner */
+
+  const resetBanner =
+    document.getElementById(
+      'btnSettingsResetBanner'
+    );
+
+  if(resetBanner){
+
+    resetBanner.onclick = () => {
+
+      profile.banner = '';
+
+      saveProfile();
+
+      renderSettingsProfileUI();
+      renderUserProfilePage();
+    };
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   AJUSTES PRINCIPALES
+───────────────────────────────────────────── */
+
 function initSettingsUI(){
 
-  const themeSel=document.getElementById('setTheme'),
-        fontRange=document.getElementById('setFontSize'),
-        fontLabel=document.getElementById('fontPxLabel'),
-        compactChk=document.getElementById('setCompact'),
-        motionChk=document.getElementById('setReducedMotion'),
-        currencySel=document.getElementById('setCurrency'),
-        languageSel=document.getElementById('setLanguage');
+  const themeSel =
+    document.getElementById('setTheme');
 
-  if(!themeSel)return;
+  const fontRange =
+    document.getElementById('setFontSize');
 
-  themeSel.value=settings.theme;
+  const fontLabel =
+    document.getElementById('fontPxLabel');
 
-  fontRange.value=settings.fontPx;
+  const compactChk =
+    document.getElementById('setCompact');
 
-  if(fontLabel)
-    fontLabel.textContent=String(settings.fontPx);
+  const motionChk =
+    document.getElementById('setReducedMotion');
 
-  compactChk.checked=settings.density==='compact';
+  const currencySel =
+    document.getElementById('setCurrency');
 
-  motionChk.checked=settings.motion==='reduced';
+  const languageSel =
+    document.getElementById('setLanguage');
 
-  currencySel.value=settings.currency;
+
+  if(!themeSel)
+    return;
+
+
+  /* ─────────────────────────────
+     CARGAR AJUSTES
+  ───────────────────────────── */
+
+  themeSel.value =
+    settings.theme;
+
+  fontRange.value =
+    settings.fontPx;
+
+  if(fontLabel){
+
+    fontLabel.textContent =
+      String(settings.fontPx);
+  }
+
+  compactChk.checked =
+    settings.density === 'compact';
+
+  motionChk.checked =
+    settings.motion === 'reduced';
+
+  currencySel.value =
+    settings.currency;
 
 
   /* ─────────────────────────────
@@ -2030,18 +2467,21 @@ function initSettingsUI(){
 
   if(languageSel){
 
-    languageSel.value=settings.language || 'es';
+    languageSel.value =
+      settings.language || 'es';
 
-    languageSel.onchange=()=>{
 
-      const lang=languageSel.value;
+    languageSel.onchange = () => {
 
-      settings.language=lang;
+      const lang =
+        languageSel.value;
+
+      settings.language =
+        lang;
 
       saveSettings();
 
       changePageLanguage(lang);
-
     };
   }
 
@@ -2050,9 +2490,13 @@ function initSettingsUI(){
      TEMA
   ───────────────────────────── */
 
-  themeSel.onchange=()=>{
-    settings.theme=themeSel.value;
+  themeSel.onchange = () => {
+
+    settings.theme =
+      themeSel.value;
+
     saveSettings();
+
     applySettings();
   };
 
@@ -2061,16 +2505,25 @@ function initSettingsUI(){
      TAMAÑO DE LETRA
   ───────────────────────────── */
 
-  fontRange.oninput=()=>{
+  fontRange.oninput = () => {
 
-    const v=parseInt(fontRange.value,10);
+    const v =
+      parseInt(
+        fontRange.value,
+        10
+      );
 
-    settings.fontPx=v;
+    settings.fontPx =
+      v;
 
-    if(fontLabel)
-      fontLabel.textContent=String(v);
+    if(fontLabel){
+
+      fontLabel.textContent =
+        String(v);
+    }
 
     saveSettings();
+
     applySettings();
   };
 
@@ -2079,26 +2532,32 @@ function initSettingsUI(){
      MODO COMPACTO
   ───────────────────────────── */
 
-  compactChk.onchange=()=>{
+  compactChk.onchange = () => {
 
-    settings.density=
-      compactChk.checked?'compact':'normal';
+    settings.density =
+      compactChk.checked
+        ? 'compact'
+        : 'normal';
 
     saveSettings();
+
     applySettings();
   };
 
 
   /* ─────────────────────────────
-     ANIMACIONES
+     REDUCIR ANIMACIONES
   ───────────────────────────── */
 
-  motionChk.onchange=()=>{
+  motionChk.onchange = () => {
 
-    settings.motion=
-      motionChk.checked?'reduced':'normal';
+    settings.motion =
+      motionChk.checked
+        ? 'reduced'
+        : 'normal';
 
     saveSettings();
+
     applySettings();
   };
 
@@ -2107,9 +2566,10 @@ function initSettingsUI(){
      MONEDA
   ───────────────────────────── */
 
-  currencySel.onchange=()=>{
+  currencySel.onchange = () => {
 
-    settings.currency=currencySel.value;
+    settings.currency =
+      currencySel.value;
 
     saveSettings();
 
@@ -2120,18 +2580,22 @@ function initSettingsUI(){
 
 
   /* ─────────────────────────────
-     PRIVACIDAD COLECCIÓN
+     PRIVACIDAD DE COLECCIÓN
   ───────────────────────────── */
 
   const profColSel =
-    document.getElementById('setProfileCollectionMode');
+    document.getElementById(
+      'setProfileCollectionMode'
+    );
 
   if(profColSel){
 
     profColSel.value =
-      settings.profileCollectionMode || 'all';
+      settings.profileCollectionMode ||
+      'all';
 
-    profColSel.onchange=()=>{
+
+    profColSel.onchange = () => {
 
       settings.profileCollectionMode =
         profColSel.value;
@@ -2151,22 +2615,195 @@ function initSettingsUI(){
 
 
   /* ─────────────────────────────
-     RESET
+     BORRAR CUENTA
+  ───────────────────────────── */
+
+  const deleteAccountBtn =
+    document.getElementById(
+      'btnDeleteAccount'
+    );
+
+
+  if(deleteAccountBtn){
+
+    deleteAccountBtn.onclick =
+      async () => {
+
+        /*
+         * Primera confirmación.
+         */
+
+        const firstConfirm =
+          confirm(
+            '¿Estás segura de que quieres borrar tu cuenta?\n\n' +
+            'Se eliminará tu cuenta y esta acción no se puede deshacer.'
+          );
+
+
+        if(!firstConfirm)
+          return;
+
+
+        /*
+         * Segunda confirmación.
+         */
+
+        const secondConfirm =
+          confirm(
+            'ÚLTIMA CONFIRMACIÓN\n\n' +
+            'Tu cuenta será eliminada permanentemente.\n\n' +
+            '¿Quieres continuar?'
+          );
+
+
+        if(!secondConfirm)
+          return;
+
+
+        /*
+         * Desactivar botón mientras se elimina.
+         */
+
+        deleteAccountBtn.disabled =
+          true;
+
+        const originalText =
+          deleteAccountBtn.textContent;
+
+        deleteAccountBtn.textContent =
+          'Borrando…';
+
+
+        try{
+
+          await deleteAccount();
+
+
+          /*
+           * Limpiar datos locales.
+           */
+
+          try{
+
+            localStorage.removeItem(
+              'mtg_manager_settings'
+            );
+
+          }catch(e){}
+
+
+          /*
+           * Si tienes otros datos locales,
+           * intenta limpiar el almacenamiento
+           * de la aplicación.
+           */
+
+          try{
+
+            if(typeof saveSettings === 'function'){
+
+              settings = {
+                ...DEFAULT_SETTINGS
+              };
+
+            }
+
+          }catch(e){}
+
+
+          /*
+           * La cuenta ya ha sido eliminada.
+           */
+
+          alert(
+            'Tu cuenta ha sido eliminada correctamente.'
+          );
+
+
+          /*
+           * Volver a la pantalla de autenticación.
+           */
+
+          try{
+
+            if(
+              typeof firebase !== 'undefined' &&
+              firebase.auth
+            ){
+
+              await firebase
+                .auth()
+                .signOut();
+            }
+
+          }catch(e){
+
+            console.warn(
+              'No se pudo cerrar la sesión:',
+              e
+            );
+          }
+
+
+          /*
+           * Recargar la aplicación.
+           */
+
+          window.location.reload();
+
+
+        }catch(err){
+
+          console.error(
+            'Error eliminando cuenta:',
+            err
+          );
+
+
+          alert(
+            'No se pudo eliminar la cuenta.\n\n' +
+            (err?.message || err)
+          );
+
+
+          deleteAccountBtn.disabled =
+            false;
+
+          deleteAccountBtn.textContent =
+            originalText ||
+            'Borrar mi cuenta';
+        }
+      };
+  }
+
+
+  /* ─────────────────────────────
+     RESTABLECER AJUSTES
   ───────────────────────────── */
 
   const resetSettingsBtn =
-    document.getElementById('btnResetSettings');
+    document.getElementById(
+      'btnResetSettings'
+    );
+
 
   if(resetSettingsBtn){
 
-    resetSettingsBtn.onclick=()=>{
+    resetSettingsBtn.onclick = () => {
 
-      if(!confirm('¿Resetear todos los ajustes?'))
+      if(
+        !confirm(
+          '¿Resetear todos los ajustes?'
+        )
+      ){
         return;
+      }
 
-      settings={
+
+      settings = {
         ...DEFAULT_SETTINGS
       };
+
 
       saveSettings();
 
@@ -2191,45 +2828,6 @@ function initSettingsUI(){
   initBackupUI();
 }
 
-  const bannerInput=document.getElementById('settingsBannerInput');
-  if(bannerInput)bannerInput.onchange=async e=>{
-    const file=e.target.files?.[0];if(!file)return;const btn=document.querySelector('label[for="settingsBannerInput"]');if(btn)btn.textContent='Subiendo…';
-    try{if(currentUserId())await fsUploadBanner(file);else{profile.banner=await fileToDataUrl(file);saveProfile();}renderSettingsProfileUI();renderUserProfilePage();}
-    catch(err){alert('No se pudo subir el banner: '+(err?.message||err));}
-    finally{if(btn)btn.textContent='Subir banner';e.target.value='';}
-  };
-  const resetAvatar=document.getElementById('btnSettingsResetAvatar');
-  if(resetAvatar)resetAvatar.onclick=()=>{profile.avatar='';saveProfile();renderSettingsProfileUI();renderUserProfilePage();renderSalesTable();};
-  const resetBanner=document.getElementById('btnSettingsResetBanner');
-  if(resetBanner)resetBanner.onclick=()=>{profile.banner='';saveProfile();renderSettingsProfileUI();renderUserProfilePage();};
-}
-
-function initSettingsUI(){
-  const themeSel=document.getElementById('setTheme'),fontRange=document.getElementById('setFontSize'),fontLabel=document.getElementById('fontPxLabel'),compactChk=document.getElementById('setCompact'),motionChk=document.getElementById('setReducedMotion'),currencySel=document.getElementById('setCurrency');
-  if(!themeSel)return;
-  themeSel.value=settings.theme;fontRange.value=settings.fontPx;if(fontLabel)fontLabel.textContent=String(settings.fontPx);compactChk.checked=settings.density==='compact';motionChk.checked=settings.motion==='reduced';currencySel.value=settings.currency;
-  themeSel.onchange=()=>{settings.theme=themeSel.value;saveSettings();applySettings();};
-  fontRange.oninput=()=>{const v=parseInt(fontRange.value,10);settings.fontPx=v;if(fontLabel)fontLabel.textContent=String(v);saveSettings();applySettings();};
-  compactChk.onchange=()=>{settings.density=compactChk.checked?'compact':'normal';saveSettings();applySettings();};
-  motionChk.onchange=()=>{settings.motion=motionChk.checked?'reduced':'normal';saveSettings();applySettings();};
-  currencySel.onchange=()=>{settings.currency=currencySel.value;saveSettings();renderCardsTableFull();updateInvestmentUI();renderSalesTable();};
-
-  const profColSel = document.getElementById('setProfileCollectionMode');
-  if(profColSel){
-    profColSel.value = settings.profileCollectionMode || 'all';
-    profColSel.onchange = () => {
-      settings.profileCollectionMode = profColSel.value;
-      saveSettings();
-      renderProfileCollectionGridV2();
-    };
-  }
-
-  initSettingsProfileUI();
-
-  const resetSettingsBtn=document.getElementById('btnResetSettings');
-  if(resetSettingsBtn)resetSettingsBtn.onclick=()=>{if(!confirm('¿Resetear todos los ajustes?'))return;settings={...DEFAULT_SETTINGS};saveSettings();applySettings();initSettingsUI();renderCardsTableFull();renderDecks();renderColorStats();renderTypeStats();updateInvestmentUI();renderSalesTable();};
-  initBackupUI();
-}
 
 /* ─────────────────────────────────────────────
    BOTONES PRINCIPALES
