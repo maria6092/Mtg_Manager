@@ -2060,37 +2060,433 @@ function renderCardsTableFull(){
   updateCardsMetrics(); updateInvestmentUI(); renderSalesTable();
 }
 function renderColeccion(){
-  const grid=document.getElementById('collectionGrid'); if(!grid) return; grid.innerHTML='';
-  const favMode=document.getElementById('colFavFilter')?.value||settings.colFavFilter||'all';
+  const grid=document.getElementById('collectionGrid');
+
+  if(!grid)return;
+
+  grid.innerHTML='';
+
+  const favMode=
+    document.getElementById('colFavFilter')?.value ||
+    settings.colFavFilter ||
+    'all';
+
   let view=sortedCardsView();
-  if(favMode==='fav')view=view.filter(c=>isFav(c)); else if(favMode==='nofav')view=view.filter(c=>!isFav(c));
-  const q=(document.getElementById('colSearchInput')?.value||'').trim().toLowerCase();
-  if(q)view=view.filter(c=>[c.name,c.setCode,c.type,c.subtype,c.lang,c.inputName,c.rarity,c.color].filter(Boolean).some(v=>String(v).toLowerCase().includes(q)));
-  let tu=0,se=0;
+
+  if(favMode==='fav'){
+    view=view.filter(c=>isFav(c));
+  }else if(favMode==='nofav'){
+    view=view.filter(c=>!isFav(c));
+  }
+
+  const q=(
+    document.getElementById('colSearchInput')?.value ||
+    ''
+  ).trim().toLowerCase();
+
+  if(q){
+    view=view.filter(c=>
+      [
+        c.name,
+        c.setCode,
+        c.collectorNumber,
+        c.type,
+        c.subtype,
+        c.lang,
+        c.inputName,
+        c.rarity,
+        c.color
+      ]
+      .filter(Boolean)
+      .some(v=>
+        String(v).toLowerCase().includes(q)
+      )
+    );
+  }
+
+  let totalUnits=0;
+  let totalEur=0;
+
   for(const c of view){
-    tu+=(c.qty||1); const eur=parseEuro(c.priceText); if(Number.isFinite(eur))se+=eur*(c.qty||1);
-    const bg=gradientFromColorIds(c.colorId),flags=[c.proxy&&'Proxy',c.foil&&'Foil',c.promo&&'Promo',c.promoPre&&'Pre'].filter(Boolean);
-    const el=document.createElement('div'); el.className='cCard'; el.dataset.id=c.id;
-    el.style.backgroundImage=bg||'none'; if(!bg)el.style.backgroundColor=PASTEL.C;
-    el.innerHTML=`<div class="collectionVisual">${c.imgUrl?`<img class="collectionThumb" src="${escapeHtml(c.imgUrl)}" alt="">`:`<div class="collectionThumb placeholder">Sin imagen</div>`}<div><div class="cTop"><div><div class="cName">${escapeHtml(c.name||'')}</div><div class="cSub mono">${escapeHtml(c.setCode||'')} · #${escapeHtml(c.collectorNumber||'')} · ${escapeHtml(c.lang||'')}</div><div class="cSub">${escapeHtml(c.type||'')} · ${escapeHtml(c.subtype||'')}</div></div><div class="cRight"><button class="starBtn" data-colstar="1">${c.fav?'★':'☆'}</button>${c.logoUrl?`<img class="cIcon" src="${c.logoUrl}" alt="">`:''}</div></div><div class="cBadges"><span class="tag ${rarityClass(c.rarity)}">${escapeHtml(c.rarity||'')}</span><span class="tag">${escapeHtml(c.color||'')}</span><span class="tag mono">${escapeHtml(c.mana||'')}</span><span class="tag mono">MV ${Number.isFinite(c.manaValue)?c.manaValue:''}</span>${flags.map(f=>`<span class="tag">${f}</span>`).join('')}</div><div class="cBody"><div class="cField"><div class="k">Cantidad</div><div class="v mono">${c.qty||1}</div></div><div class="cField"><div class="k">Precio</div><div class="v mono">${escapeHtml(c.priceText||'')}</div></div><div class="cField"><div class="k">Mejor venta</div><div class="v mono">${escapeHtml(c.bestSell||'')}</div></div><div class="cField"><div class="k">Introducido</div><div class="v">${escapeHtml(c.inputName||'')}</div></div></div></div></div>`;
+
+    const qty=Math.max(
+      1,
+      Number(c.qty)||1
+    );
+
+    totalUnits+=qty;
+
+    const eur=parseEuro(c.priceText);
+
+    if(Number.isFinite(eur)){
+      totalEur+=eur*qty;
+    }
+
+    const el=document.createElement('div');
+
+    el.className='cCard';
+    el.dataset.id=c.id;
+
+    const img=c.imgUrl
+      ? `
+        <img
+          class="collectionThumb"
+          src="${escapeHtml(c.imgUrl)}"
+          alt="${escapeHtml(c.name||'Carta')}"
+          loading="lazy"
+        >
+      `
+      : `
+        <div class="collectionThumb placeholder">
+          Sin imagen
+        </div>
+      `;
+
+    el.innerHTML=`
+
+      <div class="collectionVisual">
+
+        ${img}
+
+        <button
+          class="collectionStar"
+          type="button"
+          data-colstar="1"
+          title="${c.fav?'Quitar de favoritos':'Añadir a favoritos'}"
+        >
+          ${c.fav?'★':'☆'}
+        </button>
+
+      </div>
+
+    `;
+
     grid.appendChild(el);
   }
+
   const g=id=>document.getElementById(id);
-  if(g('colCountCards'))g('colCountCards').textContent=String(view.length);
-  if(g('colCountUnits'))g('colCountUnits').textContent=String(tu);
-  if(g('colSumEur'))g('colSumEur').textContent=se.toFixed(2);
+
+  if(g('colCountCards')){
+    g('colCountCards').textContent=
+      String(view.length);
+  }
+
+  if(g('colCountUnits')){
+    g('colCountUnits').textContent=
+      String(totalUnits);
+  }
+
+  if(g('colSumEur')){
+    g('colSumEur').textContent=
+      totalEur.toFixed(2);
+  }
 }
 
+function openCardDetail(cardId){
+
+  const card=cards.find(
+    c=>String(c.id)===String(cardId)
+  );
+
+  if(!card)return;
+
+  const modal=
+    document.getElementById('cardDetailModal');
+
+  const content=
+    document.getElementById('cardDetailContent');
+
+  if(!modal||!content)return;
+
+  const flags=[
+    card.proxy?'Proxy':null,
+    card.foil?'Foil':null,
+    card.promo?'Promo':null,
+    card.promoPre?'Pre-release':null
+  ].filter(Boolean);
+
+  const image=card.imgUrl
+    ? `
+      <img
+        src="${escapeHtml(card.imgUrl)}"
+        alt="${escapeHtml(card.name||'Carta')}"
+      >
+    `
+    : `
+      <div class="collectionThumb placeholder">
+        Sin imagen
+      </div>
+    `;
+
+  content.innerHTML=`
+
+    <div class="cardDetailContent">
+
+      <div class="cardDetailImage">
+        ${image}
+      </div>
+
+      <div class="cardDetailInfo">
+
+        <h2
+          id="cardDetailName"
+          class="cardDetailName"
+        >
+          ${escapeHtml(card.name||'Sin nombre')}
+        </h2>
+
+        ${
+          card.inputName
+            ? `
+              <div class="cardDetailOriginal">
+                Introducido como:
+                ${escapeHtml(card.inputName)}
+              </div>
+            `
+            : ''
+        }
+
+        <div class="cardDetailTags">
+
+          ${
+            card.rarity
+              ? `
+                <span class="tag ${rarityClass(card.rarity)}">
+                  ${escapeHtml(card.rarity)}
+                </span>
+              `
+              : ''
+          }
+
+          ${
+            card.color
+              ? `
+                <span class="tag">
+                  ${escapeHtml(card.color)}
+                </span>
+              `
+              : ''
+          }
+
+          ${
+            card.mana
+              ? `
+                <span class="tag mono">
+                  ${escapeHtml(card.mana)}
+                </span>
+              `
+              : ''
+          }
+
+          ${
+            Number.isFinite(card.manaValue)
+              ? `
+                <span class="tag mono">
+                  MV ${card.manaValue}
+                </span>
+              `
+              : ''
+          }
+
+          ${
+            flags.map(f=>
+              `<span class="tag">${escapeHtml(f)}</span>`
+            ).join('')
+          }
+
+        </div>
+
+
+        <div class="cardDetailSectionTitle">
+          Información de la carta
+        </div>
+
+        <div class="cardDetailGrid">
+
+          <div class="cardDetailField">
+            <span class="label">Set</span>
+            <span class="value">
+              ${escapeHtml(card.setCode||'—')}
+            </span>
+          </div>
+
+          <div class="cardDetailField">
+            <span class="label">Número de colección</span>
+            <span class="value mono">
+              ${escapeHtml(card.collectorNumber||'—')}
+            </span>
+          </div>
+
+          <div class="cardDetailField">
+            <span class="label">Idioma</span>
+            <span class="value">
+              ${escapeHtml(card.lang||'—')}
+            </span>
+          </div>
+
+          <div class="cardDetailField">
+            <span class="label">Tipo</span>
+            <span class="value">
+              ${escapeHtml(card.type||'—')}
+            </span>
+          </div>
+
+          <div class="cardDetailField">
+            <span class="label">Subtipo</span>
+            <span class="value">
+              ${escapeHtml(card.subtype||'—')}
+            </span>
+          </div>
+
+          <div class="cardDetailField">
+            <span class="label">Color</span>
+            <span class="value">
+              ${escapeHtml(card.color||'—')}
+            </span>
+          </div>
+
+          <div class="cardDetailField">
+            <span class="label">Coste de maná</span>
+            <span class="value mono">
+              ${escapeHtml(card.mana||'—')}
+            </span>
+          </div>
+
+          <div class="cardDetailField">
+            <span class="label">Valor de maná</span>
+            <span class="value">
+              ${
+                Number.isFinite(card.manaValue)
+                  ? card.manaValue
+                  : '—'
+              }
+            </span>
+          </div>
+
+        </div>
+
+
+        <div class="cardDetailSectionTitle">
+          Tu colección
+        </div>
+
+        <div class="cardDetailGrid">
+
+          <div class="cardDetailField">
+            <span class="label">Cantidad</span>
+            <span class="value">
+              ${card.qty||1}
+            </span>
+          </div>
+
+          <div class="cardDetailField">
+            <span class="label">Precio</span>
+            <span class="value">
+              ${escapeHtml(card.priceText||'—')}
+            </span>
+          </div>
+
+          <div class="cardDetailField">
+            <span class="label">Mejor venta</span>
+            <span class="value">
+              ${escapeHtml(card.bestSell||'—')}
+            </span>
+          </div>
+
+          <div class="cardDetailField">
+            <span class="label">Favorita</span>
+            <span class="value">
+              ${isFav(card)?'Sí':'No'}
+            </span>
+          </div>
+
+        </div>
+
+
+        ${
+          card.logoUrl
+            ? `
+              <div class="cardDetailSectionTitle">
+                Edición
+              </div>
+
+              <img
+                src="${escapeHtml(card.logoUrl)}"
+                alt=""
+                class="cIcon"
+                style="width:42px;height:42px;"
+              >
+            `
+            : ''
+        }
+
+      </div>
+
+    </div>
+
+  `;
+
+  modal.classList.add('is-open');
+  modal.setAttribute('aria-hidden','false');
+
+  document.body.style.overflow='hidden';
+}
 /* listeners colección */
 let _colBound=false;
+
 (function bindCol(){
-  const grid=document.getElementById('collectionGrid'); if(!grid||_colBound)return; _colBound=true;
+
+  const grid=
+    document.getElementById('collectionGrid');
+
+  if(!grid||_colBound)return;
+
+  _colBound=true;
+
   grid.addEventListener('click',e=>{
-    const star=e.target.closest('[data-colstar]'); if(!star)return;
-    const id=star.closest('.cCard')?.dataset?.id; if(!id)return;
-    const item=cards.find(x=>x.id===id); if(!item)return;
-    item.fav=!item.fav; saveCards(); renderCardsTableFull(); renderSalesTable(); renderColeccion();
+
+    /* ───────── FAVORITO ───────── */
+
+    const star=
+      e.target.closest('[data-colstar]');
+
+    if(star){
+
+      e.stopPropagation();
+
+      const id=
+        star.closest('.cCard')?.dataset?.id;
+
+      if(!id)return;
+
+      const item=
+        cards.find(x=>String(x.id)===String(id));
+
+      if(!item)return;
+
+      item.fav=!item.fav;
+
+      saveCards();
+      renderCardsTableFull();
+      renderSalesTable();
+      renderColeccion();
+
+      return;
+    }
+
+
+    /* ───────── ABRIR CARTA ───────── */
+
+    const card=
+      e.target.closest('.cCard');
+
+    if(!card)return;
+
+    const id=card.dataset.id;
+
+    openCardDetail(id);
   });
+
 })();
 
 /* listeners tabla cartas */
@@ -3290,6 +3686,72 @@ function googleTranslateElementInit() {
 </script>
 
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+
+<div
+  id="cardDetailModal"
+  class="cardDetailModal"
+  aria-hidden="true"
+>
+
+  <div
+    class="cardDetailModalBox"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="cardDetailName"
+  >
+
+    <button
+      id="cardDetailClose"
+      class="cardDetailClose"
+      type="button"
+      aria-label="Cerrar"
+    >
+      ×
+    </button>
+
+    <div id="cardDetailContent"></div>
+
+  </div>
+
+</div>
+
+<script>
+/* ─────────────────────────────────────────────
+   CERRAR MODAL DE DETALLE DE CARTA
+───────────────────────────────────────────── */
+(function initCardDetailModal(){
+
+  const modal = document.getElementById('cardDetailModal');
+  const close = document.getElementById('cardDetailClose');
+
+  if(!modal) return;
+
+  function closeCardDetail(){
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+  }
+
+  close?.addEventListener('click', closeCardDetail);
+
+  modal.addEventListener('click', e => {
+    if(e.target === modal){
+      closeCardDetail();
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if(
+      e.key === 'Escape' &&
+      modal.classList.contains('is-open')
+    ){
+      closeCardDetail();
+    }
+  });
+
+})();
+</script>
 
 </body>
 </html>
