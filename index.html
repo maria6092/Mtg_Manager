@@ -2030,12 +2030,12 @@ function priceTextFromPrices(prices){ const num=v=>(v==null||v==='')?null:parseF
 function manaToEmojis(m){ if(!m) return ''; const t=m.match(/\{[^}]+\}/g)||[]; return t.map(t=>{const c=t.replace(/[{}]/g,'').toUpperCase();if(/^\d+$/.test(c))return c;if(c==='X'||c==='Y'||c==='Z')return c;const b={W:'⚪',U:'🔵',B:'⚫',R:'🔴',G:'🟢',C:'🔘'};if(b[c])return b[c];const sp={S:'❄️',T:'↩️',Q:'↪️',E:'⚡'};if(sp[c])return sp[c];if(c.endsWith('/P')){const col=c.split('/')[0];return(b[col]||col)+'/☠️';}if(c.includes('/')){const[a,bb]=c.split('/');return(b[a]||a)+'/'+(b[bb]||bb);}return c;}).join(''); }
 function colorToEmojisFromCI(ci){ const e={W:'⚪',U:'🔵',B:'⚫',R:'🔴',G:'🟢',C:'🔘'},o=['W','U','B','R','G'],a=Array.isArray(ci)?ci.map(x=>String(x).toUpperCase()):[]; if(!a.length)return '🔘'; const s=new Set(a); return o.filter(c=>s.has(c)).map(c=>e[c]).join('')||'🔘'; }
 const PASTEL={
-  W:'#FFD966', 
-  U:'#4FA8FF', 
-  B:'#8B7CF6', 
-  R:'#FF6B6B', 
-  G:'#3ED17A', 
-  C:'#C9CDD3', 
+  W:'#D4A017', // dorado oscuro (antes #FFD966)
+  U:'#2E6FD9', // azul más profundo (antes #4FA8FF)
+  B:'#5A4BBF', // púrpura oscuro (antes #8B7CF6)
+  R:'#D4453D', // rojo/coral oscuro (antes #FF6B6B)
+  G:'#259C5C', // verde oscuro (antes #3ED17A)
+  C:'#8A8F98', // gris medio (antes #C9CDD3)
 };
 function normalizeColorId(ci){ const o=['W','U','B','R','G'],s=new Set((ci||[]).map(x=>String(x).toUpperCase()).filter(x=>o.includes(x))); return o.filter(x=>s.has(x)); }
 function gradientFromColorIds(ids){
