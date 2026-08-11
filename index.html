@@ -289,26 +289,278 @@
     .moneyCard{padding:22px 24px;min-height:110px}
     .moneyValue{font-size:1.7rem;font-weight:700;color:var(--gold2);margin:10px 0 4px;font-family:'Cinzel',serif;letter-spacing:.03em}
 
-    /* collection */
-    .collectionGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    @media(max-width:980px){.collectionGrid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:600px){.collectionGrid{grid-template-columns:1fr}}
-    .cCard{border:1px solid rgba(201,150,58,.18);border-radius:12px;background:var(--card);box-shadow:var(--shadow);overflow:hidden;transition:border-color .2s,box-shadow .2s}
-    .cCard:hover{border-color:rgba(201,150,58,.4);box-shadow:0 0 20px rgba(201,150,58,.12),var(--shadow)}
-    .cTop{padding:10px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-    .cName{font-weight:600;color:var(--gold2);line-height:1.15;font-family:'Cinzel',serif;font-size:.88rem}
-    .cSub{font-size:.75rem;color:var(--muted);margin-top:4px;font-style:italic}
-    .cBadges{display:flex;gap:5px;flex-wrap:wrap;padding:0 12px 8px}
-    .cBody{padding:10px 12px 12px;border-top:1px solid rgba(201,150,58,.12);display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
-    .cField .k{font-size:.66rem;color:var(--muted);font-family:'Cinzel',serif;letter-spacing:.05em;text-transform:uppercase}
-    .cField .v{font-size:.85rem}
-    .cIcon{width:26px;height:26px;border-radius:6px;border:1px solid rgba(201,150,58,.2);background:var(--card);padding:3px;flex:0 0 auto}
-    .cRight{display:flex;align-items:center;gap:8px}
-    .setIcon{width:24px;height:24px;border-radius:5px;border:1px solid rgba(201,150,58,.2);background:var(--card);padding:2px}
-    .collectionVisual{display:grid;grid-template-columns:100px 1fr;gap:12px;align-items:start}
-    .collectionThumb{width:100px;height:140px;border-radius:8px;object-fit:cover;border:1px solid rgba(201,150,58,.25);background:rgba(45,24,84,.4);box-shadow:0 8px 20px rgba(0,0,0,.4)}
-    .collectionThumb.placeholder{display:grid;place-items:center;font-size:10px;color:var(--muted);padding:6px;text-align:center;font-style:italic}
-    @media(max-width:640px){.collectionVisual{grid-template-columns:1fr}.collectionThumb{width:100%;max-width:200px;height:auto;aspect-ratio:63/88}}
+    /* ─────────────────────────────────────────────
+   COLECCIÓN - VISTA CARTAS
+   ───────────────────────────────────────────── */
+
+.collectionGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:18px;
+  padding:10px 2px;
+}
+
+.cCard{
+  position:relative;
+  border:0;
+  border-radius:12px;
+  background:transparent;
+  box-shadow:none;
+  overflow:visible;
+  cursor:pointer;
+  transition:
+    transform .2s ease,
+    filter .2s ease;
+}
+
+.cCard:hover{
+  transform:translateY(-7px) scale(1.025);
+  filter:drop-shadow(0 12px 18px rgba(0,0,0,.45));
+}
+
+.cCard .collectionVisual{
+  display:block;
+}
+
+.cCard .collectionThumb{
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio:63/88;
+  object-fit:cover;
+  border-radius:9px;
+  border:1px solid rgba(201,150,58,.28);
+  background:rgba(45,24,84,.4);
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.35);
+}
+
+.cCard .collectionThumb.placeholder{
+  display:grid;
+  place-items:center;
+  min-height:210px;
+  color:var(--muted);
+  font-size:.75rem;
+  text-align:center;
+  padding:10px;
+}
+
+.cCard .collectionInfo{
+  display:none;
+}
+
+/* Favorito sobre la carta */
+.cCard .collectionStar{
+  position:absolute;
+  top:7px;
+  right:7px;
+  z-index:5;
+  width:30px;
+  height:30px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:50%;
+  background:rgba(20,10,35,.78);
+  color:var(--gold2);
+  cursor:pointer;
+  font-size:18px;
+  backdrop-filter:blur(4px);
+}
+
+.cCard .collectionStar:hover{
+  transform:scale(1.12);
+  background:rgba(20,10,35,.95);
+}
+
+@media(max-width:700px){
+  .collectionGrid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:10px;
+  }
+}
+
+@media(max-width:450px){
+  .collectionGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   MODAL CARTA
+   ───────────────────────────────────────────── */
+
+.cardDetailModal{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:rgba(5,2,12,.82);
+  backdrop-filter:blur(7px);
+}
+
+.cardDetailModal.is-open{
+  display:flex;
+}
+
+.cardDetailModalBox{
+  position:relative;
+  width:min(1050px,96vw);
+  max-height:92vh;
+  overflow:auto;
+  border:1px solid rgba(201,150,58,.35);
+  border-radius:16px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(45,24,84,.98),
+      rgba(20,10,35,.98)
+    );
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.65),
+    0 0 40px rgba(201,150,58,.10);
+}
+
+.cardDetailClose{
+  position:absolute;
+  top:12px;
+  right:12px;
+  z-index:10;
+  width:38px;
+  height:38px;
+  border:1px solid rgba(201,150,58,.3);
+  border-radius:50%;
+  background:rgba(20,10,35,.8);
+  color:var(--gold2);
+  cursor:pointer;
+  font-size:22px;
+}
+
+.cardDetailClose:hover{
+  background:rgba(201,150,58,.15);
+}
+
+.cardDetailContent{
+  display:grid;
+  grid-template-columns:minmax(260px,360px) 1fr;
+  gap:30px;
+  padding:30px;
+}
+
+.cardDetailImage{
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+}
+
+.cardDetailImage img{
+  display:block;
+  width:100%;
+  max-width:360px;
+  height:auto;
+  border-radius:14px;
+  box-shadow:0 18px 35px rgba(0,0,0,.55);
+  border:1px solid rgba(201,150,58,.28);
+}
+
+.cardDetailInfo{
+  min-width:0;
+}
+
+.cardDetailName{
+  margin:0 45px 5px 0;
+  color:var(--gold2);
+  font-family:'Cinzel',serif;
+  font-size:1.7rem;
+  line-height:1.15;
+}
+
+.cardDetailOriginal{
+  color:var(--muted);
+  font-style:italic;
+  margin-bottom:20px;
+}
+
+.cardDetailTags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-bottom:20px;
+}
+
+.cardDetailGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+
+.cardDetailField{
+  padding:11px 13px;
+  border:1px solid rgba(201,150,58,.13);
+  border-radius:8px;
+  background:rgba(45,24,84,.28);
+}
+
+.cardDetailField .label{
+  display:block;
+  margin-bottom:4px;
+  color:var(--muted);
+  font-family:'Cinzel',serif;
+  font-size:.68rem;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+
+.cardDetailField .value{
+  color:var(--text);
+  font-size:.9rem;
+  word-break:break-word;
+}
+
+.cardDetailSectionTitle{
+  margin:22px 0 10px;
+  color:var(--gold2);
+  font-family:'Cinzel',serif;
+  font-size:.9rem;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+
+.cardDetailFlags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+@media(max-width:700px){
+  .cardDetailModal{
+    padding:10px;
+  }
+
+  .cardDetailContent{
+    grid-template-columns:1fr;
+    gap:18px;
+    padding:20px;
+  }
+
+  .cardDetailImage img{
+    max-width:300px;
+  }
+
+  .cardDetailName{
+    font-size:1.3rem;
+  }
+
+  .cardDetailGrid{
+    grid-template-columns:1fr;
+  }
+}
 
     /* deck view */
     .deckViewGrid{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;height:calc(100vh - 220px)}
