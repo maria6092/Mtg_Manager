@@ -1,3 +1,4 @@
+
 /**
  * achievements.js
  * Sistema de logros de MTG Manager.
@@ -10,10 +11,10 @@
  * Requiere que js/achievements-data.js se haya cargado antes
  * (expone window.ACHIEVEMENTS_DATA).
  */
-
+ 
 (function () {
   'use strict';
-
+ 
   // Los 105 logros van EMBEBIDOS directamente aquí (ya no hace falta
   // cargar un achievements-data.js aparte: menos piezas, menos fallos
   // de orden/ruta de <script>). Si quieres editar el listado, es este array.
@@ -757,23 +758,27 @@
   window.ACHIEVEMENTS_DATA = ACHIEVEMENTS_LIST; // se deja accesible por si acaso
   function DATA() { return ACHIEVEMENTS_LIST; }
   const LS_ACH = 'mtg_achievements_v1';
-
+ 
   const DIFF_LABEL = { easy: 'Fácil', medium: 'Media', hard: 'Difícil', legendary: 'Legendaria' };
   const CAT_ICON = {
     'Colección': '🗂️', 'Mazos': '📚', 'Wishlist': '⭐',
     'Mercado': '💰', 'Comunidad': '🤝', 'Especiales': '✨',
   };
-
+ 
   /* ─────────────────────────────────────────────
      ALMACENAMIENTO (por usuario, igual que el resto de la app)
   ───────────────────────────────────────────── */
-  function key() {
-    try { return (typeof scopedKey === 'function') ? scopedKey(LS_ACH) : LS_ACH; }
-    catch { return LS_ACH; }
-  }
-  function loadState() {
+  function key(uidOverride) {
     try {
-      const r = localStorage.getItem(key());
+      const uid = (uidOverride !== undefined)
+        ? uidOverride
+        : ((typeof currentUserId === 'function') ? currentUserId() : '');
+      return (typeof scopedKey === 'function') ? scopedKey(LS_ACH, uid) : (uid ? `${LS_ACH}__${uid}` : LS_ACH);
+    } catch { return LS_ACH; }
+  }
+  function loadState(uidOverride) {
+    try {
+      const r = localStorage.getItem(key(uidOverride));
       const s = r ? JSON.parse(r) : null;
       return {
         unlocked: (s && typeof s.unlocked === 'object' && !Array.isArray(s.unlocked)) ? s.unlocked : {}, // {id: tsMillis}
@@ -784,11 +789,13 @@
   function saveState(state) {
     try { localStorage.setItem(key(), JSON.stringify(state)); } catch {}
   }
-
+ 
   let STATE = loadState();
-
-  function resetForUserSwitch() { STATE = loadState(); }
-
+ 
+  // uidOverride: úsalo cuando el usuario esté a punto de cambiar (login/switch)
+  // pero `currentUserId()`/`_fbUser` todavía no se haya actualizado.
+  function resetForUserSwitch(uidOverride) { STATE = loadState(uidOverride); }
+ 
   function bumpCounter(name, by = 1) {
     STATE.counters[name] = (STATE.counters[name] || 0) + by;
     saveState(STATE);
@@ -801,19 +808,19 @@
   function counterNum(name) { return Number(STATE.counters[name] || 0); }
   function counterFlag(name) { return !!STATE.counters[name]; }
   function setFlag(name, v = true) { STATE.counters[name] = v; saveState(STATE); }
-
+ 
   /* ─────────────────────────────────────────────
      ESTADÍSTICAS DERIVADAS DEL ESTADO DE LA APP
   ───────────────────────────────────────────── */
   function safe(fn, fallback) { try { const v = fn(); return v === undefined ? fallback : v; } catch { return fallback; } }
-
+ 
   function computeStats() {
     const _cards = safe(() => cards, []) || [];
     const _decks = safe(() => decks, []) || [];
     const _wish  = safe(() => wishlist, []) || [];
     const _settings = safe(() => settings, {}) || {};
     const _profile = safe(() => profile, {}) || {};
-
+ 
     const totalQty = _cards.reduce((a, c) => a + (c.qty || 1), 0);
     const uniqueCards = _cards.length;
     const setsCodes = new Set(_cards.map(c => c.setCode).filter(Boolean));
@@ -833,7 +840,7 @@
     const allColors10 = ['W', 'U', 'B', 'R', 'G'].every(k => colorCounts[k] >= 10);
     const invAll = safe(() => computeInvestmentTotals().invAll, 0) || 0;
     const saleCount = _cards.filter(c => !!c.sale).length;
-
+ 
     // Mazos
     const deckCount = _decks.length;
     const deckWithCommander = _decks.some(d => d.commander && d.commander.name);
@@ -854,7 +861,7 @@
     const fiveColorDeck = deckSignatures.some(s => s.length === 5);
     const fourColorDeck = deckSignatures.some(s => s.length === 4);
     const uniqueDeckSignatures = new Set(deckSignatures.filter(Boolean)).size;
-
+ 
     // Wishlist
     const wishQty = _wish.reduce((a, w) => a + (w.qty || 1), 0);
     const wishCompletedCount = _wish.filter(w => (typeof haveQtyForWish === 'function' ? haveQtyForWish(w) : 0) >= (w.qty || 1)).length;
@@ -868,7 +875,7 @@
     });
     if (wishQty > 0) setFlag('hadAnyWish', true);
     const wishEmpty = wishQty === 0 && counterFlag('hadAnyWish');
-
+ 
     // Amigos / comunidad
     let friendsCount = 0, sentCount = 0, receivedCount = 0;
     try {
@@ -876,7 +883,7 @@
       if (fd) { friendsCount = fd.friends.length; sentCount = fd.sent.length; receivedCount = fd.received.length; }
     } catch {}
     if (receivedCount > counterNum('maxReceived')) STATE.counters.maxReceived = receivedCount;
-
+ 
     // Perfil
     const profileHasName   = !!(_profile.displayName || '').trim();
     const profileHasBio    = !!(_profile.bio || '').trim();
@@ -885,7 +892,7 @@
     const profileEdited = profileHasName || profileHasBio || profileHasAvatar || profileHasBanner;
     const profileComplete = profileHasName && profileHasBio && profileHasAvatar && profileHasBanner;
     const fullProfile = profileEdited && uniqueCards > 0 && deckCount > 0 && wishQty > 0;
-
+ 
     // Días de uso / nocturno
     const today = new Date();
     const todayKey = today.toISOString().slice(0, 10);
@@ -893,7 +900,7 @@
     if (!days.includes(todayKey)) { days.push(todayKey); STATE.counters.loginDays = days; saveState(STATE); }
     const hour = today.getHours();
     if (hour >= 0 && hour < 6) setFlag('nightOwl', true);
-
+ 
     return {
       totalQty, uniqueCards, setsCount: setsCodes.size, colorCounts, allColors, allColors10,
       multicolorCount, rareCount, mythicCount, planeswalkerCount, favCount, invAll, saleCount,
@@ -912,9 +919,9 @@
       secretFound: counterFlag('secretFound'),
     };
   }
-
+ 
   const MAIN_SECTIONS = ['cartas', 'coleccion', 'mazos', 'buscador', 'deseos', 'mis_ventas', 'tienda', 'usuario', 'ajustes'];
-
+ 
   /* ─────────────────────────────────────────────
      CONDICIONES DE CADA LOGRO
      (s = objeto de estadísticas devuelto por computeStats)
@@ -936,7 +943,7 @@
     planeswalker_10: s => s.planeswalkerCount >= 10,
     favorite_first: s => s.favCount >= 1, favorites_25: s => s.favCount >= 25,
     value_250: s => s.invAll >= 250, value_1000: s => s.invAll >= 1000, value_5000: s => s.invAll >= 5000,
-
+ 
     deck_1: s => s.deckCount >= 1, deck_3: s => s.deckCount >= 3, deck_5: s => s.deckCount >= 5,
     deck_10: s => s.deckCount >= 10, deck_20: s => s.deckCount >= 20, deck_50: s => s.deckCount >= 50,
     deck_25: s => s.deckCount >= 25, deck_organized: s => s.deckCount >= 10,
@@ -946,22 +953,22 @@
     deck_10_unique_colors: s => s.uniqueDeckSignatures >= 10,
     deck_wishlist: s => s.deckWishlistSent, wish_deck: s => s.deckWishlistSent,
     deck_rebuild: s => s.deckRebuildMax >= 10,
-
+ 
     wish_1: s => s.wishQty >= 1, wish_5: s => s.wishQty >= 5, wish_10: s => s.wishQty >= 10,
     wish_25: s => s.wishQty >= 25, wish_50: s => s.wishQty >= 50, wish_100: s => s.wishQty >= 100,
     wish_complete_1: s => s.wishCompletedCount >= 1, wish_complete_10: s => s.wishCompletedCount >= 10,
     wish_complete_25: s => s.wishCompletedCount >= 25, wish_50complete: s => s.wishCompletedCount >= 50,
     wish_empty: s => s.wishEmpty, wish_30days: s => s.wishHasOld30, wish_90days: s => s.wishHasOld90,
     wish_price_drop: s => s.wishHasPriceDrop,
-
+ 
     seller_1: s => s.saleCount >= 1, seller_5: s => s.saleCount >= 5, seller_10: s => s.saleCount >= 10,
     seller_25: s => s.saleCount >= 25, seller_50: s => s.saleCount >= 50, seller_100: s => s.saleCount >= 100,
-
+ 
     friend_1: s => s.friendsCount >= 1, friends_5: s => s.friendsCount >= 5,
     friends_10: s => s.friendsCount >= 10, friends_25: s => s.friendsCount >= 25, friends_50: s => s.friendsCount >= 50,
     request_1: s => s.sentCount >= 1, accept_1: s => s.friendsCount >= 1,
     received_10: s => s.maxReceived >= 10, received_25: s => s.maxReceived >= 25,
-
+ 
     search_1: s => s.searchCount >= 1, search_25: s => s.searchCount >= 25,
     search_100: s => s.searchCount >= 100, search_500: s => s.searchCount >= 500,
     first_backup: s => s.backupCount >= 1, backup_5: s => s.backupCount >= 5,
@@ -977,12 +984,12 @@
     achievement_25: null, achievement_50: null, achievement_75: null, achievement_100: null,
     perfect_collection: null,
   };
-
+ 
   /* ─────────────────────────────────────────────
      COMPROBACIÓN Y DESBLOQUEO
   ───────────────────────────────────────────── */
   function unlockedCount() { return Object.keys(STATE.unlocked).length; }
-
+ 
   function unlock(def) {
     if (STATE.unlocked[def.id]) return false;
     STATE.unlocked[def.id] = Date.now();
@@ -990,7 +997,7 @@
     showUnlockNotification(def);
     return true;
   }
-
+ 
   function check() {
     if (!DATA().length) return [];
     const stats = computeStats();
@@ -1018,12 +1025,12 @@
     if (newly.length) renderPageIfOpen();
     return newly;
   }
-
+ 
   function markSectionVisited(id) {
     if (!MAIN_SECTIONS.includes(id)) return;
     markSet('sectionsVisited', id);
   }
-
+ 
   /* ─────────────────────────────────────────────
      NOTIFICACIÓN DE LOGRO DESBLOQUEADO
   ───────────────────────────────────────────── */
@@ -1068,7 +1075,7 @@
   function escapeHtmlSafe(s) {
     return (typeof escapeHtml === 'function') ? escapeHtml(s) : String(s ?? '');
   }
-
+ 
   /* Icono con placeholder: intenta cargar assets/achievements/{id}.png,
      si no existe se queda con el emoji-placeholder. */
   function iconPlaceholderHtml(def, cls) {
@@ -1085,17 +1092,17 @@
       <span class="achLockPhGlyph">🔒</span>
     </span>`;
   }
-
+ 
   /* ─────────────────────────────────────────────
      PÁGINA DE LOGROS
   ───────────────────────────────────────────── */
   let currentFilter = { cat: '', state: 'all' };
-
+ 
   function renderPageIfOpen() {
     const sec = document.querySelector('section[data-page="logros"]');
     if (sec && sec.style.display !== 'none') renderPage();
   }
-
+ 
   function renderPage() {
     const grid = document.getElementById('achGrid');
     if (!grid) {
@@ -1107,30 +1114,30 @@
       return;
     }
     check();
-
+ 
     const total = DATA().length;
     const done = unlockedCount();
     const pctEl = document.getElementById('achProgressText');
     if (pctEl) pctEl.textContent = `${done} / ${total} logros conseguidos`;
     const barEl = document.getElementById('achProgressBar');
     if (barEl) barEl.style.width = total ? `${Math.round((done / total) * 100)}%` : '0%';
-
+ 
     let view = DATA().slice();
     if (currentFilter.cat) view = view.filter(d => d.cat === currentFilter.cat);
     if (currentFilter.state === 'unlocked') view = view.filter(d => !!STATE.unlocked[d.id]);
     if (currentFilter.state === 'locked') view = view.filter(d => !STATE.unlocked[d.id]);
-
+ 
     // Agrupar por categoría para mostrar cabeceras
     const byCat = new Map();
     view.forEach(d => { if (!byCat.has(d.cat)) byCat.set(d.cat, []); byCat.get(d.cat).push(d); });
-
+ 
     grid.innerHTML = '';
     for (const [cat, list] of byCat) {
       const h = document.createElement('div');
       h.className = 'achCatHeader';
       h.innerHTML = `<span>${CAT_ICON[cat] || '🏆'} ${escapeHtmlSafe(cat)}</span><span class="achCatCount">${list.filter(d=>STATE.unlocked[d.id]).length}/${list.length}</span>`;
       grid.appendChild(h);
-
+ 
       const wrap = document.createElement('div');
       wrap.className = 'achGridInner';
       list.forEach(def => wrap.appendChild(renderCard(def)));
@@ -1138,7 +1145,7 @@
     }
     if (!view.length) grid.innerHTML = '<div class="hint">No hay logros con este filtro.</div>';
   }
-
+ 
   function renderCard(def) {
     const unlockedAt = STATE.unlocked[def.id];
     const card = document.createElement('div');
@@ -1162,7 +1169,7 @@
     }
     return card;
   }
-
+ 
   function initFiltersUI() {
     const catSel = document.getElementById('achCatFilter');
     if (catSel && !catSel.dataset.ready) {
@@ -1177,7 +1184,7 @@
       stateSel.addEventListener('change', () => { currentFilter.state = stateSel.value; renderPage(); });
     }
   }
-
+ 
   /* ─────────────────────────────────────────────
      ENGANCHES (monkey-patch de funciones globales existentes)
   ───────────────────────────────────────────── */
@@ -1200,7 +1207,31 @@
       return r;
     };
   }
-
+ 
+  // Igual que wrap(), pero ejecuta `before` ANTES de llamar a la función
+  // original (útil para funciones async donde necesitamos actuar antes de
+  // que arranque su cuerpo, no cuando ceda el control en su primer await).
+  function wrapBefore(name, before) {
+    if (typeof window[name] !== 'function') return;
+    const orig = window[name];
+    window[name] = function (...args) {
+      try { before(...args); } catch {}
+      return orig.apply(this, args);
+    };
+  }
+ 
+  // Igual que wrap(), pero espera (await) a que la función original —si es
+  // async— termine del todo antes de ejecutar `after`.
+  function wrapAsyncAfter(name, after) {
+    if (typeof window[name] !== 'function') return;
+    const orig = window[name];
+    window[name] = async function (...args) {
+      const r = await orig.apply(this, args);
+      try { after(...args); } catch {}
+      return r;
+    };
+  }
+ 
   function initHooks() {
     wrap('saveCards', () => check());
     wrap('saveDecks', () => check());
@@ -1218,34 +1249,47 @@
     wrap('addMissingDeckToWishlist', () => { setFlag('deckWishlistSent', true); check(); });
     wrap('acceptFriendRequest', () => { setFlag('acceptedFriend', true); check(); });
     wrap('showPage', (id) => { markSectionVisited(id); if (id === 'logros') renderPage(); check(); });
-    wrap('_onFirebaseLogin', () => { resetForUserSwitch(); check(); });
-
+ 
+    // IMPORTANTE: _onFirebaseLogin es async y, dentro de su cuerpo (antes de
+    // su primer await), ya llama a showPage(...) -> lo cual dispara check().
+    // Si reseteamos el estado de logros "después" (como con wrap normal),
+    // ese primer check() todavía usaría el estado del usuario anterior (o
+    // vacío) y volvería a notificar logros que ya estaban desbloqueados.
+    // Por eso reseteamos ANTES de que arranque el login, usando el uid que
+    // llega como argumento (no currentUserId(), que aún no se ha actualizado).
+    wrapBefore('_onFirebaseLogin', (firebaseUser) => {
+      resetForUserSwitch(firebaseUser && firebaseUser.uid);
+    });
+    // Y cuando el login termina del todo (incluida la carga desde Firestore),
+    // una comprobación final por si la nube trae datos distintos a la caché local.
+    wrapAsyncAfter('_onFirebaseLogin', () => { check(); });
+ 
     document.getElementById('btnSearch')?.addEventListener('click', () => bumpCounter('searchCount'));
     document.getElementById('searchQ')?.addEventListener('keydown', e => { if (e.key === 'Enter') bumpCounter('searchCount'); });
-
+ 
     // Red de seguridad: además del enganche a showPage, si el botón del
     // perfil existe, forzamos el render al pulsarlo, pase lo que pase con
     // el monkey-patch de arriba.
     document.getElementById('btnProfileGoAchievements')?.addEventListener('click', () => {
       setTimeout(renderPage, 30);
     });
-
+ 
     // Si la sección "logros" ya está visible al cargar (por ejemplo porque
     // el usuario refrescó estando en esa pestaña), dibújala ya.
     const sec = document.querySelector('section[data-page="logros"]');
     if (sec && sec.style.display !== 'none') renderPage();
-
+ 
     initFiltersUI();
     check();
-
+ 
     console.info(`[Achievements] Cargado con ${DATA().length} logros.`);
   }
-
+ 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initHooks);
   } else {
     initHooks();
   }
-
+ 
   window.Achievements = { check, renderPage, unlockedCount, totalCount: () => DATA().length };
 })();
