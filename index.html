@@ -2029,13 +2029,13 @@ function fmtHistLine(h){ try{const d=new Date(h.t),ds=d.toLocaleDateString('es-E
 function priceTextFromPrices(prices){ const num=v=>(v==null||v==='')?null:parseFloat(String(v).replace(',','.')); const eur=num(prices?.eur)??num(prices?.eur_foil)??num(prices?.eur_etched); const usd=num(prices?.usd)??num(prices?.usd_foil)??num(prices?.usd_etched); const pref=settings.currency==='USD'?'USD':'EUR'; if(pref==='USD'){if(Number.isFinite(usd))return usd.toFixed(2)+'$';if(Number.isFinite(eur))return eur.toFixed(2)+'€';} else{if(Number.isFinite(eur))return eur.toFixed(2)+'€';if(Number.isFinite(usd))return usd.toFixed(2)+'$';} return 'No disponible'; }
 function manaToEmojis(m){ if(!m) return ''; const t=m.match(/\{[^}]+\}/g)||[]; return t.map(t=>{const c=t.replace(/[{}]/g,'').toUpperCase();if(/^\d+$/.test(c))return c;if(c==='X'||c==='Y'||c==='Z')return c;const b={W:'⚪',U:'🔵',B:'⚫',R:'🔴',G:'🟢',C:'🔘'};if(b[c])return b[c];const sp={S:'❄️',T:'↩️',Q:'↪️',E:'⚡'};if(sp[c])return sp[c];if(c.endsWith('/P')){const col=c.split('/')[0];return(b[col]||col)+'/☠️';}if(c.includes('/')){const[a,bb]=c.split('/');return(b[a]||a)+'/'+(b[bb]||bb);}return c;}).join(''); }
 function colorToEmojisFromCI(ci){ const e={W:'⚪',U:'🔵',B:'⚫',R:'🔴',G:'🟢',C:'🔘'},o=['W','U','B','R','G'],a=Array.isArray(ci)?ci.map(x=>String(x).toUpperCase()):[]; if(!a.length)return '🔘'; const s=new Set(a); return o.filter(c=>s.has(c)).map(c=>e[c]).join('')||'🔘'; }
-const PASTEL={
-  W: 'rgba(156, 125, 72, 0.72)',   // dorado envejecido
-  U: 'rgba(48, 62, 91, 0.72)',     // azul acero desaturado
-  B: 'rgba(58, 49, 58, 0.72)',     // púrpura grisáceo
-  R: 'rgba(125, 55, 43, 0.72)',    // rojo teja apagado
-  G: 'rgba(49, 82, 48, 0.72)',     // verde bosque grisáceo
-  C: 'rgba(75, 73, 78, 0.68)',     // gris neutro
+const PASTEL = {
+  W: 'rgba(105, 82, 45, 0.50)',   // Dorado oscuro
+  U: 'rgba(25, 38, 65, 0.50)',    // Azul acero oscuro
+  B: 'rgba(35, 27, 37, 0.50)',    // Púrpura casi negro
+  R: 'rgba(91, 34, 24, 0.50)',     // Rojo ladrillo oscuro
+  G: 'rgba(25, 55, 25, 0.50)',     // Verde bosque oscuro
+  C: 'rgba(48, 47, 50, 0.45)',     // Gris oscuro
 };
 function normalizeColorId(ci){ const o=['W','U','B','R','G'],s=new Set((ci||[]).map(x=>String(x).toUpperCase()).filter(x=>o.includes(x))); return o.filter(x=>s.has(x)); }
 function gradientFromColorIds(ids){
