@@ -13,11 +13,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 
-  <!-- Firebase init (antes que cualquier otro script) -->
+  <!-- Firebase init  -->
   <script>
-  
     window.DEV_SKIP_EMAIL_VERIFICATION = false;
-
     const firebaseConfig = {
       apiKey:            "AIzaSyC2CyBcmqd4dhuNtIX2sjUk_dadwriF0x8",
       authDomain:        "mtg-manager-2005.firebaseapp.com",
@@ -38,11 +36,11 @@
   <script src="js/ui/auth-ui.js"></script>
   <script src="js/services/auth-action.js"></script>
   <script src="js/services/cloud-service.js"></script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
 
+  <!-- Estilos personalizados -->
   <style>
     :root{
       --bg:#1a0f2e;--card:#21143d;--pink:#c9963a;--pink2:#e8b84b;
@@ -80,7 +78,7 @@
         radial-gradient(1.5px 1.5px at 35% 90%,rgba(232,184,75,.3) 0%,transparent 100%);
     }
 
-    /* density */
+    /* Densidad */
     body[data-density="compact"] .panel{padding:10px}
     body[data-density="compact"] input,body[data-density="compact"] select{padding:7px 10px}
     body[data-density="compact"] .tabbtn{padding:7px 10px}
@@ -98,55 +96,157 @@
       border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;
       position:relative;overflow:hidden;
     }
-    .panel::before,.panel::after{content:'✦';position:absolute;font-size:10px;color:rgba(201,150,58,.3);line-height:1}
-    .panel::before{top:6px;left:8px} .panel::after{bottom:6px;right:8px}
+    .panel::before,.panel::after{
+      content:'✦';
+      position:absolute;
+      font-size:10px;
+      color:rgba(201,150,58,.3);
+      line-height:1
+    }
+    .panel::before{top:6px;left:8px} 
+    .panel::after{bottom:6px;right:8px}
     .panel.soft{background:linear-gradient(160deg,rgba(45,24,84,.45) 0%,rgba(33,20,61,.8) 100%)}
 
-    /* typography */
-    .h2{margin:0 0 10px;color:var(--gold2);font-size:1.05rem;font-family:'Cinzel',serif;letter-spacing:.06em;text-transform:uppercase}
-    .h3{margin:0 0 8px;color:var(--gold);font-size:.85rem;font-family:'Cinzel',serif;letter-spacing:.06em;text-transform:uppercase}
-    .mb10{margin-bottom:10px} .mt12{margin-top:12px} .mt10{margin-top:10px}
-    .hr{border:none;border-top:1px solid rgba(201,150,58,.2);margin:14px 0;position:relative}
-    .hr::after{content:'◆';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:9px;color:rgba(201,150,58,.4);background:var(--card);padding:0 6px}
+    /* tipografias */
+    .h2{
+      margin:0 0 10px;
+      color:var(--gold2);
+      font-size:1.05rem;
+      font-family:'Cinzel',serif;
+      letter-spacing:.06em;
+      text-transform:uppercase
+    }
+    .h3{
+      margin:0 0 8px;
+      color:var(--gold);
+      font-size:.85rem;
+      font-family:'Cinzel',serif;
+      letter-spacing:.06em;
+      text-transform:uppercase
+    }
+    .mb10{margin-bottom:10px} 
+    .mt12{margin-top:12px} 
+    .mt10{margin-top:10px}
+    .hr{
+      border:none;
+      border-top:1px solid rgba(201,150,58,.2);
+      margin:14px 0;
+      position:relative
+    }
+    .hr::after{
+      content:'◆';position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      font-size:9px;
+      color:rgba(201,150,58,.4);
+      background:var(--card);
+      padding:0 6px
+    }
 
     /* grids */
-    .grid{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:12px}
+    .grid{
+      display:grid;
+      grid-template-columns:1.2fr 1fr 1fr 1fr;
+      gap:12px
+    }
     @media(max-width:980px){.grid{grid-template-columns:1fr 1fr}}
     @media(max-width:600px){.grid{grid-template-columns:1fr}}
-    .grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+    .grid-4{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr 1fr;
+      gap:12px
+    }
     @media(max-width:980px){.grid-4{grid-template-columns:1fr 1fr}}
     @media(max-width:600px){.grid-4{grid-template-columns:1fr}}
-    .grid-search-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px}
+    .grid-search-top{
+      display:grid;
+      grid-template-columns:2fr 1fr 1fr 1fr;
+      gap:12px
+    }
     @media(max-width:980px){.grid-search-top{grid-template-columns:1fr 1fr}}
     @media(max-width:600px){.grid-search-top{grid-template-columns:1fr}}
-    .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .two{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px
+    }
     @media(max-width:900px){.two{grid-template-columns:1fr}}
 
     /* inputs */
-    label{font-size:.72rem;color:var(--muted);display:block;margin-bottom:6px;font-family:'Cinzel',serif;letter-spacing:.05em;text-transform:uppercase}
-    input,select{
-      width:100%;padding:10px 12px;border-radius:6px;border:1px solid rgba(201,150,58,.2);
-      outline:none;font-size:.9rem;font-family:'Raleway',sans-serif;
-      background:var(--input-bg);color:var(--input-text);transition:border-color .2s,box-shadow .2s;
+    label{
+      font-size:.72rem;
+      color:var(--muted);
+      display:block;
+      margin-bottom:6px;
+      font-family:'Cinzel',serif;
+      letter-spacing:.05em;
+      text-transform:uppercase
     }
-    input:focus,select:focus{border-color:rgba(201,150,58,.6);box-shadow:0 0 0 3px rgba(201,150,58,.1),var(--glow)}
+    input,select{
+      width:100%;
+      padding:10px 12px;
+      border-radius:6px;
+      border:1px solid rgba(201,150,58,.2);
+      outline:none;
+      font-size:.9rem;
+      font-family:'Raleway',sans-serif;
+      background:var(--input-bg);
+      color:var(--input-text);
+      transition:border-color .2s,box-shadow .2s;
+    }
+    input:focus,select:focus{
+      border-color:rgba(201,150,58,.6);
+      box-shadow:0 0 0 3px rgba(201,150,58,.1),var(--glow)
+    }
     select option{background:var(--deep);color:var(--text)}
 
-    /* buttons */
+    /* botones */
     .btn{
       border:1px solid rgba(201,150,58,.4);
       background:linear-gradient(135deg,rgba(201,150,58,.22),rgba(139,94,26,.18));
-      color:var(--gold2);padding:10px 16px;border-radius:5px;cursor:pointer;
-      transition:all .2s ease;font-family:'Cinzel',serif;font-size:.72rem;
-      font-weight:600;letter-spacing:.08em;text-transform:uppercase;touch-action:manipulation;
+      color:var(--gold2);
+      padding:10px 16px;
+      border-radius:5px;
+      cursor:pointer;
+      transition:all .2s ease;
+      font-family:'Cinzel',serif;
+      font-size:.72rem;
+      font-weight:600;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      touch-action:manipulation;
     }
-    .btn:hover{background:linear-gradient(135deg,rgba(201,150,58,.38),rgba(139,94,26,.28));border-color:rgba(201,150,58,.7);box-shadow:0 0 16px rgba(201,150,58,.2);transform:translateY(-1px)}
-    .btn.ghost{background:transparent;border:1px solid rgba(201,150,58,.25);color:var(--muted)}
-    .btn.ghost:hover{border-color:rgba(201,150,58,.5);color:var(--gold2);background:rgba(201,150,58,.08)}
-    .btn.tiny{padding:5px 10px;border-radius:4px;font-size:.66rem}
-    .btn.danger{background:linear-gradient(135deg,rgba(180,50,50,.3),rgba(120,30,30,.2));border-color:rgba(180,50,50,.5);color:#f87171}
-    .btn.danger:hover{background:linear-gradient(135deg,rgba(180,50,50,.45),rgba(120,30,30,.35));box-shadow:0 0 14px rgba(180,50,50,.2)}
-
+    .btn:hover{
+      background:linear-gradient(135deg,rgba(201,150,58,.38),rgba(139,94,26,.28));
+      border-color:rgba(201,150,58,.7);
+      box-shadow:0 0 16px rgba(201,150,58,.2);
+      transform:translateY(-1px)
+    }
+    .btn.ghost{
+      background:transparent;
+      border:1px solid rgba(201,150,58,.25);
+      color:var(--muted)
+    }
+    .btn.ghost:hover{
+      border-color:rgba(201,150,58,.5);
+      color:var(--gold2);
+      background:rgba(201,150,58,.08)
+    }
+    .btn.tiny{
+      padding:5px 10px;
+      border-radius:4px;
+      font-size:.66rem
+    }
+    .btn.danger{
+      background:linear-gradient(135deg,rgba(180,50,50,.3),rgba(120,30,30,.2));
+      border-color:rgba(180,50,50,.5);
+      color:#f87171
+    }
+    .btn.danger:hover{
+      background:linear-gradient(135deg,rgba(180,50,50,.45),rgba(120,30,30,.35));
+      box-shadow:0 0 14px rgba(180,50,50,.2)
+    }
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .spacer{flex:1 1 auto}
     .hint{font-size:.82rem;color:var(--muted);margin-top:8px;font-style:italic}
@@ -554,76 +654,57 @@
 
     .field-help {
       position: relative;
+      overflow: visible !important;
     }
 
     .help-icon {
+      position: relative;
       display: inline-flex;
       align-items: center;
       justify-content: center;
 
-      width: 17px;
-      height: 17px;
-
-      margin-left: 5px;
-
-      border-radius: 50%;
-
-      background: #777;
-      color: #fff;
-
-      font-size: 11px;
-      font-weight: bold;
+      width: 20px;
+      height: 20px;
+      margin-left: 6px;
 
       cursor: help;
 
-      position: relative;
-      vertical-align: middle;
-
-      transition: background .15s ease, transform .15s ease;
+      z-index: 999999;
     }
 
-    .help-icon:hover {
-      background: #aaa;
-      transform: scale(1.08);
-    }
-
-    /* Imagen oculta */
     .help-image {
-      display: none;
-
       position: absolute;
 
-      left: 25px;
-      top: -10px;
+      left: 30px;
+      top: 50%;
+      transform: translateY(-50%);
 
-      z-index: 99999;
+      display: none;
+
+      z-index: 2147483647 !important;
+
+      padding: 8px;
 
       background: #111;
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 10px;
 
-      padding: 6px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.7);
 
-      border-radius: 8px;
-
-      box-shadow: 0 5px 20px rgba(0,0,0,.55);
-
-      pointer-events: none;
+      white-space: nowrap;
     }
 
-    /* Mostrar imagen al pasar el ratón */
-    .help-icon:hover .help-image {
-      display: block;
-    }
-
-    /* Imagen */
     .help-image img {
       display: block;
-
-      width: 320px;
-      max-width: 60vw;
-
+      width: auto;
       height: auto;
 
-      border-radius: 5px;
+      max-width: 700px;
+      max-height: 80vh;
+    }
+
+    .help-icon:hover .help-image {
+      display: block;
     }
 
 
@@ -699,19 +780,9 @@
       <img class="sidebarLogoImg" src="assets/logo.png" alt="Logo">
       <div>
         <div class="sidebarTitle">✦ MTG Manager ✦</div>
-        <div class="sidebarSub">Tu colección</div>
       </div>
     </div>
     <div class="sidebarTabs" id="tabs"></div>
-    <div class="sidebarUserBox" id="sidebarUserBox">
-      <div class="sidebarUserRow">
-        <img class="sidebarAvatar" id="sidebarAvatar" src="assets/logo.png" alt="Avatar">
-        <div>
-          <div style="font-weight:700;font-size:.85rem;" id="sidebarUserName">Usuario</div>
-          <div class="small" id="sidebarUserMini">—</div>
-        </div>
-      </div>
-    </div>
     <div class="sidebarFooter">✦ MTG Manager ✦</div>
     <div id="globalErrorBox" class="notice" style="display:none;"></div>
   </aside>
@@ -728,20 +799,18 @@
         <div class="appTopbarSpacer"></div>
         <button class="btn ghost topFriendsBtn" id="btnTopFriends" aria-label="Ver tus amigos" title="Ver tus amigos">👥 Amigos</button>
         <button class="profileQuickBtn" id="btnTopProfile" aria-label="Ir al perfil">
-          <img id="topbarAvatar" src="assets/logo.png" alt="Perfil">
+          <img id="topbarAvatar" src="assets/User.jpg" alt="Perfil">
         </button>
       </div>
 
       <!-- INTRO -->
       <section class="panel" data-page="intro">
         <h2 class="h2">Introducción</h2>
-        <div class="pill">Gestor de colección para Magic: The Gathering</div>
         <p class="hint">Registra tu colección de Magic con datos de Scryfall: precio, rareza, color, tipo y más. Organiza mazos, lleva una lista de deseos y consulta estadísticas de lo que tienes.</p>
         <div class="two mt12">
           <div class="panel soft" style="box-shadow:none;">
             <h3 class="h3">Modo de uso</h3>
             <p class="hint" style="margin:0;">Para identificar una carta correctamente necesitas el nombre, el código de colección y el número. Si solo tienes el nombre se carga la impresión más antigua.</p>
-            <div class="pillRow"><span class="pill">Guardado local</span><span class="pill">Sincronización</span><span class="pill">Exportar</span><span class="pill">Importar</span></div>
           </div>
           <div class="panel soft" style="box-shadow:none;">
             <h3 class="h3">Ajustes y guardado</h3>
@@ -757,6 +826,27 @@
             </table>
           </div>
           <div class="hint" id="introSetsInfo"></div>
+        </div>
+        <div class="row mb10">
+          <h2 class="h2" style="margin:0;">Estadísticas</h2><div class="spacer"></div>
+          <button class="btn ghost" id="btnRecalcColors">Recalcular</button>
+          <button class="btn ghost" id="btnRecalcTypes">Actualizar tipos</button>
+          <button class="btn ghost" id="btnRecalcMoney">Actualizar dinero</button>
+        </div>
+        <div class="two">
+          <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Colores</h3><canvas id="chartColors"></canvas></div>
+          <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Resumen de colores</h3><div id="colorsSummary" class="hint"></div></div>
+        </div>
+        <div class="two mt12">
+          <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Tipos</h3><canvas id="chartTypes"></canvas></div>
+          <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Rarezas</h3><canvas id="chartRarity"></canvas></div>
+        </div>
+        <hr class="hr"/>
+        <div class="moneyGrid">
+          <div class="panel soft moneyCard" style="box-shadow:none;"><h3 class="h3">Valor total</h3><div class="moneyValue" id="moneyInvestAll">0.00 €</div><div class="hint">Precio × cantidad</div></div>
+          <div class="panel soft moneyCard" style="box-shadow:none;"><h3 class="h3">Sin proxies</h3><div class="moneyValue" id="moneyInvestNoProxy">0.00 €</div><div class="hint">Excluye proxies</div></div>
+          <div class="panel soft moneyCard" style="box-shadow:none;"><h3 class="h3">Mejor venta estimada</h3><div class="moneyValue" id="moneyBestSellAll">0.00 €</div><div class="hint">Campo "mejor venta" × cantidad</div></div>
+          <div class="panel soft moneyCard" style="box-shadow:none;"><h3 class="h3">Beneficio estimado</h3><div class="moneyValue" id="moneyProfitAll">0.00 €</div><div class="hint">Mejor venta − valor total</div></div>
         </div>
       </section>
 
@@ -864,31 +954,6 @@
 
             <tbody></tbody>
           </table>
-        </div>
-      </section>
-
-      <!-- STATS -->
-      <section class="panel is-hidden" data-page="stats" style="display:none;">
-        <div class="row mb10">
-          <h2 class="h2" style="margin:0;">Estadísticas</h2><div class="spacer"></div>
-          <button class="btn ghost" id="btnRecalcColors">Recalcular</button>
-          <button class="btn ghost" id="btnRecalcTypes">Actualizar tipos</button>
-          <button class="btn ghost" id="btnRecalcMoney">Actualizar dinero</button>
-        </div>
-        <div class="two">
-          <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Colores</h3><canvas id="chartColors"></canvas></div>
-          <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Resumen de colores</h3><div id="colorsSummary" class="hint"></div></div>
-        </div>
-        <div class="two mt12">
-          <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Tipos</h3><canvas id="chartTypes"></canvas></div>
-          <div class="panel soft" style="box-shadow:none;"><h3 class="h3">Rarezas</h3><canvas id="chartRarity"></canvas></div>
-        </div>
-        <hr class="hr"/>
-        <div class="moneyGrid">
-          <div class="panel soft moneyCard" style="box-shadow:none;"><h3 class="h3">Valor total</h3><div class="moneyValue" id="moneyInvestAll">0.00 €</div><div class="hint">Precio × cantidad</div></div>
-          <div class="panel soft moneyCard" style="box-shadow:none;"><h3 class="h3">Sin proxies</h3><div class="moneyValue" id="moneyInvestNoProxy">0.00 €</div><div class="hint">Excluye proxies</div></div>
-          <div class="panel soft moneyCard" style="box-shadow:none;"><h3 class="h3">Mejor venta estimada</h3><div class="moneyValue" id="moneyBestSellAll">0.00 €</div><div class="hint">Campo "mejor venta" × cantidad</div></div>
-          <div class="panel soft moneyCard" style="box-shadow:none;"><h3 class="h3">Beneficio estimado</h3><div class="moneyValue" id="moneyProfitAll">0.00 €</div><div class="hint">Mejor venta − valor total</div></div>
         </div>
       </section>
 
@@ -1569,10 +1634,9 @@ function initBackupUI(){
    ROUTER / TABS
 ───────────────────────────────────────────── */
 const pages=[
-  {id:'intro',label:'Introducción'},{id:'cartas',label:'Cartas'},{id:'stats',label:'Stats'},
+  {id:'intro',label:'Introducción'},{id:'cartas',label:'Cartas'},
   {id:'buscador',label:'Buscador'},{id:'coleccion',label:'Colección'},{id:'mazos',label:'Mazos'},
   {id:'deseos',label:'Deseos'},{id:'tienda',label:'Tienda'},{id:'mis_ventas',label:'Ventas'},
-  {id:'ajustes',label:'Ajustes'},
 ];
 function getLastTab(){ try{return localStorage.getItem(LAST_TAB_KEY)||'intro';}catch{return 'intro';} }
 function showPage(id){
@@ -1583,11 +1647,9 @@ function showPage(id){
   try{localStorage.setItem(LAST_TAB_KEY,id);}catch{}
   try{
     if(id==='cartas') renderCardsTableFull();
-    if(id==='stats'){renderColorStats();renderTypeStats();updateInvestmentUI();}
     if(id==='buscador'){ensureSearchOptions();loadSearchStateToUI();renderSearchResults();}
     if(id==='mazos') renderDecks();
     if(id==='usuario'){renderUserProfilePage();}
-    if(id==='ajustes'){initSettingsUI();renderSettingsProfileUI();}
     if(id==='coleccion'){const sel=document.getElementById('colFavFilter');if(sel)sel.value=settings.colFavFilter||'all';renderColeccion();}
     if(id==='tienda'||id==='mis_ventas') renderSalesTable();
     closeSidebar();
@@ -1935,78 +1997,17 @@ function parseCsv(text){ const out=[];let row=[],cur='',inQ=false;const s=String
 /* ─────────────────────────────────────────────
    AJUSTES UI
 ───────────────────────────────────────────── */
-
-/* ─────────────────────────────────────────────
-   AJUSTES UI - PERFIL
-───────────────────────────────────────────── */
-
 function renderSettingsProfileUI(){
-
-  const avatar = getProfileAvatar();
-  const name = getProfileName();
-  const bio = profile.bio?.trim() || '';
-  const banner = getProfileBannerCss();
-
-  const set = (id,v) => {
-    const el = document.getElementById(id);
-    if(el) el.value = v;
-  };
-
-  const txt = (id,v) => {
-    const el = document.getElementById(id);
-    if(el) el.textContent = v;
-  };
-
-  const img = (id,v) => {
-    const el = document.getElementById(id);
-    if(el) el.src = v;
-  };
-
-  img('settingsAvatarPreview', avatar);
-  img('settingsPreviewAvatar', avatar);
-
-  set(
-    'settingsProfileName',
-    profile.displayName || ''
-  );
-
-  set(
-    'settingsProfileBio',
-    profile.bio || ''
-  );
-
-  txt(
-    'settingsPreviewName',
-    name
-  );
-
-  txt(
-    'settingsPreviewEmail',
-    getProfileEmail()
-  );
-
-  txt(
-    'settingsPreviewBio',
-    bio || 'Sin bio todavía.'
-  );
-
-  const preview =
-    document.getElementById('settingsProfilePreview');
-
-  if(preview){
-    preview.style.setProperty(
-      '--profile-banner',
-      banner
-    );
-  }
+  const avatar=getProfileAvatar(),name=getProfileName(),bio=profile.bio?.trim()||'',banner=getProfileBannerCss();
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
+  const txt=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const img=(id,v)=>{const el=document.getElementById(id);if(el)el.src=v;};
+  img('settingsAvatarPreview',avatar);img('settingsPreviewAvatar',avatar);
+  set('settingsProfileName',profile.displayName||'');set('settingsProfileBio',profile.bio||'');
+  txt('settingsPreviewName',name);txt('settingsPreviewEmail',getProfileEmail());txt('settingsPreviewBio',bio||'Sin bio todavía.');
+  const preview=document.getElementById('settingsProfilePreview');if(preview)preview.style.setProperty('--profile-banner',banner);
 }
-
-
-/* ─────────────────────────────────────────────
-   CAMBIO DE IDIOMA
-───────────────────────────────────────────── */
-
-function changePageLanguage(lang){
+function changePageLanguage(lang) {
 
   const langMap = {
     es: 'es',
@@ -2021,16 +2022,30 @@ function changePageLanguage(lang){
     zht: 'zh-TW'
   };
 
-  const targetLang =
-    langMap[lang] || 'es';
-
+  const targetLang = langMap[lang] || 'es';
 
   /*
-   * Google Translate utiliza esta cookie
-   * para determinar el idioma.
+   * Google Translate crea una cookie llamada googtrans.
+   * La usamos para indicar el idioma seleccionado.
    */
+  document.cookie =
+    'googtrans=/es/' + targetLang +
+    ';path=/';
 
-  if(targetLang === 'es'){
+  /*
+   * También se establece para el dominio actual.
+   * Esto ayuda cuando la web está publicada en GitHub Pages.
+   */
+  document.cookie =
+    'googtrans=/es/' + targetLang +
+    ';path=/;' +
+    'domain=' + window.location.hostname;
+
+  /*
+   * Si ya estamos en el idioma seleccionado no hace falta
+   * volver a recargar.
+   */
+  if (targetLang === 'es') {
 
     document.cookie =
       'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
@@ -2038,427 +2053,38 @@ function changePageLanguage(lang){
     document.cookie =
       'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;' +
       'domain=' + window.location.hostname;
-
-  }else{
-
-    document.cookie =
-      'googtrans=/es/' + targetLang +
-      ';path=/';
-
-    document.cookie =
-      'googtrans=/es/' + targetLang +
-      ';path=/;' +
-      'domain=' + window.location.hostname;
   }
 
-
   /*
-   * Guardamos también el idioma en los ajustes.
+   * Recargamos para que Google Translate aplique
+   * la traducción desde el principio.
    */
-
-  if(typeof settings !== 'undefined'){
-
-    settings.language = lang;
-
-    if(typeof saveSettings === 'function'){
-      saveSettings();
-    }
-  }
-
-
-  /*
-   * Recargamos para que Google Translate
-   * aplique el idioma desde el inicio.
-   */
-
   window.location.reload();
 }
-
-
-/* ─────────────────────────────────────────────
-   BORRAR CUENTA
-───────────────────────────────────────────── */
-
-async function deleteAccount(){
-
-  /*
-   * Obtener usuario actualmente autenticado.
-   */
-
-  let user = null;
-
-  try{
-
-    if(
-      typeof firebase !== 'undefined' &&
-      firebase.auth
-    ){
-      user = firebase.auth().currentUser;
-    }
-
-  }catch(err){
-
-    console.error(
-      'No se pudo obtener el usuario:',
-      err
-    );
-  }
-
-
-  if(!user){
-
-    throw new Error(
-      'No hay ninguna sesión iniciada.'
-    );
-  }
-
-
-  /*
-   * Firebase puede exigir una autenticación
-   * reciente para eliminar una cuenta.
-   */
-
-  try{
-
-    await user.delete();
-
-  }catch(err){
-
-    console.error(
-      'Error eliminando cuenta:',
-      err
-    );
-
-    /*
-     * Error específico de Firebase:
-     * la sesión ya no es suficientemente reciente.
-     */
-
-    if(
-      err?.code === 'auth/requires-recent-login'
-    ){
-
-      throw new Error(
-        'Por seguridad, Firebase necesita que vuelvas a iniciar sesión antes de poder borrar la cuenta.'
-      );
-    }
-
-    throw err;
-  }
-}
-
-
-/* ─────────────────────────────────────────────
-   PERFIL DE AJUSTES
-───────────────────────────────────────────── */
-
-function initSettingsProfileUI(){
-
-  const nameInput =
-    document.getElementById('settingsProfileName');
-
-  const bioInput =
-    document.getElementById('settingsProfileBio');
-
-  if(!nameInput || !bioInput)
-    return;
-
-
-  renderSettingsProfileUI();
-
-
-  /* Nombre */
-
-  nameInput.oninput = () => {
-
-    const el =
-      document.getElementById('settingsPreviewName');
-
-    if(el){
-
-      el.textContent =
-        nameInput.value.trim() ||
-        getSession()?.username ||
-        'Usuario';
-
-    }
-  };
-
-
-  /* Bio */
-
-  bioInput.oninput = () => {
-
-    const el =
-      document.getElementById('settingsPreviewBio');
-
-    if(el){
-
-      el.textContent =
-        bioInput.value.trim() ||
-        'Sin bio todavía.';
-
-    }
-  };
-
-
-  /* Guardar perfil */
-
-  const saveBtn =
-    document.getElementById(
-      'btnSettingsSaveProfile'
-    );
-
-  if(saveBtn){
-
-    saveBtn.onclick = () => {
-
-      profile.displayName =
-        nameInput.value.trim();
-
-      profile.bio =
-        bioInput.value.trim();
-
-      saveProfile();
-
-      renderSettingsProfileUI();
-      renderUserProfilePage();
-      renderSalesTable();
-
-      alert('Perfil guardado.');
-    };
-  }
-
-
-  /* Avatar */
-
-  const avatarInput =
-    document.getElementById(
-      'settingsAvatarInput'
-    );
-
-  if(avatarInput){
-
-    avatarInput.onchange = async e => {
-
-      const file =
-        e.target.files?.[0];
-
-      if(!file)
-        return;
-
-      const btn =
-        document.querySelector(
-          'label[for="settingsAvatarInput"]'
-        );
-
-      if(btn)
-        btn.textContent = 'Subiendo…';
-
-
-      try{
-
-        if(currentUserId()){
-
-          await fsUploadAvatar(file);
-
-        }else{
-
-          profile.avatar =
-            await fileToDataUrl(file);
-
-          saveProfile();
-        }
-
-
-        renderSettingsProfileUI();
-        renderUserProfilePage();
-        renderSalesTable();
-
-      }catch(err){
-
-        console.error(err);
-
-        alert(
-          'No se pudo subir la foto: ' +
-          (err?.message || err)
-        );
-
-      }finally{
-
-        if(btn)
-          btn.textContent = 'Subir foto';
-
-        e.target.value = '';
-      }
-    };
-  }
-
-
-  /* Banner */
-
-  const bannerInput =
-    document.getElementById(
-      'settingsBannerInput'
-    );
-
-  if(bannerInput){
-
-    bannerInput.onchange = async e => {
-
-      const file =
-        e.target.files?.[0];
-
-      if(!file)
-        return;
-
-      const btn =
-        document.querySelector(
-          'label[for="settingsBannerInput"]'
-        );
-
-      if(btn)
-        btn.textContent = 'Subiendo…';
-
-
-      try{
-
-        if(currentUserId()){
-
-          await fsUploadBanner(file);
-
-        }else{
-
-          profile.banner =
-            await fileToDataUrl(file);
-
-          saveProfile();
-        }
-
-
-        renderSettingsProfileUI();
-        renderUserProfilePage();
-
-      }catch(err){
-
-        console.error(err);
-
-        alert(
-          'No se pudo subir el banner: ' +
-          (err?.message || err)
-        );
-
-      }finally{
-
-        if(btn)
-          btn.textContent = 'Subir banner';
-
-        e.target.value = '';
-      }
-    };
-  }
-
-
-  /* Restablecer avatar */
-
-  const resetAvatar =
-    document.getElementById(
-      'btnSettingsResetAvatar'
-    );
-
-  if(resetAvatar){
-
-    resetAvatar.onclick = () => {
-
-      profile.avatar = '';
-
-      saveProfile();
-
-      renderSettingsProfileUI();
-      renderUserProfilePage();
-      renderSalesTable();
-    };
-  }
-
-
-  /* Restablecer banner */
-
-  const resetBanner =
-    document.getElementById(
-      'btnSettingsResetBanner'
-    );
-
-  if(resetBanner){
-
-    resetBanner.onclick = () => {
-
-      profile.banner = '';
-
-      saveProfile();
-
-      renderSettingsProfileUI();
-      renderUserProfilePage();
-    };
-  }
-}
-
-
-/* ─────────────────────────────────────────────
-   AJUSTES PRINCIPALES
-───────────────────────────────────────────── */
-
 function initSettingsUI(){
 
-  const themeSel =
-    document.getElementById('setTheme');
+  const themeSel=document.getElementById('setTheme'),
+        fontRange=document.getElementById('setFontSize'),
+        fontLabel=document.getElementById('fontPxLabel'),
+        compactChk=document.getElementById('setCompact'),
+        motionChk=document.getElementById('setReducedMotion'),
+        currencySel=document.getElementById('setCurrency'),
+        languageSel=document.getElementById('setLanguage');
 
-  const fontRange =
-    document.getElementById('setFontSize');
+  if(!themeSel)return;
 
-  const fontLabel =
-    document.getElementById('fontPxLabel');
+  themeSel.value=settings.theme;
 
-  const compactChk =
-    document.getElementById('setCompact');
+  fontRange.value=settings.fontPx;
 
-  const motionChk =
-    document.getElementById('setReducedMotion');
+  if(fontLabel)
+    fontLabel.textContent=String(settings.fontPx);
 
-  const currencySel =
-    document.getElementById('setCurrency');
+  compactChk.checked=settings.density==='compact';
 
-  const languageSel =
-    document.getElementById('setLanguage');
+  motionChk.checked=settings.motion==='reduced';
 
-
-  if(!themeSel)
-    return;
-
-
-  /* ─────────────────────────────
-     CARGAR AJUSTES
-  ───────────────────────────── */
-
-  themeSel.value =
-    settings.theme;
-
-  fontRange.value =
-    settings.fontPx;
-
-  if(fontLabel){
-
-    fontLabel.textContent =
-      String(settings.fontPx);
-  }
-
-  compactChk.checked =
-    settings.density === 'compact';
-
-  motionChk.checked =
-    settings.motion === 'reduced';
-
-  currencySel.value =
-    settings.currency;
+  currencySel.value=settings.currency;
 
 
   /* ─────────────────────────────
@@ -2467,21 +2093,18 @@ function initSettingsUI(){
 
   if(languageSel){
 
-    languageSel.value =
-      settings.language || 'es';
+    languageSel.value=settings.language || 'es';
 
+    languageSel.onchange=()=>{
 
-    languageSel.onchange = () => {
+      const lang=languageSel.value;
 
-      const lang =
-        languageSel.value;
-
-      settings.language =
-        lang;
+      settings.language=lang;
 
       saveSettings();
 
       changePageLanguage(lang);
+
     };
   }
 
@@ -2490,13 +2113,9 @@ function initSettingsUI(){
      TEMA
   ───────────────────────────── */
 
-  themeSel.onchange = () => {
-
-    settings.theme =
-      themeSel.value;
-
+  themeSel.onchange=()=>{
+    settings.theme=themeSel.value;
     saveSettings();
-
     applySettings();
   };
 
@@ -2505,25 +2124,16 @@ function initSettingsUI(){
      TAMAÑO DE LETRA
   ───────────────────────────── */
 
-  fontRange.oninput = () => {
+  fontRange.oninput=()=>{
 
-    const v =
-      parseInt(
-        fontRange.value,
-        10
-      );
+    const v=parseInt(fontRange.value,10);
 
-    settings.fontPx =
-      v;
+    settings.fontPx=v;
 
-    if(fontLabel){
-
-      fontLabel.textContent =
-        String(v);
-    }
+    if(fontLabel)
+      fontLabel.textContent=String(v);
 
     saveSettings();
-
     applySettings();
   };
 
@@ -2532,32 +2142,26 @@ function initSettingsUI(){
      MODO COMPACTO
   ───────────────────────────── */
 
-  compactChk.onchange = () => {
+  compactChk.onchange=()=>{
 
-    settings.density =
-      compactChk.checked
-        ? 'compact'
-        : 'normal';
+    settings.density=
+      compactChk.checked?'compact':'normal';
 
     saveSettings();
-
     applySettings();
   };
 
 
   /* ─────────────────────────────
-     REDUCIR ANIMACIONES
+     ANIMACIONES
   ───────────────────────────── */
 
-  motionChk.onchange = () => {
+  motionChk.onchange=()=>{
 
-    settings.motion =
-      motionChk.checked
-        ? 'reduced'
-        : 'normal';
+    settings.motion=
+      motionChk.checked?'reduced':'normal';
 
     saveSettings();
-
     applySettings();
   };
 
@@ -2566,10 +2170,9 @@ function initSettingsUI(){
      MONEDA
   ───────────────────────────── */
 
-  currencySel.onchange = () => {
+  currencySel.onchange=()=>{
 
-    settings.currency =
-      currencySel.value;
+    settings.currency=currencySel.value;
 
     saveSettings();
 
@@ -2580,22 +2183,18 @@ function initSettingsUI(){
 
 
   /* ─────────────────────────────
-     PRIVACIDAD DE COLECCIÓN
+     PRIVACIDAD COLECCIÓN
   ───────────────────────────── */
 
   const profColSel =
-    document.getElementById(
-      'setProfileCollectionMode'
-    );
+    document.getElementById('setProfileCollectionMode');
 
   if(profColSel){
 
     profColSel.value =
-      settings.profileCollectionMode ||
-      'all';
+      settings.profileCollectionMode || 'all';
 
-
-    profColSel.onchange = () => {
+    profColSel.onchange=()=>{
 
       settings.profileCollectionMode =
         profColSel.value;
@@ -2615,195 +2214,22 @@ function initSettingsUI(){
 
 
   /* ─────────────────────────────
-     BORRAR CUENTA
-  ───────────────────────────── */
-
-  const deleteAccountBtn =
-    document.getElementById(
-      'btnDeleteAccount'
-    );
-
-
-  if(deleteAccountBtn){
-
-    deleteAccountBtn.onclick =
-      async () => {
-
-        /*
-         * Primera confirmación.
-         */
-
-        const firstConfirm =
-          confirm(
-            '¿Estás segura de que quieres borrar tu cuenta?\n\n' +
-            'Se eliminará tu cuenta y esta acción no se puede deshacer.'
-          );
-
-
-        if(!firstConfirm)
-          return;
-
-
-        /*
-         * Segunda confirmación.
-         */
-
-        const secondConfirm =
-          confirm(
-            'ÚLTIMA CONFIRMACIÓN\n\n' +
-            'Tu cuenta será eliminada permanentemente.\n\n' +
-            '¿Quieres continuar?'
-          );
-
-
-        if(!secondConfirm)
-          return;
-
-
-        /*
-         * Desactivar botón mientras se elimina.
-         */
-
-        deleteAccountBtn.disabled =
-          true;
-
-        const originalText =
-          deleteAccountBtn.textContent;
-
-        deleteAccountBtn.textContent =
-          'Borrando…';
-
-
-        try{
-
-          await deleteAccount();
-
-
-          /*
-           * Limpiar datos locales.
-           */
-
-          try{
-
-            localStorage.removeItem(
-              'mtg_manager_settings'
-            );
-
-          }catch(e){}
-
-
-          /*
-           * Si tienes otros datos locales,
-           * intenta limpiar el almacenamiento
-           * de la aplicación.
-           */
-
-          try{
-
-            if(typeof saveSettings === 'function'){
-
-              settings = {
-                ...DEFAULT_SETTINGS
-              };
-
-            }
-
-          }catch(e){}
-
-
-          /*
-           * La cuenta ya ha sido eliminada.
-           */
-
-          alert(
-            'Tu cuenta ha sido eliminada correctamente.'
-          );
-
-
-          /*
-           * Volver a la pantalla de autenticación.
-           */
-
-          try{
-
-            if(
-              typeof firebase !== 'undefined' &&
-              firebase.auth
-            ){
-
-              await firebase
-                .auth()
-                .signOut();
-            }
-
-          }catch(e){
-
-            console.warn(
-              'No se pudo cerrar la sesión:',
-              e
-            );
-          }
-
-
-          /*
-           * Recargar la aplicación.
-           */
-
-          window.location.reload();
-
-
-        }catch(err){
-
-          console.error(
-            'Error eliminando cuenta:',
-            err
-          );
-
-
-          alert(
-            'No se pudo eliminar la cuenta.\n\n' +
-            (err?.message || err)
-          );
-
-
-          deleteAccountBtn.disabled =
-            false;
-
-          deleteAccountBtn.textContent =
-            originalText ||
-            'Borrar mi cuenta';
-        }
-      };
-  }
-
-
-  /* ─────────────────────────────
-     RESTABLECER AJUSTES
+     RESET
   ───────────────────────────── */
 
   const resetSettingsBtn =
-    document.getElementById(
-      'btnResetSettings'
-    );
-
+    document.getElementById('btnResetSettings');
 
   if(resetSettingsBtn){
 
-    resetSettingsBtn.onclick = () => {
+    resetSettingsBtn.onclick=()=>{
 
-      if(
-        !confirm(
-          '¿Resetear todos los ajustes?'
-        )
-      ){
+      if(!confirm('¿Resetear todos los ajustes?'))
         return;
-      }
 
-
-      settings = {
+      settings={
         ...DEFAULT_SETTINGS
       };
-
 
       saveSettings();
 
@@ -2828,6 +2254,42 @@ function initSettingsUI(){
   initBackupUI();
 }
 
+async function deleteAccount() {
+  const user = firebase.auth().currentUser;
+
+  if (!user) {
+    throw new Error('No hay ninguna sesión iniciada.');
+  }
+
+  await user.delete();
+}
+
+function initSettingsUI(){
+  const themeSel=document.getElementById('setTheme'),fontRange=document.getElementById('setFontSize'),fontLabel=document.getElementById('fontPxLabel'),compactChk=document.getElementById('setCompact'),motionChk=document.getElementById('setReducedMotion'),currencySel=document.getElementById('setCurrency');
+  if(!themeSel)return;
+  themeSel.value=settings.theme;fontRange.value=settings.fontPx;if(fontLabel)fontLabel.textContent=String(settings.fontPx);compactChk.checked=settings.density==='compact';motionChk.checked=settings.motion==='reduced';currencySel.value=settings.currency;
+  themeSel.onchange=()=>{settings.theme=themeSel.value;saveSettings();applySettings();};
+  fontRange.oninput=()=>{const v=parseInt(fontRange.value,10);settings.fontPx=v;if(fontLabel)fontLabel.textContent=String(v);saveSettings();applySettings();};
+  compactChk.onchange=()=>{settings.density=compactChk.checked?'compact':'normal';saveSettings();applySettings();};
+  motionChk.onchange=()=>{settings.motion=motionChk.checked?'reduced':'normal';saveSettings();applySettings();};
+  currencySel.onchange=()=>{settings.currency=currencySel.value;saveSettings();renderCardsTableFull();updateInvestmentUI();renderSalesTable();};
+
+  const profColSel = document.getElementById('setProfileCollectionMode');
+  if(profColSel){
+    profColSel.value = settings.profileCollectionMode || 'all';
+    profColSel.onchange = () => {
+      settings.profileCollectionMode = profColSel.value;
+      saveSettings();
+      renderProfileCollectionGridV2();
+    };
+  }
+
+  initSettingsProfileUI();
+
+  const resetSettingsBtn=document.getElementById('btnResetSettings');
+  if(resetSettingsBtn)resetSettingsBtn.onclick=()=>{if(!confirm('¿Resetear todos los ajustes?'))return;settings={...DEFAULT_SETTINGS};saveSettings();applySettings();initSettingsUI();renderCardsTableFull();renderDecks();renderColorStats();renderTypeStats();updateInvestmentUI();renderSalesTable();};
+  initBackupUI();
+}
 
 /* ─────────────────────────────────────────────
    BOTONES PRINCIPALES
