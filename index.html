@@ -1771,6 +1771,7 @@ let _colBound=false;
 
 /* listeners tabla cartas */
 const cardsTbody=document.querySelector('#tbl tbody');
+if(cardsTbody){
 cardsTbody.addEventListener('change',e=>{
   const tr=e.target.closest('tr[data-id]'); if(!tr)return;
   const item=cards.find(x=>x.id===tr.dataset.id); if(!item)return;
@@ -2007,6 +2008,142 @@ function renderSettingsProfileUI(){
   txt('settingsPreviewName',name);txt('settingsPreviewEmail',getProfileEmail());txt('settingsPreviewBio',bio||'Sin bio todavía.');
   const preview=document.getElementById('settingsProfilePreview');if(preview)preview.style.setProperty('--profile-banner',banner);
 }
+
+function initSettingsProfileUI(){
+  renderSettingsProfileUI();
+
+  const nameInput=document.getElementById('settingsProfileName');
+  const bioInput=document.getElementById('settingsProfileBio');
+  const saveBtn=document.getElementById('btnSettingsSaveProfile');
+  const avatarInput=document.getElementById('settingsAvatarInput');
+  const resetAvatarBtn=document.getElementById('btnSettingsResetAvatar');
+  const bannerInput=document.getElementById('settingsBannerInput');
+  const resetBannerBtn=document.getElementById('btnSettingsResetBanner');
+
+  const updatePreview=()=>{
+    const name=(nameInput?.value||'').trim()||getProfileName();
+    const bio=(bioInput?.value||'').trim()||'Sin bio todavía.';
+    const n=document.getElementById('settingsPreviewName');
+    const b=document.getElementById('settingsPreviewBio');
+    if(n)n.textContent=name;
+    if(b)b.textContent=bio;
+  };
+
+  nameInput?.addEventListener('input',updatePreview);
+  bioInput?.addEventListener('input',updatePreview);
+
+  if(saveBtn && !saveBtn.dataset.bound){
+    saveBtn.dataset.bound='1';
+    saveBtn.addEventListener('click',async()=>{
+      const name=(nameInput?.value||'').trim();
+      const bio=(bioInput?.value||'').trim();
+
+      if(!name){
+        alert('El nombre de perfil no puede estar vacío.');
+        return;
+      }
+
+      saveBtn.disabled=true;
+      const oldText=saveBtn.textContent;
+      saveBtn.textContent='Guardando…';
+
+      try{
+        profile.displayName=name;
+        profile.bio=bio;
+
+        if(typeof saveProfile==='function')saveProfile();
+
+        renderSettingsProfileUI();
+        renderUserProfilePage();
+        renderSidebarProfile();
+
+        if(typeof fsSaveProfile==='function'){
+          try{await fsSaveProfile(profile);}
+          catch(err){console.warn('No se pudo sincronizar el perfil:',err);}
+        }
+
+        alert('Perfil guardado correctamente.');
+      }catch(err){
+        console.error('Error guardando perfil:',err);
+        alert(err?.message||'No se pudo guardar el perfil.');
+      }finally{
+        saveBtn.disabled=false;
+        saveBtn.textContent=oldText;
+      }
+    });
+  }
+
+  if(avatarInput && !avatarInput.dataset.bound){
+    avatarInput.dataset.bound='1';
+    avatarInput.addEventListener('change',()=>{
+      const file=avatarInput.files?.[0];
+      if(!file)return;
+
+      if(!file.type.startsWith('image/')){
+        alert('Selecciona una imagen válida.');
+        avatarInput.value='';
+        return;
+      }
+
+      const reader=new FileReader();
+      reader.onload=()=>{
+        profile.avatar=String(reader.result||'');
+        if(typeof saveProfile==='function')saveProfile();
+        renderSettingsProfileUI();
+        renderUserProfilePage();
+        renderSidebarProfile();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if(resetAvatarBtn && !resetAvatarBtn.dataset.bound){
+    resetAvatarBtn.dataset.bound='1';
+    resetAvatarBtn.addEventListener('click',()=>{
+      profile.avatar='';
+      if(typeof saveProfile==='function')saveProfile();
+      if(avatarInput)avatarInput.value='';
+      renderSettingsProfileUI();
+      renderUserProfilePage();
+      renderSidebarProfile();
+    });
+  }
+
+  if(bannerInput && !bannerInput.dataset.bound){
+    bannerInput.dataset.bound='1';
+    bannerInput.addEventListener('change',()=>{
+      const file=bannerInput.files?.[0];
+      if(!file)return;
+
+      if(!file.type.startsWith('image/')){
+        alert('Selecciona una imagen válida.');
+        bannerInput.value='';
+        return;
+      }
+
+      const reader=new FileReader();
+      reader.onload=()=>{
+        profile.banner=String(reader.result||'');
+        if(typeof saveProfile==='function')saveProfile();
+        renderSettingsProfileUI();
+        renderUserProfilePage();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if(resetBannerBtn && !resetBannerBtn.dataset.bound){
+    resetBannerBtn.dataset.bound='1';
+    resetBannerBtn.addEventListener('click',()=>{
+      profile.banner='';
+      if(typeof saveProfile==='function')saveProfile();
+      if(bannerInput)bannerInput.value='';
+      renderSettingsProfileUI();
+      renderUserProfilePage();
+    });
+  }
+}
+
 function changePageLanguage(lang) {
 
   const langMap = {
@@ -2262,33 +2399,6 @@ async function deleteAccount() {
   }
 
   await user.delete();
-}
-
-function initSettingsUI(){
-  const themeSel=document.getElementById('setTheme'),fontRange=document.getElementById('setFontSize'),fontLabel=document.getElementById('fontPxLabel'),compactChk=document.getElementById('setCompact'),motionChk=document.getElementById('setReducedMotion'),currencySel=document.getElementById('setCurrency');
-  if(!themeSel)return;
-  themeSel.value=settings.theme;fontRange.value=settings.fontPx;if(fontLabel)fontLabel.textContent=String(settings.fontPx);compactChk.checked=settings.density==='compact';motionChk.checked=settings.motion==='reduced';currencySel.value=settings.currency;
-  themeSel.onchange=()=>{settings.theme=themeSel.value;saveSettings();applySettings();};
-  fontRange.oninput=()=>{const v=parseInt(fontRange.value,10);settings.fontPx=v;if(fontLabel)fontLabel.textContent=String(v);saveSettings();applySettings();};
-  compactChk.onchange=()=>{settings.density=compactChk.checked?'compact':'normal';saveSettings();applySettings();};
-  motionChk.onchange=()=>{settings.motion=motionChk.checked?'reduced':'normal';saveSettings();applySettings();};
-  currencySel.onchange=()=>{settings.currency=currencySel.value;saveSettings();renderCardsTableFull();updateInvestmentUI();renderSalesTable();};
-
-  const profColSel = document.getElementById('setProfileCollectionMode');
-  if(profColSel){
-    profColSel.value = settings.profileCollectionMode || 'all';
-    profColSel.onchange = () => {
-      settings.profileCollectionMode = profColSel.value;
-      saveSettings();
-      renderProfileCollectionGridV2();
-    };
-  }
-
-  initSettingsProfileUI();
-
-  const resetSettingsBtn=document.getElementById('btnResetSettings');
-  if(resetSettingsBtn)resetSettingsBtn.onclick=()=>{if(!confirm('¿Resetear todos los ajustes?'))return;settings={...DEFAULT_SETTINGS};saveSettings();applySettings();initSettingsUI();renderCardsTableFull();renderDecks();renderColorStats();renderTypeStats();updateInvestmentUI();renderSalesTable();};
-  initBackupUI();
 }
 
 /* ─────────────────────────────────────────────
@@ -2586,6 +2696,30 @@ function renderUserProfilePage(){
 
   renderFriendsUI();renderSidebarProfile();openProfileTab('resumen');
 }
+
+function initDeleteAccountUI(){
+  const btn=document.getElementById('btnDeleteAccount');
+  if(!btn || btn.dataset.bound)return;
+
+  btn.dataset.bound='1';
+
+  btn.addEventListener('click',async()=>{
+    if(!confirm('¿Seguro que quieres borrar tu cuenta? Esta acción no se puede deshacer.'))return;
+
+    btn.disabled=true;
+
+    try{
+      await deleteAccount();
+      alert('Tu cuenta ha sido eliminada.');
+    }catch(err){
+      console.error('Error eliminando cuenta:',err);
+      alert(err?.message||'No se pudo eliminar la cuenta.');
+    }finally{
+      btn.disabled=false;
+    }
+  });
+}
+
 function initUserProfilePage(){
   document.getElementById('btnBackFromSettingsPage')?.addEventListener('click',()=>{showPage('usuario');openProfileTab('resumen');});
 
@@ -2603,7 +2737,9 @@ function initUserProfilePage(){
     const ab=e.target.closest('[data-accept-friend]'),db=e.target.closest('[data-decline-friend]'),cb=e.target.closest('[data-cancel-friend]'),rb=e.target.closest('[data-remove-friend]');
     try{if(ab){await acceptFriendRequest(ab.dataset.acceptFriend);renderUserProfilePage();openProfileTab('solicitudes');}if(db){await declineFriendRequest(db.dataset.declineFriend);renderUserProfilePage();openProfileTab('solicitudes');}if(cb){await declineFriendRequest(cb.dataset.cancelFriend);await fsLoadSocialData();renderUserProfilePage();openProfileTab('solicitudes');}if(rb){await removeFriend(rb.dataset.removeFriend);renderUserProfilePage();openProfileTab('amigos');}}catch(err){alert(err?.message||err);}
   });}
-  initSettingsUI();renderUserProfilePage();
+  initSettingsUI();
+  initDeleteAccountUI();
+  renderUserProfilePage();
 }
 
 /* ─────────────────────────────────────────────
