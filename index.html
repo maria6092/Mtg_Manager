@@ -37,6 +37,7 @@
   <script src="js/services/auth-firebase.js"></script>
   <script src="js/ui/auth-ui.js"></script>
   <script src="js/services/auth-action.js"></script>
+  <script src="js/services/cloud-service.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1276,7 +1277,14 @@ const THEME_PRESETS={
 };
 const DEFAULT_SETTINGS={theme:'cosmic',fontPx:16,density:'normal',motion:'normal',currency:'EUR',autoBackupEnabled:false,autoBackupEveryMin:'30',colFavFilter:'all',profileCollectionMode:'all'};
 let settings=(() => { try{const r=userLoad(LS_SETTINGS,null);return r?{...DEFAULT_SETTINGS,...r}:{...DEFAULT_SETTINGS};}catch{return{...DEFAULT_SETTINGS};} })();
-function saveSettings(){ userSave(LS_SETTINGS,settings); }
+function saveSettings(){
+  userSave(LS_SETTINGS,settings);
+  applySettings();
+
+  if(currentUserId()){
+    saveCloudStateDebounced();
+  }
+}
 function applyThemePreset(key){
   const p=THEME_PRESETS[key]||THEME_PRESETS.cosmic, r=document.documentElement;
   r.style.setProperty('--bg',p.bg); r.style.setProperty('--card',p.card);
@@ -1336,13 +1344,60 @@ normalizeDecks();
 /* ─────────────────────────────────────────────
    PERSIST
 ───────────────────────────────────────────── */
-function saveCards(){
-  userSave(LS_KEY,cards); syncCurrentUserSalesToMarket();
-  if(currentUserId()) fsSyncAllSaleCards().catch(()=>{});
-  try{renderWishlist();}catch{}
-}
-function saveDecks(){ userSave(LS_DECKS,decks); }
-function saveWishlist(){ userSave(LS_WISHLIST,wishlist); }
+let _cloudSaveTimer = null;
+
+  function saveCloudStateDebounced(){
+    if(!currentUserId()) return;
+
+    clearTimeout(_cloudSaveTimer);
+
+    _cloudSaveTimer = setTimeout(() => {
+
+      if(!window.CloudService) return;
+
+      CloudService.saveAll({
+        cards,
+        decks,
+        wishlist,
+        settings,
+        sortState
+      }).catch(err => {
+        console.warn('Error guardando datos en Firestore:', err);
+      });
+
+    }, 800);
+  }
+
+  function saveCards(){
+    userSave(LS_KEY,cards);
+
+    syncCurrentUserSalesToMarket();
+
+    if(currentUserId()){
+      fsSyncAllSaleCards().catch(()=>{});
+      saveCloudStateDebounced();
+    }
+
+    try{
+      renderWishlist();
+    }catch{}
+  }
+
+  function saveDecks(){
+    userSave(LS_DECKS,decks);
+
+    if(currentUserId()){
+      saveCloudStateDebounced();
+    }
+  }
+
+  function saveWishlist(){
+    userSave(LS_WISHLIST,wishlist);
+
+    if(currentUserId()){
+      saveCloudStateDebounced();
+    }
+  }
 function touchDeck(d){ d._updatedAt=Date.now(); }
 function toTitleCase(s){ return String(s||'').trim().replace(/\s+/g,' ').split(' ').map(w=>w?w[0].toUpperCase()+w.slice(1).toLowerCase():w).join(' '); }
 function escapeHtml(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
@@ -1465,7 +1520,13 @@ async function fetchSetIconUrl(set){ try{const r=await fetch(`https://api.scryfa
 ───────────────────────────────────────────── */
 let sortState={key:'added',dir:'desc'};
 try{const r=localStorage.getItem(scopedKey(LS_SORT));if(r)sortState={...sortState,...JSON.parse(r)};}catch{}
-function saveSortState(){ userSave(LS_SORT,sortState); }
+function saveSortState(){
+  userSave(LS_SORT,sortState);
+
+  if(currentUserId()){
+    saveCloudStateDebounced();
+  }
+}
 function sortedCardsView(){ const dir=sortState.dir==='asc'?1:-1,key=sortState.key,arr=[...cards],ro={Común:1,'Poco común':2,Rara:3,Mítica:4,Especial:5}; arr.sort((a,b)=>{const val=o=>{if(key==='added')return o._addedAt||0;if(key==='name')return String(o.name||'');if(key==='set')return String(o.setCode||'');if(key==='price'){const p=parseEuro(o.priceText);return Number.isFinite(p)?p:-1;}if(key==='mv')return Number.isFinite(o.manaValue)?o.manaValue:-1;if(key==='rarity')return ro[o.rarity]||999;if(key==='qty')return o.qty||1;return 0;};const A=val(a),B=val(b);if(typeof A==='string')return String(A).localeCompare(String(B),'es',{sensitivity:'base'})*dir;return(A===B?0:A<B?-1:1)*dir;}); return arr; }
 (function ensureAddedAt(){let c=false;for(const card of cards){if(typeof card._addedAt!=='number'){card._addedAt=Date.now()-Math.floor(Math.random()*1000);c=true;}if(!Array.isArray(card.colorId))card.colorId=[];if(typeof card.manaValue!=='number'||!Number.isFinite(card.manaValue))card.manaValue=0;if(!card.color)card.color=colorToEmojisFromCI(card.colorId);}if(c)saveCards();})();
 
@@ -2188,24 +2249,135 @@ function setAuthTop(user){
   renderFriendsUI();renderSidebarProfile();
 }
 
-function _onFirebaseLogin(firebaseUser){
-  _fbUser=firebaseUser;
+async function _onFirebaseLogin(firebaseUser){
+
+  _fbUser = firebaseUser;
+
+  // 1. Cargar primero los datos locales como fallback inmediato
   reloadScopedAppState();
+
   setAuthTop(getSession());
+
   initAppUI();
   initTabs();
   initUserProfilePage();
-  const skEl=document.getElementById('sortKey'),sdEl=document.getElementById('sortDir');
-  if(skEl)skEl.value=sortState.key;if(sdEl)sdEl.value=sortState.dir;
-  ensureSearchOptions();loadSearchStateToUI();
-  showPage(getLastTab());renderCardsTableFull();renderDecks();updateInvestmentUI();renderSalesTable();
+
+  const skEl = document.getElementById('sortKey');
+  const sdEl = document.getElementById('sortDir');
+
+  if(skEl) skEl.value = sortState.key;
+  if(sdEl) sdEl.value = sortState.dir;
+
+  ensureSearchOptions();
+  loadSearchStateToUI();
+
+  // 2. Mostrar provisionalmente la aplicación
+  showPage(getLastTab());
+
+  renderCardsTableFull();
+  renderDecks();
+  updateInvestmentUI();
+  renderSalesTable();
+
   window.AuthUI.showAppScreen();
+
+  // 3. Cargar datos reales desde Firestore
+  try{
+
+    const result = await CloudService.loadAll();
+
+    if(result.exists && result.data){
+
+      const data = result.data;
+
+      cards = Array.isArray(data.cards)
+        ? data.cards
+        : [];
+
+      decks = Array.isArray(data.decks)
+        ? data.decks
+        : [];
+
+      wishlist = Array.isArray(data.wishlist)
+        ? data.wishlist
+        : [];
+
+      settings = {
+        ...DEFAULT_SETTINGS,
+        ...(data.settings || {})
+      };
+
+      sortState = {
+        key: 'added',
+        dir: 'desc',
+        ...(data.sortState || {})
+      };
+
+      // Guardar también la copia local
+      userSave(LS_KEY, cards);
+      userSave(LS_DECKS, decks);
+      userSave(LS_WISHLIST, wishlist);
+      userSave(LS_SETTINGS, settings);
+      userSave(LS_SORT, sortState);
+
+      normalizeCards();
+      normalizeDecks();
+      normalizeWishlist();
+      applySettings();
+
+      if(skEl) skEl.value = sortState.key;
+      if(sdEl) sdEl.value = sortState.dir;
+
+      ensureSearchOptions();
+      loadSearchStateToUI();
+
+      // 4. Volver a pintar con los datos de Firestore
+      renderCardsTableFull();
+      renderDecks();
+      renderWishlist();
+      renderColeccion();
+      updateInvestmentUI();
+      renderSalesTable();
+
+      console.log('☁️ Colección cargada desde Firestore.');
+
+    }else{
+
+      // No existe todavía información en la nube.
+      // Migramos los datos locales actuales.
+      console.log('☁️ No existe colección en Firestore. Migrando datos locales...');
+
+      await CloudService.saveAll({
+        cards,
+        decks,
+        wishlist,
+        settings,
+        sortState
+      });
+
+      console.log('☁️ Datos locales migrados a Firestore.');
+    }
+
+  }catch(error){
+
+    console.error(
+      'No se pudieron cargar los datos desde Firestore:',
+      error
+    );
+
+  }
+
+  // 5. El resto de información del usuario
   fsSaveProfile().catch(()=>{});
-  fsLoadSocialData().then(()=>renderUserProfilePage()).catch(()=>{});
+
+  fsLoadSocialData()
+    .then(()=>renderUserProfilePage())
+    .catch(()=>{});
+
   fsSyncAllSaleCards().catch(()=>{});
+
   refreshNotifBadgeV2().catch(()=>{});
 }
-
 /* ─────────────────────────────────────────────
    ARRANQUE
 ───────────────────────────────────────────── */

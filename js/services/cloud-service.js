@@ -1,38 +1,138 @@
-import { state, } from '../core/state.js';
-import { DEFAULT_SETTINGS } from '../core/constants.js';
-import { saveCards, saveDecks, saveWishlist, saveSettings, saveSortState } from '../core/storage.js';
+const CloudService = (() => {
 
-export async function cloudSaveAll() {
-  const user = window._fbCurrentUser;
-  if (!user) return false;
-  const { doc, setDoc } = window._fbFns || {};
-  const db = window._fbDb;
-  if (!doc || !setDoc || !db) return false;
-  try {
-    await setDoc(doc(db, 'users', user.uid, 'data', 'main'), {
-      cards: state.cards, decks: state.decks, wishlist: state.wishlist,
-      settings: state.settings, sortState: state.sortState, updatedAt: Date.now()
-    });
-    return true;
-  } catch(e) { console.error('cloudSaveAll:', e); return false; }
-}
+  let saveTimer = null;
+  let loading = false;
 
-export async function cloudLoadAll() {
-  const user = window._fbCurrentUser;
-  if (!user) return false;
-  const { doc, getDoc } = window._fbFns || {};
-  const db = window._fbDb;
-  if (!doc || !getDoc || !db) return false;
-  try {
-    const snap = await getDoc(doc(db, 'users', user.uid, 'data', 'main'));
-    if (!snap.exists()) return false;
-    const data = snap.data();
-    if (Array.isArray(data.cards))    state.cards    = data.cards;
-    if (Array.isArray(data.decks))    state.decks    = data.decks;
-    if (Array.isArray(data.wishlist)) state.wishlist = data.wishlist;
-    if (data.settings)  state.settings  = { ...DEFAULT_SETTINGS, ...data.settings };
-    if (data.sortState) state.sortState = data.sortState;
-    saveCards(); saveDecks(); saveWishlist(); saveSettings(); saveSortState();
-    return true;
-  } catch(e) { console.error('cloudLoadAll:', e); return false; }
-}
+  function getUser() {
+    return window._fbCurrentUser || window._fbUser || window.fbAuth?.currentUser || null;
+  }
+
+  function getDb() {
+    return window._fbDb || window.fbDb || null;
+  }
+
+  function getFns() {
+    return window._fbFns || null;
+  }
+
+  function getLocalState() {
+    return {
+      cards: Array.isArray(window.cards) ? window.cards : [],
+      decks: Array.isArray(window.decks) ? window.decks : [],
+      wishlist: Array.isArray(window.wishlist) ? window.wishlist : [],
+      settings: window.settings || {},
+      sortState: window.sortState || { key: 'added', dir: 'desc' }
+    };
+  }
+
+  async function saveAll(data = null) {
+    const user = getUser();
+    const db = getDb();
+
+    if (!user || !db) return false;
+
+    const state = data || getLocalState();
+
+    try {
+      await db
+        .collection('users')
+        .doc(user.uid)
+        .collection('data')
+        .doc('main')
+        .set({
+          cards: Array.isArray(state.cards) ? state.cards : [],
+          decks: Array.isArray(state.decks) ? state.decks : [],
+          wishlist: Array.isArray(state.wishlist) ? state.wishlist : [],
+          settings: state.settings || {},
+          sortState: state.sortState || { key: 'added', dir: 'desc' },
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: false });
+
+      return true;
+
+    } catch (error) {
+      console.error('CloudService.saveAll:', error);
+      return false;
+    }
+  }
+
+  async function loadAll() {
+    const user = getUser();
+    const db = getDb();
+
+    if (!user || !db) {
+      return {
+        exists: false,
+        data: null
+      };
+    }
+
+    try {
+      const snap = await db
+        .collection('users')
+        .doc(user.uid)
+        .collection('data')
+        .doc('main')
+        .get();
+
+      if (!snap.exists) {
+        return {
+          exists: false,
+          data: null
+        };
+      }
+
+      const data = snap.data() || {};
+
+      return {
+        exists: true,
+        data: {
+          cards: Array.isArray(data.cards) ? data.cards : [],
+          decks: Array.isArray(data.decks) ? data.decks : [],
+          wishlist: Array.isArray(data.wishlist) ? data.wishlist : [],
+          settings: data.settings || {},
+          sortState: data.sortState || { key: 'added', dir: 'desc' }
+        }
+      };
+
+    } catch (error) {
+      console.error('CloudService.loadAll:', error);
+
+      return {
+        exists: false,
+        data: null,
+        error
+      };
+    }
+  }
+
+  function saveDebounced(data = null, delay = 800) {
+    clearTimeout(saveTimer);
+
+    saveTimer = setTimeout(() => {
+      saveAll(data).catch(error => {
+        console.error('CloudService.saveDebounced:', error);
+      });
+    }, delay);
+  }
+
+  function cancelPendingSave() {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+  }
+
+  function isLoading() {
+    return loading;
+  }
+
+  return {
+    saveAll,
+    loadAll,
+    saveDebounced,
+    cancelPendingSave,
+    isLoading
+  };
+
+})();
+
+window.CloudService = CloudService;
