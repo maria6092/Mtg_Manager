@@ -267,14 +267,6 @@
     tbody td{padding:8px;border-bottom:1px solid rgba(201,150,58,.08);vertical-align:middle;font-size:.85rem;background:transparent}
     tbody tr:hover{background:rgba(201,150,58,.05)!important}
     .icon{width:28px;height:28px;display:inline-block;vertical-align:middle;border-radius:6px;border:1px solid rgba(201,150,58,.2);background:var(--card)}
-    .colorChip{
-      display:inline-flex;align-items:center;justify-content:center;
-      min-width:56px;height:20px;padding:0 6px;border-radius:999px;
-      font-size:11px;line-height:1;letter-spacing:1px;
-      border:1px solid rgba(0,0,0,.25);
-      box-shadow:0 1px 3px rgba(0,0,0,.35) inset, 0 1px 2px rgba(0,0,0,.2);
-      white-space:nowrap;
-    }
     .tag{display:inline-block;padding:3px 8px;border-radius:3px;border:1px solid rgba(201,150,58,.2);font-size:.7rem;white-space:nowrap;font-family:'Cinzel',serif;letter-spacing:.04em}
     .tag.r-common{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15);color:#ccc}
     .tag.r-uncommon{background:rgba(140,200,140,.08);border-color:#6d6d6d4d;color:#666}
@@ -2038,31 +2030,8 @@ function priceTextFromPrices(prices){ const num=v=>(v==null||v==='')?null:parseF
 function manaToEmojis(m){ if(!m) return ''; const t=m.match(/\{[^}]+\}/g)||[]; return t.map(t=>{const c=t.replace(/[{}]/g,'').toUpperCase();if(/^\d+$/.test(c))return c;if(c==='X'||c==='Y'||c==='Z')return c;const b={W:'⚪',U:'🔵',B:'⚫',R:'🔴',G:'🟢',C:'🔘'};if(b[c])return b[c];const sp={S:'❄️',T:'↩️',Q:'↪️',E:'⚡'};if(sp[c])return sp[c];if(c.endsWith('/P')){const col=c.split('/')[0];return(b[col]||col)+'/☠️';}if(c.includes('/')){const[a,bb]=c.split('/');return(b[a]||a)+'/'+(b[bb]||bb);}return c;}).join(''); }
 function colorToEmojisFromCI(ci){ const e={W:'⚪',U:'🔵',B:'⚫',R:'🔴',G:'🟢',C:'🔘'},o=['W','U','B','R','G'],a=Array.isArray(ci)?ci.map(x=>String(x).toUpperCase()):[]; if(!a.length)return '🔘'; const s=new Set(a); return o.filter(c=>s.has(c)).map(c=>e[c]).join('')||'🔘'; }
 const PASTEL={W:'#FFF4C9',U:'#DDEBFF',B:'#E6E8EE',R:'#FFE1E6',G:'#DFF7E3',C:'#FFFFFF'};
-const COLOR_VIVID = { W:'#f0dfa0', U:'#5b9bf5', B:'#8a8a95', R:'#e2564f', G:'#4caf6e', C:'#9a9aa5' };
 function normalizeColorId(ci){ const o=['W','U','B','R','G'],s=new Set((ci||[]).map(x=>String(x).toUpperCase()).filter(x=>o.includes(x))); return o.filter(x=>s.has(x)); }
 function gradientFromColorIds(ids){ const n=normalizeColorId(ids); if(!n.length)return ''; const c=n.map(id=>PASTEL[id]||'#FFF'); if(c.length===1)return `linear-gradient(90deg,${c[0]} 0%,${c[0]} 100%)`; const st=[]; for(let i=0;i<c.length;i++){const s=Math.round(i/c.length*100),e=Math.round((i+1)/c.length*100);st.push(`${c[i]} ${s}%`,`${c[i]} ${e}%`);} return `linear-gradient(90deg,${st.join(',')})`; }
-function colorChipHtml(colorIds){
-  const ids = normalizeColorId(colorIds);
-  const emojiMap = { W:'⚪', U:'🔵', B:'⚫', R:'🔴', G:'🟢' };
-  if(!ids.length){
-    return `<span class="colorChip" style="background:${COLOR_VIVID.C}" title="Incoloro">🔘</span>`;
-  }
-  const cols = ids.map(id => COLOR_VIVID[id] || COLOR_VIVID.C);
-  let bg;
-  if(cols.length === 1){
-    bg = cols[0];
-  } else {
-    const stops = [];
-    for(let i=0;i<cols.length;i++){
-      const s = Math.round((i/cols.length)*100);
-      const e = Math.round(((i+1)/cols.length)*100);
-      stops.push(`${cols[i]} ${s}%`, `${cols[i]} ${e}%`);
-    }
-    bg = `linear-gradient(90deg, ${stops.join(',')})`;
-  }
-  const title = ids.map(id => ({W:'Blanco',U:'Azul',B:'Negro',R:'Rojo',G:'Verde'}[id])).join(' / ');
-  return `<span class="colorChip" style="background:${bg}" title="${escapeHtml(title)}">${ids.map(id=>emojiMap[id]).join('')}</span>`;
-}
 function typesEs(tl){ const sm={Legendary:'legendaria',Basic:'básica',Snow:'nevada'},tm={Creature:'Criatura',Instant:'Instantáneo',Sorcery:'Conjuro',Artifact:'Artefacto',Enchantment:'Encantamiento',Land:'Tierra',Planeswalker:'Planeswalker',Battle:'Batalla'},sub={Aura:'Aura',Equipment:'Equipo',Vehicle:'Vehículo',Elf:'Elfo',Human:'Humano',Wizard:'Hechicero',Dragon:'Dragón',Angel:'Ángel',Goblin:'Trasgo',Zombie:'Zombi',Vampire:'Vampiro',Spirit:'Espíritu',Knight:'Caballero',Cleric:'Clérigo',Beast:'Bestia',Elemental:'Elemental',Warrior:'Guerrero',Soldier:'Soldado',Cat:'Gato',Dog:'Perro',Island:'Isla',Mountain:'Montaña',Swamp:'Pantano',Forest:'Bosque',Plains:'Llanura'}; const p=String(tl||'').split(' — '),l=(p[0]||'').trim().split(/\s+/).filter(Boolean),r=p[1]?p[1].trim().split(/\s+/).filter(Boolean):[]; const su=[],ma=[]; l.forEach(w=>{if(sm[w])su.push(sm[w]);else if(tm[w])ma.push(tm[w]);}); let main=ma.join(' '); if(main&&su.length)main+=' '+su.join(' '); return{main:main||'Tipo no disponible',sub:r.map(w=>sub[w]||w).join(' ')||'Sin subtipo'}; }
 function mainTypeBucket(te){ const t=String(te||'').toLowerCase(); if(t.includes('criatura'))return 'Criatura'; if(t.includes('planeswalker'))return 'Planeswalker'; if(t.includes('instant'))return 'Instantáneo'; if(t.includes('conjuro'))return 'Conjuro'; if(t.includes('artefact'))return 'Artefacto'; if(t.includes('encant'))return 'Encantamiento'; if(t.includes('tierra'))return 'Tierra'; if(t.includes('batalla'))return 'Batalla'; return 'Otro'; }
 function computeColorId(card){ const ci=(card.type_line?.includes('Land')&&Array.isArray(card.produced_mana)&&card.produced_mana.length?card.produced_mana:(card.color_identity||[])).map(x=>String(x).toUpperCase()); return ci.filter(x=>['W','U','B','R','G'].includes(x)); }
@@ -2111,7 +2080,7 @@ function renderCardsTableFull(){
   for(const c of sortedCardsView()){
     const tr=document.createElement('tr'); tr.dataset.id=c.id;
     const bg=gradientFromColorIds(c.colorId); tr.style.backgroundImage=bg||'none'; if(!bg)tr.style.backgroundColor=PASTEL.C;
-    tr.innerHTML=`<td class="center"><button class="starBtn" data-star="1">${c.fav?'★':'☆'}</button></td><td><b>${escapeHtml(c.name)}</b><div class="small">${escapeHtml(c.inputName||'')}</div></td><td class="mono">${escapeHtml(c.setCode||'')}</td><td class="mono">${escapeHtml(c.collectorNumber||'')}</td><td>${escapeHtml(c.type||'')}</td><td>${escapeHtml(c.subtype||'')}</td><td>${colorChipHtml(c.colorId)}</td><td>${escapeHtml(c.mana||'')}</td><td class="mono">${Number.isFinite(c.manaValue)?c.manaValue:''}</td><td class="rarity-cell"><span class="tag ${rarityClass(c.rarity)}">${escapeHtml(c.rarity||'')}</span></td><td>${c.logoUrl?`<img class="icon" src="${c.logoUrl}" alt="">`:''}</td><td class="right mono">${escapeHtml(c.priceText||'')}</td><td><input class="chk" type="checkbox" ${c.proxy?'checked':''} data-k="proxy"></td><td><input class="chk" type="checkbox" ${c.foil?'checked':''} data-k="foil"></td><td><input class="chk" type="checkbox" ${c.promo?'checked':''} data-k="promo"></td><td><input class="chk" type="checkbox" ${c.promoPre?'checked':''} data-k="promoPre"></td><td><select data-k="lang">${['es','en','fr','de','it','pt','ja','ko','zhs','zht'].map(l=>`<option value="${l}" ${c.lang===l?'selected':''}>${l}</option>`).join('')}</select></td><td class="right"><input type="number" min="1" value="${c.qty||1}" style="width:70px" data-k="qty"></td><td class="right mono">${escapeHtml(c.bestSell||'')}</td><td class="center"><input class="chk" type="checkbox" ${c.sale?'checked':''} data-k="sale"></td><td class="right"><button class="btn ghost" data-del="1">Eliminar</button></td>`;
+    tr.innerHTML=`<td class="center"><button class="starBtn" data-star="1">${c.fav?'★':'☆'}</button></td><td><b>${escapeHtml(c.name)}</b><div class="small">${escapeHtml(c.inputName||'')}</div></td><td class="mono">${escapeHtml(c.setCode||'')}</td><td class="mono">${escapeHtml(c.collectorNumber||'')}</td><td>${escapeHtml(c.type||'')}</td><td>${escapeHtml(c.subtype||'')}</td><td>${escapeHtml(c.color||'')}</td><td>${escapeHtml(c.mana||'')}</td><td class="mono">${Number.isFinite(c.manaValue)?c.manaValue:''}</td><td class="rarity-cell"><span class="tag ${rarityClass(c.rarity)}">${escapeHtml(c.rarity||'')}</span></td><td>${c.logoUrl?`<img class="icon" src="${c.logoUrl}" alt="">`:''}</td><td class="right mono">${escapeHtml(c.priceText||'')}</td><td><input class="chk" type="checkbox" ${c.proxy?'checked':''} data-k="proxy"></td><td><input class="chk" type="checkbox" ${c.foil?'checked':''} data-k="foil"></td><td><input class="chk" type="checkbox" ${c.promo?'checked':''} data-k="promo"></td><td><input class="chk" type="checkbox" ${c.promoPre?'checked':''} data-k="promoPre"></td><td><select data-k="lang">${['es','en','fr','de','it','pt','ja','ko','zhs','zht'].map(l=>`<option value="${l}" ${c.lang===l?'selected':''}>${l}</option>`).join('')}</select></td><td class="right"><input type="number" min="1" value="${c.qty||1}" style="width:70px" data-k="qty"></td><td class="right mono">${escapeHtml(c.bestSell||'')}</td><td class="center"><input class="chk" type="checkbox" ${c.sale?'checked':''} data-k="sale"></td><td class="right"><button class="btn ghost" data-del="1">Eliminar</button></td>`;
     tbody.appendChild(tr);
   }
   updateCardsMetrics(); updateInvestmentUI(); renderSalesTable();
@@ -2347,7 +2316,7 @@ function openCardDetail(cardId){
 
           ${
             flags.map(f=>
-              `${colorChipHtml(c.colorId)}`
+              `<span class="tag">${escapeHtml(f)}</span>`
             ).join('')
           }
 
