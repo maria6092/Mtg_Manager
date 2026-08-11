@@ -1640,23 +1640,95 @@ const pages=[
 ];
 function getLastTab(){ try{return localStorage.getItem(LAST_TAB_KEY)||'intro';}catch{return 'intro';} }
 function showPage(id){
-  const sections=Array.from(document.querySelectorAll('section[data-page]'));
-  if(!id||!document.querySelector(`section[data-page="${id}"]`)) id='intro';
-  sections.forEach(s=>{ const a=s.dataset.page===id; s.classList.toggle('is-hidden',!a); s.style.display=a?'':'none'; if(a)void s.offsetWidth; });
-  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
-  try{localStorage.setItem(LAST_TAB_KEY,id);}catch{}
+  const sections=Array.from(
+    document.querySelectorAll('section[data-page]')
+  );
+
+  if(!id || !document.querySelector(`section[data-page="${id}"]`)){
+    id='intro';
+  }
+
+  sections.forEach(s=>{
+    const a=s.dataset.page===id;
+
+    s.classList.toggle('is-hidden',!a);
+    s.style.display=a?'':'none';
+
+    if(a) void s.offsetWidth;
+  });
+
+  document.querySelectorAll('.tabbtn')
+    .forEach(b=>{
+      b.classList.toggle(
+        'active',
+        b.dataset.page===id
+      );
+    });
+
   try{
-    if(id==='cartas') renderCardsTableFull();
-    if(id==='buscador'){ensureSearchOptions();loadSearchStateToUI();renderSearchResults();}
-    if(id==='mazos') renderDecks();
-    if(id==='usuario'){renderUserProfilePage();}
-    if(id==='coleccion'){const sel=document.getElementById('colFavFilter');if(sel)sel.value=settings.colFavFilter||'all';renderColeccion();}
-    if(id==='tienda'||id==='mis_ventas') renderSalesTable();
+    localStorage.setItem(LAST_TAB_KEY,id);
+  }catch{}
+
+  try{
+
+    if(id==='intro'){
+      requestAnimationFrame(()=>{
+        renderColorStats();
+        renderTypeStats();
+      });
+    }
+
+    if(id==='cartas'){
+      renderCardsTableFull();
+    }
+
+    if(id==='buscador'){
+      ensureSearchOptions();
+      loadSearchStateToUI();
+      renderSearchResults();
+    }
+
+    if(id==='mazos'){
+      renderDecks();
+    }
+
+    if(id==='usuario'){
+      renderUserProfilePage();
+    }
+
+    if(id==='coleccion'){
+      const sel=document.getElementById('colFavFilter');
+
+      if(sel){
+        sel.value=settings.colFavFilter||'all';
+      }
+
+      renderColeccion();
+    }
+
+    if(id==='tienda'||id==='mis_ventas'){
+      renderSalesTable();
+    }
+
     closeSidebar();
+
   }catch(err){
-    console.error('Error al renderizar tabla:',id,err);
-    const box=document.getElementById('globalErrorBox');
-    if(box){box.style.display='';box.textContent=`⚠️ Error al abrir "${id}": ${err?.message||err}`;}
+
+    console.error(
+      'Error al renderizar tabla:',
+      id,
+      err
+    );
+
+    const box=document.getElementById(
+      'globalErrorBox'
+    );
+
+    if(box){
+      box.style.display='';
+      box.textContent=
+        `⚠️ Error al abrir "${id}": ${err?.message||err}`;
+    }
   }
 }
 function initTabs(){
