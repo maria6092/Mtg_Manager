@@ -39,6 +39,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/achievements.css">
 
   <!-- Estilos personalizados -->
   <style>
@@ -1372,6 +1373,7 @@
             <div class="profileHeaderActions">
               <button class="btn ghost" id="btnProfileGoCollection">Ver colección</button>
               <button class="btn ghost" id="btnProfileGoStore">Ir a tienda</button>
+              <button class="btn" id="btnProfileGoAchievements">Ver logros</button>
             </div>
           </div>
         </div>
@@ -1412,7 +1414,30 @@
 
 
 
-</section>
+      </section>
+      <!-- LOGROS -->
+      <section class="panel is-hidden" data-page="logros" style="display:none;">
+        <div class="pageHeader">
+          <h2>🏆 Logros</h2>
+          <p>Todo lo que puedes desbloquear usando MTG Manager.</p>
+        </div>
+
+        <div class="achProgressWrap">
+          <div class="achProgressText" id="achProgressText">0 / 0 logros conseguidos</div>
+          <div class="achProgressTrack"><div class="achProgressBar" id="achProgressBar"></div></div>
+        </div>
+
+        <div class="achFilters">
+          <select id="achCatFilter"></select>
+          <select id="achStateFilter">
+            <option value="all">Todos</option>
+            <option value="unlocked">Desbloqueados</option>
+            <option value="locked">Bloqueados</option>
+          </select>
+        </div>
+
+        <div id="achGrid"></div>
+      </section>
 <!-- ajestes -->
 
               <section class="panel is-hidden" data-page="ajustes" style="display:none;">
@@ -3384,8 +3409,8 @@ function renderProfileTopActionsV2(isOwnProfile){
     refreshNotifBadgeV2();
   } else {
     box.innerHTML = `
-      <button class="profileIconBtnV2 wide" id="btnProfileMsgV2">✉️ Mensaje</button>
-      <button class="profileIconBtnV2 wide" id="btnProfileAddFriendV2">➕ Amigo</button>
+      <button class="profileIconBtnV2 wide" id="btnProfileMsgV2">✉ Mensaje</button>
+      <button class="profileIconBtnV2 wide" id="btnProfileAddFriendV2">✚ Amigo</button>
     `;
     document.getElementById('btnProfileMsgV2')?.addEventListener('click', ()=>alert('Chat: próximamente (Fase 7 del roadmap).'));
     document.getElementById('btnProfileAddFriendV2')?.addEventListener('click', ()=>{
@@ -3449,6 +3474,7 @@ function initUserProfilePage(){
   el('btnProfileGoCollection')?.addEventListener('click',()=>showPage('coleccion'));
   el('btnProfileGoStore')?.addEventListener('click',()=>showPage('tienda'));
   el('btnBackFromProfileSettings')?.addEventListener('click',()=>openProfileTab('resumen'));
+  el('btnProfileGoAchievements')?.addEventListener('click', () => showPage('logros'));
   document.querySelectorAll('[data-profile-tab]').forEach(b=>b.addEventListener('click',()=>openProfileTab(b.dataset.profileTab)));
 
   el('btnSendFriendRequest')?.addEventListener('click',async()=>{const btn=el('btnSendFriendRequest'),qi=el('friendSearchInput');btn.disabled=true;btn.textContent='Buscando…';try{const res=await sendFriendRequest(qi?.value||'');if(qi)qi.value='';renderUserProfilePage();openProfileTab('amigos');alert(res.autoAccepted?'Ya sois amigos.':'Solicitud enviada.');}catch(err){alert(err?.message||err);}finally{btn.disabled=false;btn.textContent='Añadir amigo';}});
@@ -3596,7 +3622,6 @@ async function _onFirebaseLogin(firebaseUser){
       ensureSearchOptions();
       loadSearchStateToUI();
 
-      // 4. Volver a pintar con los datos de Firestore
       renderCardsTableFull();
       renderDecks();
       renderWishlist();
@@ -3604,13 +3629,11 @@ async function _onFirebaseLogin(firebaseUser){
       updateInvestmentUI();
       renderSalesTable();
 
-      console.log('☁️ Colección cargada desde Firestore.');
+      console.log(' Colección cargada desde Firestore.');
 
     }else{
 
-      // No existe todavía información en la nube.
-      // Migramos los datos locales actuales.
-      console.log('☁️ No existe colección en Firestore. Migrando datos locales...');
+      console.log(' No existe colección en Firestore. Migrando datos locales...');
 
       await CloudService.saveAll({
         cards,
@@ -3620,7 +3643,7 @@ async function _onFirebaseLogin(firebaseUser){
         sortState
       });
 
-      console.log('☁️ Datos locales migrados a Firestore.');
+      console.log(' Datos locales migrados a Firestore.');
     }
 
   }catch(error){
@@ -3752,6 +3775,8 @@ function googleTranslateElementInit() {
 
 })();
 </script>
+<script src="js/achievements-data.js"></script>
+<script src="js/achievements.js"></script>
 
 </body>
 </html>

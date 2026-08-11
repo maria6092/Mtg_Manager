@@ -1,0 +1,114 @@
+/* =============================================
+   ACHIEVEMENTS.CSS — Página de logros + notificación
+   ============================================= */
+
+/* ── Cabecera / progreso ── */
+.achProgressWrap { margin: 4px 0 16px; }
+.achProgressText { font-size: .82rem; color: var(--muted); margin-bottom: 6px; }
+.achProgressTrack {
+  width: 100%; height: 10px; border-radius: 999px;
+  background: rgba(201,150,58,.12);
+  border: 1px solid rgba(201,150,58,.2);
+  overflow: hidden;
+}
+.achProgressBar {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--gold, var(--pink)), var(--gold2, var(--pink2)));
+  transition: width .4s ease;
+}
+
+.achFilters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.achFilters select { max-width: 220px; }
+
+/* ── Cabecera de categoría ── */
+.achCatHeader {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 18px 0 8px; padding: 6px 2px;
+  border-bottom: 1px solid rgba(201,150,58,.2);
+  font-weight: 700; font-size: .82rem; color: var(--gold2, var(--pink2));
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.achCatHeader:first-child { margin-top: 0; }
+.achCatCount { font-size: .74rem; color: var(--muted); font-weight: 600; letter-spacing: 0; text-transform: none; }
+
+/* ── Grid de logros ── */
+.achGridInner {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.achCard {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px; border-radius: 12px;
+  border: 1px solid rgba(201,150,58,.18);
+  background: var(--card);
+  transition: border-color .18s, box-shadow .18s, transform .15s;
+}
+.achCard.is-unlocked { border-color: rgba(201,150,58,.5); box-shadow: 0 0 16px rgba(201,150,58,.1); }
+.achCard.is-unlocked:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(201,150,58,.18); }
+.achCard.is-locked { opacity: .72; }
+
+.achCardBody { min-width: 0; flex: 1; }
+.achCardTitle { font-weight: 700; font-size: .88rem; color: var(--gold2, var(--pink2)); line-height: 1.25; }
+.achCardTitle-locked { color: var(--muted); }
+.achCardDesc { font-size: .78rem; color: var(--muted); margin-top: 4px; font-style: italic; line-height: 1.35; }
+.achCardMeta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.achCardDate { font-size: .68rem; color: var(--muted); }
+
+.achDiff-easy      { color: #7dd88f; border-color: rgba(125,216,143,.35); }
+.achDiff-medium    { color: #7cb0ff; border-color: rgba(124,176,255,.35); }
+.achDiff-hard      { color: #ff8d13; border-color: rgba(255,141,19,.35); }
+.achDiff-legendary { color: #d68bff; border-color: rgba(214,139,255,.4); }
+
+/* ── Icono / candado placeholder ── */
+.achCardIcon { flex: 0 0 auto; }
+.achIconPh, .achLockPh {
+  width: 46px; height: 46px; border-radius: 10px;
+  display: grid; place-items: center; position: relative;
+  background: rgba(201,150,58,.08);
+  border: 1px solid rgba(201,150,58,.25);
+  overflow: hidden;
+}
+.achLockPh { background: rgba(120,120,120,.1); border-color: rgba(120,120,120,.25); }
+.achIconPh img, .achLockPh img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.achIconPhGlyph, .achLockPhGlyph {
+  display: none; font-size: 20px; line-height: 1;
+}
+.achIconPh.is-ph .achIconPhGlyph, .achLockPh.is-ph .achLockPhGlyph { display: block; }
+.achLockPh.is-ph .achLockPhGlyph { opacity: .7; }
+
+/* ── Toast de logro desbloqueado ── */
+#achToastRoot {
+  position: fixed; top: 18px; right: 18px; z-index: 5000;
+  display: flex; flex-direction: column; gap: 10px;
+  pointer-events: none;
+  max-width: min(360px, calc(100vw - 24px));
+}
+.achToast {
+  pointer-events: auto;
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px; border-radius: 14px;
+  background: linear-gradient(160deg, rgba(45,24,84,.97), rgba(24,14,42,.98));
+  border: 1px solid rgba(201,150,58,.45);
+  box-shadow: 0 20px 50px rgba(0,0,0,.5), 0 0 24px rgba(201,150,58,.18);
+  transform: translateX(120%); opacity: 0;
+  transition: transform .32s cubic-bezier(.2,.8,.2,1), opacity .32s ease;
+}
+.achToast.is-in { transform: translateX(0); opacity: 1; }
+.achToast.is-out { transform: translateX(120%); opacity: 0; }
+.achToastIconWrap { flex: 0 0 auto; }
+.achToastIcon { width: 44px; height: 44px; border-radius: 10px; }
+.achToastBody { min-width: 0; flex: 1; }
+.achToastEyebrow { font-size: .66rem; color: var(--gold, var(--pink)); text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+.achToastTitle { font-size: .92rem; font-weight: 700; color: var(--gold2, var(--pink2)); margin-top: 2px; }
+.achToastDesc { font-size: .76rem; color: var(--muted); margin-top: 3px; font-style: italic; }
+.achToastClose {
+  flex: 0 0 auto; background: transparent; border: none; color: var(--muted);
+  cursor: pointer; font-size: 13px; padding: 2px 4px; line-height: 1;
+}
+.achToastClose:hover { color: var(--text); }
+
+@media (max-width: 480px) {
+  #achToastRoot { left: 12px; right: 12px; top: 12px; max-width: none; }
+}
