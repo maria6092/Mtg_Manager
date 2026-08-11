@@ -2029,9 +2029,23 @@ function fmtHistLine(h){ try{const d=new Date(h.t),ds=d.toLocaleDateString('es-E
 function priceTextFromPrices(prices){ const num=v=>(v==null||v==='')?null:parseFloat(String(v).replace(',','.')); const eur=num(prices?.eur)??num(prices?.eur_foil)??num(prices?.eur_etched); const usd=num(prices?.usd)??num(prices?.usd_foil)??num(prices?.usd_etched); const pref=settings.currency==='USD'?'USD':'EUR'; if(pref==='USD'){if(Number.isFinite(usd))return usd.toFixed(2)+'$';if(Number.isFinite(eur))return eur.toFixed(2)+'€';} else{if(Number.isFinite(eur))return eur.toFixed(2)+'€';if(Number.isFinite(usd))return usd.toFixed(2)+'$';} return 'No disponible'; }
 function manaToEmojis(m){ if(!m) return ''; const t=m.match(/\{[^}]+\}/g)||[]; return t.map(t=>{const c=t.replace(/[{}]/g,'').toUpperCase();if(/^\d+$/.test(c))return c;if(c==='X'||c==='Y'||c==='Z')return c;const b={W:'⚪',U:'🔵',B:'⚫',R:'🔴',G:'🟢',C:'🔘'};if(b[c])return b[c];const sp={S:'❄️',T:'↩️',Q:'↪️',E:'⚡'};if(sp[c])return sp[c];if(c.endsWith('/P')){const col=c.split('/')[0];return(b[col]||col)+'/☠️';}if(c.includes('/')){const[a,bb]=c.split('/');return(b[a]||a)+'/'+(b[bb]||bb);}return c;}).join(''); }
 function colorToEmojisFromCI(ci){ const e={W:'⚪',U:'🔵',B:'⚫',R:'🔴',G:'🟢',C:'🔘'},o=['W','U','B','R','G'],a=Array.isArray(ci)?ci.map(x=>String(x).toUpperCase()):[]; if(!a.length)return '🔘'; const s=new Set(a); return o.filter(c=>s.has(c)).map(c=>e[c]).join('')||'🔘'; }
-const PASTEL={W:'#FFF4C9',U:'#DDEBFF',B:'#E6E8EE',R:'#FFE1E6',G:'#DFF7E3',C:'#FFFFFF'};
+const PASTEL={
+  W:'#FFD966', 
+  U:'#4FA8FF', 
+  B:'#8B7CF6', 
+  R:'#FF6B6B', 
+  G:'#3ED17A', 
+  C:'#C9CDD3', 
+};
 function normalizeColorId(ci){ const o=['W','U','B','R','G'],s=new Set((ci||[]).map(x=>String(x).toUpperCase()).filter(x=>o.includes(x))); return o.filter(x=>s.has(x)); }
-function gradientFromColorIds(ids){ const n=normalizeColorId(ids); if(!n.length)return ''; const c=n.map(id=>PASTEL[id]||'#FFF'); if(c.length===1)return `linear-gradient(90deg,${c[0]} 0%,${c[0]} 100%)`; const st=[]; for(let i=0;i<c.length;i++){const s=Math.round(i/c.length*100),e=Math.round((i+1)/c.length*100);st.push(`${c[i]} ${s}%`,`${c[i]} ${e}%`);} return `linear-gradient(90deg,${st.join(',')})`; }
+function gradientFromColorIds(ids){
+  const n=normalizeColorId(ids);
+  if(!n.length) return '';
+  const c=n.map(id=>PASTEL[id]||'#FFF');
+  if(c.length===1) return `linear-gradient(90deg, ${c[0]}, ${c[0]})`;
+  const stops = c.map((color,i)=> `${color} ${Math.round(i/(c.length-1)*100)}%`);
+  return `linear-gradient(90deg, ${stops.join(', ')})`;
+}
 function typesEs(tl){ const sm={Legendary:'legendaria',Basic:'básica',Snow:'nevada'},tm={Creature:'Criatura',Instant:'Instantáneo',Sorcery:'Conjuro',Artifact:'Artefacto',Enchantment:'Encantamiento',Land:'Tierra',Planeswalker:'Planeswalker',Battle:'Batalla'},sub={Aura:'Aura',Equipment:'Equipo',Vehicle:'Vehículo',Elf:'Elfo',Human:'Humano',Wizard:'Hechicero',Dragon:'Dragón',Angel:'Ángel',Goblin:'Trasgo',Zombie:'Zombi',Vampire:'Vampiro',Spirit:'Espíritu',Knight:'Caballero',Cleric:'Clérigo',Beast:'Bestia',Elemental:'Elemental',Warrior:'Guerrero',Soldier:'Soldado',Cat:'Gato',Dog:'Perro',Island:'Isla',Mountain:'Montaña',Swamp:'Pantano',Forest:'Bosque',Plains:'Llanura'}; const p=String(tl||'').split(' — '),l=(p[0]||'').trim().split(/\s+/).filter(Boolean),r=p[1]?p[1].trim().split(/\s+/).filter(Boolean):[]; const su=[],ma=[]; l.forEach(w=>{if(sm[w])su.push(sm[w]);else if(tm[w])ma.push(tm[w]);}); let main=ma.join(' '); if(main&&su.length)main+=' '+su.join(' '); return{main:main||'Tipo no disponible',sub:r.map(w=>sub[w]||w).join(' ')||'Sin subtipo'}; }
 function mainTypeBucket(te){ const t=String(te||'').toLowerCase(); if(t.includes('criatura'))return 'Criatura'; if(t.includes('planeswalker'))return 'Planeswalker'; if(t.includes('instant'))return 'Instantáneo'; if(t.includes('conjuro'))return 'Conjuro'; if(t.includes('artefact'))return 'Artefacto'; if(t.includes('encant'))return 'Encantamiento'; if(t.includes('tierra'))return 'Tierra'; if(t.includes('batalla'))return 'Batalla'; return 'Otro'; }
 function computeColorId(card){ const ci=(card.type_line?.includes('Land')&&Array.isArray(card.produced_mana)&&card.produced_mana.length?card.produced_mana:(card.color_identity||[])).map(x=>String(x).toUpperCase()); return ci.filter(x=>['W','U','B','R','G'].includes(x)); }
