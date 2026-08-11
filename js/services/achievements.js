@@ -14,7 +14,10 @@
 (function () {
   'use strict';
 
-  const DATA = window.ACHIEVEMENTS_DATA || [];
+  // Se lee de forma perezosa (función, no const) para que funcione sin
+  // importar el orden de carga de <script achievements-data.js> y
+  // <script achievements.js>, o si por lo que sea uno tarda más que el otro.
+  function DATA() { return window.ACHIEVEMENTS_DATA || []; }
   const LS_ACH = 'mtg_achievements_v1';
 
   const DIFF_LABEL = { easy: 'Fácil', medium: 'Media', hard: 'Difícil', legendary: 'Legendaria' };
@@ -251,10 +254,10 @@
   }
 
   function check() {
-    if (!DATA.length) return [];
+    if (!DATA().length) return [];
     const stats = computeStats();
     const newly = [];
-    for (const def of DATA) {
+    for (const def of DATA()) {
       if (STATE.unlocked[def.id]) continue;
       const fn = CHECKS[def.id];
       if (typeof fn !== 'function') continue;
@@ -266,12 +269,12 @@
       ['achievement_25', 25], ['achievement_50', 50], ['achievement_75', 75], ['achievement_100', 100],
     ];
     for (const [id, n] of metas) {
-      const def = DATA.find(d => d.id === id);
+      const def = DATA().find(d => d.id === id);
       if (def && !STATE.unlocked[id] && count >= n) { if (unlock(def)) newly.push(def); }
     }
-    const perfectDef = DATA.find(d => d.id === 'perfect_collection');
+    const perfectDef = DATA().find(d => d.id === 'perfect_collection');
     if (perfectDef && !STATE.unlocked['perfect_collection']) {
-      const total = DATA.length;
+      const total = DATA().length;
       if (unlockedCount() >= total - 1) { if (unlock(perfectDef)) newly.push(perfectDef); }
     }
     if (newly.length) renderPageIfOpen();
@@ -360,14 +363,14 @@
     const grid = document.getElementById('achGrid');
     if (!grid) return;
 
-    const total = DATA.length;
+    const total = DATA().length;
     const done = unlockedCount();
     const pctEl = document.getElementById('achProgressText');
     if (pctEl) pctEl.textContent = `${done} / ${total} logros conseguidos`;
     const barEl = document.getElementById('achProgressBar');
     if (barEl) barEl.style.width = total ? `${Math.round((done / total) * 100)}%` : '0%';
 
-    let view = DATA.slice();
+    let view = DATA().slice();
     if (currentFilter.cat) view = view.filter(d => d.cat === currentFilter.cat);
     if (currentFilter.state === 'unlocked') view = view.filter(d => !!STATE.unlocked[d.id]);
     if (currentFilter.state === 'locked') view = view.filter(d => !STATE.unlocked[d.id]);
@@ -418,7 +421,7 @@
   function initFiltersUI() {
     const catSel = document.getElementById('achCatFilter');
     if (catSel && !catSel.dataset.ready) {
-      const cats = [...new Set(DATA.map(d => d.cat))];
+      const cats = [...new Set(DATA().map(d => d.cat))];
       catSel.innerHTML = '<option value="">Todas las categorías</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
       catSel.dataset.ready = '1';
       catSel.addEventListener('change', () => { currentFilter.cat = catSel.value; renderPage(); });
@@ -477,6 +480,14 @@
 
     initFiltersUI();
     check();
+
+    if (!DATA().length) {
+      console.warn(
+        '[Achievements] ACHIEVEMENTS_DATA está vacío. Comprueba que ' +
+        '<script src="js/achievements-data.js"> esté incluido en index.html ' +
+        'y que la ruta sea correcta (revisa la pestaña Network del navegador).'
+      );
+    }
   }
 
   if (document.readyState === 'loading') {
@@ -485,5 +496,5 @@
     initHooks();
   }
 
-  window.Achievements = { check, renderPage, unlockedCount, totalCount: () => DATA.length };
+  window.Achievements = { check, renderPage, unlockedCount, totalCount: () => DATA().length };
 })();
